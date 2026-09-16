@@ -1,0 +1,391 @@
+/**
+ * Ozone Skypool OS - Admin Workspace Styles
+ */
+
+/* 1. WordPress Admin Isolation & Viewport Lock */
+#wpadminbar,
+#adminmenumain,
+#adminmenuback,
+#adminmenuwrap,
+#wpfooter,
+.notice,
+.updated,
+.error,
+.update-nag {
+    display: none !important;
+}
+
+html.wp-toolbar {
+    padding-top: 0 !important;
+}
+
+html, body {
+    overflow: hidden !important;
+    height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+#wpcontent {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    background: var(--ifs-bg) !important;
+}
+
+#wpbody-content {
+    padding-bottom: 0 !important;
+    float: none !important;
+}
+
+/* 2. Color Tokens & Theme Variables */
+:root {
+    --ifs-bg: #f8fafc;
+    --ifs-sidebar: #ffffff;
+    --ifs-surface: #ffffff;
+    --ifs-surface-hover: #f1f5f9;
+    --ifs-surface-active: #e2e8f0;
+    --ifs-border-subtle: #e2e8f0;
+    --ifs-border-strong: #cbd5e1;
+    --ifs-border-focus: #0284c7;
+    --ifs-text-primary: #0f172a;
+    --ifs-text-secondary: #475569;
+    --ifs-text-tertiary: #64748b;
+    --ifs-primary: #0284c7;
+    --ifs-primary-hover: #0369a1;
+    --ifs-accent: #0284c7;
+    --ifs-primary-soft: rgba(2, 132, 199, 0.1);
+    --ifs-success: #16a34a;
+    --ifs-success-soft: rgba(22, 163, 74, 0.12);
+    --ifs-danger: #e11d48;
+    --ifs-danger-soft: rgba(225, 29, 72, 0.12);
+    --ifs-warning: #d97706;
+    --ifs-warning-soft: rgba(217, 119, 6, 0.12);
+    --ifs-card-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    --ifs-font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --ifs-font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="dark"] {
+    --ifs-bg: #070a12;
+    --ifs-sidebar: #0d121f;
+    --ifs-surface: #121829;
+    --ifs-surface-hover: #182035;
+    --ifs-surface-active: #1e2842;
+    --ifs-border-subtle: rgba(255, 255, 255, 0.07);
+    --ifs-border-strong: rgba(255, 255, 255, 0.14);
+    --ifs-border-focus: #38bdf8;
+    --ifs-text-primary: #f8fafc;
+    --ifs-text-secondary: #94a3b8;
+    --ifs-text-tertiary: #64748b;
+    --ifs-primary: #0284c7;
+    --ifs-primary-hover: #0369a1;
+    --ifs-accent: #38bdf8;
+    --ifs-primary-soft: rgba(2, 132, 199, 0.18);
+    --ifs-success: #10b981;
+    --ifs-success-soft: rgba(16, 185, 129, 0.14);
+    --ifs-danger: #f43f5e;
+    --ifs-danger-soft: rgba(244, 63, 94, 0.14);
+    --ifs-warning: #f59e0b;
+    --ifs-warning-soft: rgba(245, 158, 11, 0.14);
+    --ifs-card-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* 3. Core Shell Layout */
+.ifs-pms-shell {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background: var(--ifs-bg);
+    font-family: var(--ifs-font-sans);
+    color: var(--ifs-text-primary);
+    box-sizing: border-box;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.ifs-pms-aside {
+    width: 260px;
+    min-width: 260px;
+    background: var(--ifs-sidebar);
+    border-right: 1px solid var(--ifs-border-subtle);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 22px 14px;
+    box-sizing: border-box;
+    z-index: 20;
+}
+
+.ifs-pms-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px 18px 8px;
+    border-bottom: 1px solid var(--ifs-border-subtle);
+    margin-bottom: 16px;
+}
+
+.ifs-pms-brand-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--ifs-primary) 0%, var(--ifs-primary-hover) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 18px;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+}
+
+.ifs-pms-nav-group-title {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--ifs-text-tertiary);
+    padding: 10px 12px 6px;
+}
+
+.ifs-pms-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px 0;
+}
+
+.ifs-pms-nav-item {
+    margin-bottom: 2px;
+}
+
+.ifs-pms-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ifs-text-secondary);
+    text-decoration: none;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+}
+
+.ifs-pms-nav-link i {
+    font-size: 15px;
+    width: 18px;
+    text-align: center;
+    color: var(--ifs-text-tertiary);
+}
+
+.ifs-pms-nav-link:hover {
+    color: var(--ifs-text-primary);
+    background: var(--ifs-surface-hover);
+}
+
+.ifs-pms-nav-link:hover i {
+    color: var(--ifs-text-primary);
+}
+
+.ifs-pms-nav-item.ifs-pms-active .ifs-pms-nav-link {
+    background: var(--ifs-primary-soft);
+    color: var(--ifs-accent);
+    font-weight: 700;
+}
+
+.ifs-pms-nav-item.ifs-pms-active .ifs-pms-nav-link i {
+    color: var(--ifs-accent);
+}
+
+.ifs-pms-nav-item.ifs-pms-active .ifs-pms-nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    background: var(--ifs-accent);
+    border-radius: 0 3px 3px 0;
+}
+
+.ifs-pms-theme-toggle-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ifs-surface-hover);
+    border: 1px solid var(--ifs-border-subtle);
+    border-radius: 10px;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+}
+
+.ifs-pms-theme-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ifs-text-secondary);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ifs-pms-theme-btn.active {
+    background: var(--ifs-surface);
+    color: var(--ifs-text-primary);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.ifs-pms-operator-card {
+    background: var(--ifs-surface-hover);
+    border: 1px solid var(--ifs-border-subtle);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ifs-pms-operator-avatar {
+    width: 32px;
+    height: 32px;
+    background: var(--ifs-surface);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 13px;
+    color: var(--ifs-accent);
+    border: 1px solid var(--ifs-border-strong);
+}
+
+.ifs-pms-canvas {
+    flex-grow: 1;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 28px 36px;
+    box-sizing: border-box;
+    background: var(--ifs-bg);
+}
+
+.ifs-pms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--ifs-border-subtle);
+    margin-bottom: 22px;
+}
+
+.ifs-pms-header h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+    color: var(--ifs-text-primary);
+}
+
+.ifs-pms-header p {
+    margin: 4px 0 0 0;
+    font-size: 12.5px;
+    color: var(--ifs-text-secondary);
+    display: flex;
+    align-items: center;
+}
+
+.ifs-pms-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ifs-success);
+    box-shadow: 0 0 8px var(--ifs-success);
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.ifs-pms-panel {
+    background: var(--ifs-surface);
+    border: 1px solid var(--ifs-border-subtle);
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--ifs-card-shadow);
+    box-sizing: border-box;
+}
+
+.ifs-pms-mono {
+    font-family: var(--ifs-font-mono) !important;
+}
+
+.ifs-pms-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.ifs-pms-badge-success {
+    background: var(--ifs-success-soft);
+    color: var(--ifs-success);
+}
+
+.ifs-pms-badge-danger {
+    background: var(--ifs-danger-soft);
+    color: var(--ifs-danger);
+}
+
+/* 4. Thermal Slip Modal & Print Formatting */
+#ifs-pms-thermal-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    z-index: 999999;
+    align-items: center;
+    justify-content: center;
+}
+
+.ifs-pms-receipt-card {
+    background: #ffffff;
+    width: 300px;
+    padding: 24px;
+    border-radius: 8px;
+    color: #000000;
+    font-family: var(--ifs-font-mono);
+    text-align: center;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
+}
+
+.ifs-pms-dashed-sep {
+    border-top: 1px dashed #cbd5e1;
+    margin: 12px 0;
+}
+
+@media print {
+    body * {
+        visibility: hidden !important;
+    }
+    #ifs-pms-thermal-modal,
+    #ifs-pms-thermal-modal * {
+        visibility: visible !important;
+    }
+    #ifs-pms-thermal-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: #ffffff !important;
+        width: 100% !important;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
