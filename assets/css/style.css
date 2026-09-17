@@ -400,7 +400,7 @@ html, body {
 
     .ifs-pms-subnav-bar {
         display: flex;
-        width: 100%;
+        width: 500px;
         gap: 8px;
         background: #f1f5f9;
         padding: 6px;
@@ -1245,7 +1245,7 @@ html, body {
     /* Sub Navigation Tabs */
     .ifs-pms-subnav-bar {
         display: flex;
-        width: 100%;
+        width: 500px;
         gap: 10px;
         background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.6) 100%);
         backdrop-filter: blur(12px);
@@ -2185,7 +2185,7 @@ html, body {
 /* Sub Navigation Tabs */
 .ifs-pms-subnav-bar {
     display: flex;
-    width: 100%;
+    width: 500px;
     gap: 10px;
     background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.6) 100%);
     backdrop-filter: blur(12px);
@@ -2595,7 +2595,7 @@ html, body {
 /* Sub Navigation Tabs */
 .ifs-pms-subnav-bar {
     display: flex;
-    width: 100%;
+    width: 500px;
     gap: 10px;
     background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.6) 100%);
     backdrop-filter: blur(12px);
@@ -5908,7 +5908,9 @@ html, body {
     color: #059669;
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
-
+.wp-login-logo {
+	display: none !important;
+}
 .ifs-pms-status-amber {
     background: rgba(245, 158, 11, 0.12);
     color: #d97706;

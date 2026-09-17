@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Operations Dashboard & Executive Command Center (Enterprise Edition v7 - 5 Stream Limit & Zero Inline CSS)
+ * View: Operations Dashboard & Executive Command Center (Enterprise Edition v7 - Native SVG Icons)
  *
  * @package Ozone_Skypool_OS
  */
@@ -115,13 +115,13 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-telemetry-header">
         <div class="ifs-pms-clock-wrap">
             <div class="ifs-pms-clock-icon">
-                <i class="fa-regular fa-clock"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'clock', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div>
                 <div class="ifs-pms-clock-digits" id="ifsPmsLiveClock">--:--:-- --</div>
                 <div class="ifs-pms-clock-date" id="ifsPmsLiveDate"><?php echo esc_html( current_time( 'l, F j, Y' ) ); ?></div>
                 <div class="ifs-pms-closing-countdown" id="ifsPmsClosingCountdown">
-                    <i class="fa-solid fa-hourglass-half"></i> <span id="ifsPmsCountdownText">--</span>
+                    <span id="ifsPmsCountdownText">--</span>
                 </div>
             </div>
         </div>
@@ -141,7 +141,7 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-gauge-card">
         <div style="display: flex; align-items: center; gap: 20px;">
             <div class="ifs-pms-gauge-icon-box">
-                <i class="fa-solid fa-person-swimming"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'users', '', 20 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div>
                 <div class="ifs-pms-gauge-title">
@@ -177,7 +177,7 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-action-deck">
         <a href="<?php echo esc_url( $base_dash_url . '&view=tickets' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-blue">
-                <i class="fa-solid fa-ticket"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div>
                 <div class="ifs-pms-action-title"><?php esc_html_e( 'Sell Ticket Pass', 'ozone-skypool' ); ?></div>
@@ -187,7 +187,7 @@ $recent_admissions = $wpdb->get_results(
 
         <a href="<?php echo esc_url( $base_dash_url . '&view=scanner' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-green">
-                <i class="fa-solid fa-qrcode"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'qrcode', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div>
                 <div class="ifs-pms-action-title"><?php esc_html_e( 'Gate Turnstile Scan', 'ozone-skypool' ); ?></div>
@@ -197,7 +197,7 @@ $recent_admissions = $wpdb->get_results(
 
         <a href="<?php echo esc_url( $base_dash_url . '&view=membership' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-purple">
-                <i class="fa-solid fa-id-card"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'card', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div>
                 <div class="ifs-pms-action-title"><?php esc_html_e( 'Enroll Members', 'ozone-skypool' ); ?></div>
@@ -207,7 +207,7 @@ $recent_admissions = $wpdb->get_results(
 
         <a href="<?php echo esc_url( $base_dash_url . '&view=expenses' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-red">
-                <i class="fa-solid fa-receipt"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'receipt', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div>
                 <div class="ifs-pms-action-title"><?php esc_html_e( 'Record Outflow', 'ozone-skypool' ); ?></div>
@@ -221,7 +221,7 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-inflow">
             <div class="ifs-pms-kpi-meta-tag">
                 <span><?php esc_html_e( 'Shift Gross Receipts', 'ozone-skypool' ); ?></span>
-                <i class="fa-solid fa-arrow-trend-up" style="color: #10b981;"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'check', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #10b981;">
                 <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_revenue, 2 ) ); ?>
@@ -237,7 +237,7 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-admit">
             <div class="ifs-pms-kpi-meta-tag">
                 <span><?php esc_html_e( 'Passes Issued Today', 'ozone-skypool' ); ?></span>
-                <i class="fa-solid fa-ticket" style="color: #0284c7;"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #0f172a;">
                 <?php echo esc_html( number_format_i18n( $today_tickets_issued ) ); ?>
@@ -250,7 +250,7 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-turnover">
             <div class="ifs-pms-kpi-meta-tag">
                 <span><?php esc_html_e( 'Gate Turnstile Verified', 'ozone-skypool' ); ?></span>
-                <i class="fa-solid fa-qrcode" style="color: #c084fc;"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'qrcode', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #c084fc;">
                 <?php echo esc_html( number_format_i18n( $today_admitted ) ); ?>
@@ -264,7 +264,7 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-outflow">
             <div class="ifs-pms-kpi-meta-tag">
                 <span><?php esc_html_e( 'Operating Outflows', 'ozone-skypool' ); ?></span>
-                <i class="fa-solid fa-arrow-trend-down" style="color: #ef4444;"></i>
+                <?php echo wp_kses( ifs_pms_get_svg( 'receipt', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #ef4444;">
                 <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_expenses, 2 ) ); ?>
@@ -281,7 +281,7 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-top">
                 <h3 class="ifs-pms-panel-header-title">
-                    <i class="fa-solid fa-bolt" style="color: #0284c7;"></i>
+                    <?php echo wp_kses( ifs_pms_get_svg( 'tower', '', 16 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
                     <?php esc_html_e( 'Live Turnstile Activity Stream (Latest 5)', 'ozone-skypool' ); ?>
                 </h3>
                 <a href="<?php echo esc_url( $base_dash_url . '&view=history' ); ?>" style="color: #0284c7; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
@@ -320,8 +320,8 @@ $recent_admissions = $wpdb->get_results(
                 <?php endforeach; ?>
             <?php else : ?>
                 <div style="text-align: center; color: #64748b; padding: 56px 20px;">
-                    <i class="fa-solid fa-ticket" style="font-size: 32px; margin-bottom: 12px; opacity: 0.3; display: block;"></i>
-                    <?php esc_html_e( 'No tickets issued or scanned yet today.', 'ozone-skypool' ); ?>
+                    <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 32 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                    <div style="margin-top: 12px;"><?php esc_html_e( 'No tickets issued or scanned yet today.', 'ozone-skypool' ); ?></div>
                 </div>
             <?php endif; ?>
         </div>
@@ -330,7 +330,7 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-top">
                 <h3 class="ifs-pms-panel-header-title">
-                    <i class="fa-solid fa-scale-balanced" style="color: #475569;"></i>
+                    <?php echo wp_kses( ifs_pms_get_svg( 'sliders', '', 16 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
                     <?php esc_html_e( 'Shift Balance Breakdown', 'ozone-skypool' ); ?>
                 </h3>
                 <span class="ifs-pms-status-pill ifs-pms-status-green" style="font-size: 11px; padding: 4px 10px;">
@@ -340,7 +340,7 @@ $recent_admissions = $wpdb->get_results(
 
             <div class="ifs-pms-finance-row">
                 <span style="display: flex; align-items: center; gap: 12px; color: #0f172a;">
-                    <i class="fa-solid fa-ticket" style="color: #0284c7;"></i>
+                    <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
                     <?php esc_html_e( 'Day Admission Tickets', 'ozone-skypool' ); ?>
                 </span>
                 <strong class="ifs-pms-mono" style="color: #0f172a;">
@@ -350,7 +350,7 @@ $recent_admissions = $wpdb->get_results(
 
             <div class="ifs-pms-finance-row">
                 <span style="display: flex; align-items: center; gap: 12px; color: #0f172a;">
-                    <i class="fa-solid fa-id-card" style="color: #c084fc;"></i>
+                    <?php echo wp_kses( ifs_pms_get_svg( 'card', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
                     <?php esc_html_e( 'Pass Subscriptions', 'ozone-skypool' ); ?>
                 </span>
                 <strong class="ifs-pms-mono" style="color: #0f172a;">
@@ -360,7 +360,7 @@ $recent_admissions = $wpdb->get_results(
 
             <div class="ifs-pms-finance-row">
                 <span style="display: flex; align-items: center; gap: 12px; color: #0f172a;">
-                    <i class="fa-solid fa-receipt" style="color: #ef4444;"></i>
+                    <?php echo wp_kses( ifs_pms_get_svg( 'receipt', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
                     <?php esc_html_e( 'Operational Outflows', 'ozone-skypool' ); ?>
                 </span>
                 <strong class="ifs-pms-mono" style="color: #ef4444;">
