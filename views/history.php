@@ -357,7 +357,7 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
         <!-- Inflow -->
         <div class="oz-kpi-card">
             <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Shift Gross Intake', 'ozone-skypool' ); ?></span>
+                <span class="oz-kpi-label"><?php esc_html_e( 'Shift Gross Intake', 'swimming-pool-manager' ); ?></span>
                 <div class="oz-kpi-icon-bubble" style="background: rgba(16, 185, 129, 0.1); color: var(--ifs-success, #10b981);">
                     <i class="fa-solid fa-money-bill-wave"></i>
                 </div>
@@ -365,13 +365,13 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
             <div class="oz-kpi-val ifs-pms-mono" style="color: var(--ifs-success, #10b981);">
                 <?php echo esc_html( $currency . ' ' . number_format_i18n( $shift_total_rev, 2 ) ); ?>
             </div>
-            <div class="oz-kpi-sub"><?php esc_html_e( 'Sum of register tickets for date', 'ozone-skypool' ); ?></div>
+            <div class="oz-kpi-sub"><?php esc_html_e( 'Sum of register tickets for date', 'swimming-pool-manager' ); ?></div>
         </div>
 
         <!-- Volume Issued -->
         <div class="oz-kpi-card">
             <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Passes Issued', 'ozone-skypool' ); ?></span>
+                <span class="oz-kpi-label"><?php esc_html_e( 'Passes Issued', 'swimming-pool-manager' ); ?></span>
                 <div class="oz-kpi-icon-bubble" style="background: rgba(2, 132, 199, 0.1); color: var(--ifs-accent, #0284c7);">
                     <i class="fa-solid fa-ticket"></i>
                 </div>
@@ -379,13 +379,13 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
             <div class="oz-kpi-val ifs-pms-mono" style="color: var(--ifs-text-primary, #0f172a);">
                 <?php echo esc_html( number_format_i18n( $shift_total_tkts ) ); ?>
             </div>
-            <div class="oz-kpi-sub"><?php esc_html_e( 'Single, Combo & VIP tickets sold', 'ozone-skypool' ); ?></div>
+            <div class="oz-kpi-sub"><?php esc_html_e( 'Single, Combo & VIP tickets sold', 'swimming-pool-manager' ); ?></div>
         </div>
 
         <!-- Shift Star Performer -->
         <div class="oz-kpi-card">
             <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Leading Register Cashier', 'ozone-skypool' ); ?></span>
+                <span class="oz-kpi-label"><?php esc_html_e( 'Leading Register Cashier', 'swimming-pool-manager' ); ?></span>
                 <div class="oz-kpi-icon-bubble" style="background: rgba(245, 158, 11, 0.1); color: var(--ifs-warning, #f59e0b);">
                     <i class="fa-solid fa-trophy"></i>
                 </div>
@@ -394,14 +394,14 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
                 <?php echo esc_html( $top_cashier_name ); ?>
             </div>
             <div class="oz-kpi-sub ifs-pms-mono">
-                <?php echo esc_html( $currency . ' ' . number_format_i18n( $top_cashier_intake, 2 ) ); ?> <?php esc_html_e( 'collected', 'ozone-skypool' ); ?>
+                <?php echo esc_html( $currency . ' ' . number_format_i18n( $top_cashier_intake, 2 ) ); ?> <?php esc_html_e( 'collected', 'swimming-pool-manager' ); ?>
             </div>
         </div>
 
         <!-- Scans Audited -->
         <div class="oz-kpi-card">
             <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Turnstile Verifications', 'ozone-skypool' ); ?></span>
+                <span class="oz-kpi-label"><?php esc_html_e( 'Turnstile Verifications', 'swimming-pool-manager' ); ?></span>
                 <div class="oz-kpi-icon-bubble" style="background: rgba(192, 132, 252, 0.1); color: #c084fc;">
                     <i class="fa-solid fa-turnstile"></i>
                 </div>
@@ -409,7 +409,7 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
             <div class="oz-kpi-val ifs-pms-mono" style="color: #c084fc;">
                 <?php echo esc_html( number_format_i18n( $shift_total_scans ) ); ?>
             </div>
-            <div class="oz-kpi-sub"><?php esc_html_e( 'Passes admitted through gates', 'ozone-skypool' ); ?></div>
+            <div class="oz-kpi-sub"><?php esc_html_e( 'Passes admitted through gates', 'swimming-pool-manager' ); ?></div>
         </div>
     </div>
 
@@ -419,15 +419,15 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
             <div>
                 <h3 class="oz-panel-title">
                     <i class="fa-solid fa-user-shield" style="color: var(--ifs-accent, #0284c7);"></i>
-                    <?php esc_html_e( 'Cashier Shift Reconciliations', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Cashier Shift Reconciliations', 'swimming-pool-manager' ); ?>
                 </h3>
                 <span style="font-size: 11.5px; color: var(--ifs-text-tertiary, #64748b); margin-top: 3px; display: block;">
-                    <?php esc_html_e( 'Shift Date: ', 'ozone-skypool' ); ?><?php echo esc_html( $date_label ); ?>
+                    <?php esc_html_e( 'Shift Date: ', 'swimming-pool-manager' ); ?><?php echo esc_html( $date_label ); ?>
                 </span>
             </div>
 
             <button type="button" class="oz-btn oz-btn-secondary" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Shift Slip', 'ozone-skypool' ); ?>
+                <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Shift Slip', 'swimming-pool-manager' ); ?>
             </button>
         </div>
 
@@ -435,17 +435,17 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
         <div class="oz-staff-toolbar">
             <div class="oz-search-container">
                 <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                <input type="text" id="ozStaffSearchInput" placeholder="<?php esc_attr_e( 'Search register operator...', 'ozone-skypool' ); ?>" oninput="ozFilterStaffTable()" autocomplete="off">
+                <input type="text" id="ozStaffSearchInput" placeholder="<?php esc_attr_e( 'Search register operator...', 'swimming-pool-manager' ); ?>" oninput="ozFilterStaffTable()" autocomplete="off">
             </div>
 
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=staff&shift_date=' . current_time( 'Y-m-d' ) ) ); ?>" 
                    class="oz-btn oz-btn-secondary <?php echo ( $shift_date === current_time( 'Y-m-d' ) ) ? 'active' : ''; ?>">
-                    <?php esc_html_e( 'Today', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Today', 'swimming-pool-manager' ); ?>
                 </a>
                 <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=staff&shift_date=' . gmdate( 'Y-m-d', strtotime( '-1 day', strtotime( current_time( 'Y-m-d' ) ) ) ) ) ); ?>" 
                    class="oz-btn oz-btn-secondary <?php echo ( $shift_date === gmdate( 'Y-m-d', strtotime( '-1 day', strtotime( current_time( 'Y-m-d' ) ) ) ) ) ? 'active' : ''; ?>">
-                    <?php esc_html_e( 'Yesterday', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Yesterday', 'swimming-pool-manager' ); ?>
                 </a>
 
                 <form method="GET" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="display: flex; align-items: center; gap: 8px; margin: 0;">
@@ -453,7 +453,7 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
                     <input type="hidden" name="view" value="staff">
                     <input type="date" name="shift_date" class="ifs-pms-mono" value="<?php echo esc_attr( $shift_date ); ?>">
                     <button type="submit" class="oz-btn oz-btn-primary">
-                        <i class="fa-solid fa-arrows-rotate"></i> <?php esc_html_e( 'Audit', 'ozone-skypool' ); ?>
+                        <i class="fa-solid fa-arrows-rotate"></i> <?php esc_html_e( 'Audit', 'swimming-pool-manager' ); ?>
                     </button>
                 </form>
             </div>
@@ -463,17 +463,17 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
             <table class="oz-table" id="ozStaffSalesTable">
                 <thead>
                     <tr>
-                        <th><?php esc_html_e( 'Cashier Operator', 'ozone-skypool' ); ?></th>
-                        <th><?php esc_html_e( 'Tickets Issued', 'ozone-skypool' ); ?></th>
-                        <th><?php esc_html_e( 'Shift Share', 'ozone-skypool' ); ?></th>
-                        <th><?php esc_html_e( 'Gross Tendered', 'ozone-skypool' ); ?></th>
-                        <th><?php esc_html_e( 'Turnstile Verifications', 'ozone-skypool' ); ?></th>
+                        <th><?php esc_html_e( 'Cashier Operator', 'swimming-pool-manager' ); ?></th>
+                        <th><?php esc_html_e( 'Tickets Issued', 'swimming-pool-manager' ); ?></th>
+                        <th><?php esc_html_e( 'Shift Share', 'swimming-pool-manager' ); ?></th>
+                        <th><?php esc_html_e( 'Gross Tendered', 'swimming-pool-manager' ); ?></th>
+                        <th><?php esc_html_e( 'Turnstile Verifications', 'swimming-pool-manager' ); ?></th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ( ! empty( $staff_sales ) ) : ?>
                         <?php foreach ( $staff_sales as $st ) :
-                            $cashier_name = ! empty( $st->sold_by ) ? $st->sold_by : __( 'Terminal Unassigned', 'ozone-skypool' );
+                            $cashier_name = ! empty( $st->sold_by ) ? $st->sold_by : __( 'Terminal Unassigned', 'swimming-pool-manager' );
                             $scans_count  = isset( $staff_scans_raw[ $st->sold_by ] ) ? (int) $staff_scans_raw[ $st->sold_by ]->scan_count : 0;
                             $pct_share    = $shift_total_rev > 0 ? (int) round( ( (float) $st->total / $shift_total_rev ) * 100 ) : 0;
                             $initial      = mb_strtoupper( mb_substr( $cashier_name, 0, 1 ) );
@@ -484,13 +484,13 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
                                         <span class="oz-staff-avatar-sm"><?php echo esc_html( $initial ); ?></span>
                                         <div>
                                             <strong class="oz-staff-label" style="font-size: 13.5px; color: var(--ifs-text-primary, #0f172a);"><?php echo esc_html( $cashier_name ); ?></strong>
-                                            <div style="font-size: 11.5px; color: var(--ifs-text-tertiary, #94a3b8);"><?php esc_html_e( 'Terminal Operator', 'ozone-skypool' ); ?></div>
+                                            <div style="font-size: 11.5px; color: var(--ifs-text-tertiary, #94a3b8);"><?php esc_html_e( 'Terminal Operator', 'swimming-pool-manager' ); ?></div>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <strong class="ifs-pms-mono" style="font-size: 14px; color: var(--ifs-text-primary, #0f172a);"><?php echo esc_html( number_format_i18n( $st->count ) ); ?></strong>
-                                    <span style="color: var(--ifs-text-tertiary, #94a3b8); font-size: 12px; margin-left: 3px;"><?php esc_html_e( 'passes', 'ozone-skypool' ); ?></span>
+                                    <span style="color: var(--ifs-text-tertiary, #94a3b8); font-size: 12px; margin-left: 3px;"><?php esc_html_e( 'passes', 'swimming-pool-manager' ); ?></span>
                                 </td>
                                 <td>
                                     <div style="font-size: 11.5px; font-weight: 800; color: var(--ifs-text-tertiary, #64748b);" class="ifs-pms-mono"><?php echo esc_html( (string) $pct_share ); ?>%</div>
@@ -503,7 +503,7 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
                                 </td>
                                 <td>
                                     <span class="ifs-pms-badge" style="background: var(--ifs-primary-soft, rgba(2, 132, 199, 0.08)); color: var(--ifs-accent, #0284c7); border: 1px solid rgba(2, 132, 199, 0.25);">
-                                        <i class="fa-solid fa-qrcode" style="margin-right: 4px;"></i> <?php echo esc_html( number_format_i18n( $scans_count ) ); ?> <?php esc_html_e( 'verified', 'ozone-skypool' ); ?>
+                                        <i class="fa-solid fa-qrcode" style="margin-right: 4px;"></i> <?php echo esc_html( number_format_i18n( $scans_count ) ); ?> <?php esc_html_e( 'verified', 'swimming-pool-manager' ); ?>
                                     </span>
                                 </td>
                             </tr>
@@ -512,7 +512,7 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
                         <tr>
                             <td colspan="5" style="text-align: center; padding: 48px 16px; color: var(--ifs-text-tertiary, #94a3b8);">
                                 <i class="fa-solid fa-user-xmark" style="font-size: 36px; opacity: 0.35; margin-bottom: 12px; display: block;"></i>
-                                <?php printf( esc_html__( 'No cashier transactions logged for date: %s', 'ozone-skypool' ), esc_html( $shift_date ) ); ?>
+                                <?php printf( esc_html__( 'No cashier transactions logged for date: %s', 'swimming-pool-manager' ), esc_html( $shift_date ) ); ?>
                             </td>
                         </tr>
                     <?php endif; ?>
@@ -520,16 +520,16 @@ $date_label = date_i18n( 'l, F j, Y', strtotime( $shift_date ) );
                 <?php if ( ! empty( $staff_sales ) ) : ?>
                     <tfoot>
                         <tr style="background: var(--ifs-surface-hover, #f8fafc); font-weight: 800; border-top: 2px solid var(--ifs-border-strong, #cbd5e1);">
-                            <td style="color: var(--ifs-text-primary, #0f172a);"><?php esc_html_e( 'Shift Aggregate Sum', 'ozone-skypool' ); ?></td>
+                            <td style="color: var(--ifs-text-primary, #0f172a);"><?php esc_html_e( 'Shift Aggregate Sum', 'swimming-pool-manager' ); ?></td>
                             <td class="ifs-pms-mono" style="color: var(--ifs-text-primary, #0f172a);">
-                                <?php echo esc_html( number_format_i18n( $shift_total_tkts ) ); ?> <?php esc_html_e( 'passes', 'ozone-skypool' ); ?>
+                                <?php echo esc_html( number_format_i18n( $shift_total_tkts ) ); ?> <?php esc_html_e( 'passes', 'swimming-pool-manager' ); ?>
                             </td>
                             <td style="color: var(--ifs-text-tertiary, #94a3b8);" class="ifs-pms-mono">100%</td>
                             <td class="ifs-pms-mono" style="color: var(--ifs-success, #10b981); font-size: 15px;">
                                 <?php echo esc_html( $currency . ' ' . number_format_i18n( $shift_total_rev, 2 ) ); ?>
                             </td>
                             <td class="ifs-pms-mono" style="color: var(--ifs-accent, #0284c7);">
-                                <?php echo esc_html( number_format_i18n( $shift_total_scans ) ); ?> <?php esc_html_e( 'verified', 'ozone-skypool' ); ?>
+                                <?php echo esc_html( number_format_i18n( $shift_total_scans ) ); ?> <?php esc_html_e( 'verified', 'swimming-pool-manager' ); ?>
                             </td>
                         </tr>
                     </tfoot>

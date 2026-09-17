@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Gate Turnstile Control & QR Validator Console (Executive Telemetry Edition v10 - Rich Telemetry & Auto 4-Digit Padding)
+ * View: Gate Turnstile Control & QR Validator Console (Live Telemetry Preview Edition)
  *
  * @package Ozone_Skypool_OS
  */
@@ -9,359 +9,22 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+// Enqueue external scanner console stylesheet
+if ( defined( 'IFS_PMS_URL' ) && defined( 'IFS_PMS_VERSION' ) ) {
+    wp_enqueue_style(
+        'oz-scanner-console-css',
+        IFS_PMS_URL . 'assets/css/scanner-console.css',
+        array(),
+        IFS_PMS_VERSION
+    );
+}
+
 $currency = esc_html( get_option( 'ifs_pms_currency', 'BDT' ) );
+$current_operator = wp_get_current_user()->display_name;
 
 // Generate today's base prefix (e.g., OZONE-SEP-17-)
 $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 'd' ) . '-';
 ?>
-
-<style>
-    /* ==========================================================================
-       EXECUTIVE TURNSTILE GATE & SCANNER CONSOLE
-       ========================================================================== */
-    .oz-scanner-layout {
-        display: grid;
-        grid-template-columns: minmax(0, 1.25fr) minmax(400px, 0.95fr);
-        gap: 26px;
-        align-items: start;
-        box-sizing: border-box;
-        width: 100%;
-    }
-
-    @media (max-width: 1200px) {
-        .oz-scanner-layout {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .oz-panel-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-        box-sizing: border-box;
-        overflow: hidden;
-    }
-
-    .oz-panel-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 22px 28px;
-        border-bottom: 1px solid #f1f5f9;
-        background: linear-gradient(to bottom, #fafbfd, #f8fafc);
-    }
-
-    .oz-panel-title {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 800;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: #0f172a;
-    }
-
-    .oz-console-body {
-        padding: 28px;
-        display: flex;
-        flex-direction: column;
-        gap: 22px;
-        box-sizing: border-box;
-    }
-
-    /* Electronic Turnstile Relay Bar */
-    .oz-barrier-relay-bar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 18px;
-        padding: 16px 20px;
-        transition: all 0.3s ease;
-    }
-
-    .oz-relay-status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11.5px;
-        font-weight: 800;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        padding: 8px 18px;
-        border-radius: 9999px;
-        transition: all 0.25s ease;
-    }
-
-    .oz-relay-status-pill.closed {
-        background: rgba(239, 68, 68, 0.1);
-        color: #ef4444;
-        border: 1px solid rgba(239, 68, 68, 0.3);
-    }
-
-    .oz-relay-status-pill.open {
-        background: rgba(16, 185, 129, 0.12);
-        color: #10b981;
-        border: 1px solid rgba(16, 185, 129, 0.4);
-        box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
-    }
-
-    /* Optical Viewfinder HUD */
-    .oz-scanner-viewport {
-        position: relative;
-        width: 100%;
-        max-width: 500px;
-        height: 270px;
-        margin: 0 auto;
-        border-radius: 20px;
-        background: #020617;
-        border: 2px solid #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.85);
-    }
-
-    .oz-scanner-video {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: none;
-    }
-
-    .oz-hud-reticle {
-        position: absolute;
-        width: 28px;
-        height: 28px;
-        border-color: #0284c7;
-        border-style: solid;
-        z-index: 6;
-        pointer-events: none;
-    }
-
-    .oz-hud-reticle.top-left { top: 16px; left: 16px; border-width: 3px 0 0 3px; border-top-left-radius: 8px; }
-    .oz-hud-reticle.top-right { top: 16px; right: 16px; border-width: 3px 3px 0 0; border-top-right-radius: 8px; }
-    .oz-hud-reticle.bottom-left { bottom: 16px; left: 16px; border-width: 0 0 3px 3px; border-bottom-left-radius: 8px; }
-    .oz-hud-reticle.bottom-right { bottom: 16px; right: 16px; border-width: 0 3px 3px 0; border-bottom-right-radius: 8px; }
-
-    .oz-laser-beam {
-        position: absolute;
-        left: 8%;
-        right: 8%;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #0284c7, #38bdf8, transparent);
-        box-shadow: 0 0 16px #0284c7, 0 0 6px #ffffff;
-        animation: ozLaserSweep 2.2s ease-in-out infinite alternate;
-        z-index: 5;
-        pointer-events: none;
-    }
-
-    @keyframes ozLaserSweep {
-        0% { top: 14%; opacity: 0.2; }
-        50% { opacity: 1; }
-        100% { top: 86%; opacity: 0.2; }
-    }
-
-    .oz-field-group {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .oz-field-label {
-        font-size: 12.5px;
-        font-weight: 700;
-        color: #475569;
-        margin-bottom: 8px;
-        display: block;
-    }
-
-    /* Split Input Group (Prefix + Serial Number) */
-    .oz-split-token-group {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        background: #ffffff;
-        border: 2px solid #cbd5e1;
-        border-radius: 14px;
-        overflow: hidden;
-        transition: border-color 0.2s, box-shadow 0.2s;
-        box-sizing: border-box;
-    }
-
-    .oz-split-token-group:focus-within {
-        border-color: #0284c7;
-        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
-    }
-
-    .oz-token-prefix-addon {
-        background: #f1f5f9;
-        color: #0284c7;
-        font-weight: 800;
-        font-size: 15px;
-        padding: 0 14px;
-        height: 52px;
-        display: flex;
-        align-items: center;
-        border-right: 1.5px solid #cbd5e1;
-        user-select: none;
-        letter-spacing: 0.8px;
-        white-space: nowrap;
-    }
-
-    #wpcontent .oz-scanner-layout input[type="text"].oz-token-number-input {
-        flex: 1 !important;
-        display: block !important;
-        width: 100% !important;
-        background: #ffffff !important;
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 0 16px !important;
-        font-size: 20px !important;
-        font-weight: 800 !important;
-        letter-spacing: 2px !important;
-        text-transform: uppercase !important;
-        text-align: left !important;
-        color: #0f172a !important;
-        height: 52px !important;
-        box-shadow: none !important;
-        outline: none !important;
-    }
-
-    .oz-scanner-status-bar {
-        padding: 16px 20px;
-        border-radius: 14px;
-        font-weight: 700;
-        font-size: 13.5px;
-        text-align: center;
-        background: #f8fafc;
-        border: 1.5px solid #e2e8f0;
-        color: #475569;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        transition: all 0.25s ease;
-    }
-
-    /* Detailed Telemetry HUD */
-    .oz-telemetry-result-card {
-        background: #ffffff;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 20px;
-        padding: 22px;
-        box-sizing: border-box;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-    }
-
-    .oz-telemetry-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin: 14px 0;
-        font-size: 12px;
-    }
-
-    .oz-telemetry-item {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 8px 12px;
-    }
-
-    .oz-telemetry-item span {
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    .oz-telemetry-item strong {
-        font-size: 12.5px;
-        color: #0f172a;
-    }
-
-    .oz-telemetry-item-wide {
-        grid-column: span 2;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 10px 12px;
-    }
-
-    .oz-telemetry-item-wide span {
-        display: block;
-        font-size: 10px;
-        font-weight: 700;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 2px;
-    }
-
-    .oz-feed-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 16px;
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        margin-bottom: 8px;
-        transition: all 0.15s ease;
-    }
-
-    .oz-feed-item:hover {
-        background: #f1f5f9;
-        transform: translateY(-1px);
-    }
-
-    #wpcontent .oz-scanner-layout .oz-btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        font-weight: 700 !important;
-        cursor: pointer !important;
-        border-radius: 12px !important;
-        transition: all 0.2s ease !important;
-    }
-
-    #wpcontent .oz-scanner-layout .oz-btn-primary.oz-btn-lg {
-        height: 52px !important;
-        font-size: 15px !important;
-        font-weight: 800 !important;
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(2, 132, 199, 0.8) !important;
-        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35) !important;
-    }
-
-    #wpcontent .oz-scanner-layout .oz-btn-primary.oz-btn-lg:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 22px rgba(2, 132, 199, 0.45) !important;
-    }
-
-    #wpcontent .oz-scanner-layout .oz-btn-secondary {
-        height: 44px !important;
-        padding: 0 16px !important;
-        font-size: 13px !important;
-        background: #ffffff !important;
-        color: #475569 !important;
-        border: 1.5px solid #cbd5e1 !important;
-    }
-
-    #wpcontent .oz-scanner-layout .oz-btn-secondary:hover {
-        background: #f8fafc !important;
-        border-color: #0284c7 !important;
-        color: #0284c7 !important;
-    }
-</style>
 
 <div class="oz-scanner-layout">
     <!-- LEFT: Main Validator Console -->
@@ -369,10 +32,10 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         <div class="oz-panel-head">
             <h3 class="oz-panel-title">
                 <i class="fa-solid fa-turnstile" style="color: #0284c7;"></i>
-                <?php esc_html_e( 'Gate Turnstile Validation Console', 'ozone-skypool' ); ?>
+                <?php esc_html_e( 'Gate Turnstile Validation Console', 'swimming-pool-manager' ); ?>
             </h3>
             <span class="ifs-pms-badge ifs-pms-badge-success">
-                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Relay Port Online', 'ozone-skypool' ); ?>
+                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Relay Port Online', 'swimming-pool-manager' ); ?>
             </span>
         </div>
 
@@ -384,15 +47,15 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                         <i class="fa-solid fa-microchip"></i>
                     </div>
                     <div>
-                        <div style="font-size: 14px; font-weight: 800; color: #0f172a;"><?php esc_html_e( 'Electronic Gate Barrier #01', 'ozone-skypool' ); ?></div>
+                        <div style="font-size: 14px; font-weight: 800; color: #0f172a;"><?php esc_html_e( 'Electronic Gate Barrier #01', 'swimming-pool-manager' ); ?></div>
                         <div style="font-size: 11.5px; color: #64748b; margin-top: 1px;" id="ozBarrierSub">
-                            <?php esc_html_e( '4000ms actuation pulse • Auto-relock armed', 'ozone-skypool' ); ?>
+                            <?php esc_html_e( '4000ms actuation pulse • Auto-relock armed', 'swimming-pool-manager' ); ?>
                         </div>
                     </div>
                 </div>
 
                 <div class="oz-relay-status-pill closed" id="ozTurnstileStatePill">
-                    <i class="fa-solid fa-lock"></i> <span id="ozTurnstileStateTxt"><?php esc_html_e( 'BARRIER LOCKED', 'ozone-skypool' ); ?></span>
+                    <i class="fa-solid fa-lock"></i> <span id="ozTurnstileStateTxt"><?php esc_html_e( 'BARRIER LOCKED', 'swimming-pool-manager' ); ?></span>
                 </div>
             </div>
 
@@ -409,7 +72,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                 <div id="ozScannerPlaceholder" style="text-align: center; color: #64748b; padding: 20px;">
                     <i class="fa-solid fa-qrcode" style="font-size: 64px; opacity: 0.3; margin-bottom: 12px; display: block;"></i>
                     <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase;">
-                        <?php esc_html_e( 'Ready for USB Scanner Gun or WebCam', 'ozone-skypool' ); ?>
+                        <?php esc_html_e( 'Ready for USB Scanner Gun or WebCam', 'swimming-pool-manager' ); ?>
                     </div>
                 </div>
             </div>
@@ -417,17 +80,17 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
             <!-- Scanner Camera Controls -->
             <div style="display: flex; gap: 12px;">
                 <button type="button" class="oz-btn oz-btn-secondary" style="flex: 1.4;" id="ozToggleCamBtn" onclick="ozToggleCamera()">
-                    <i class="fa-solid fa-camera"></i> <span id="ozCamBtnLabel"><?php esc_html_e( 'Activate WebCam Scanner', 'ozone-skypool' ); ?></span>
+                    <i class="fa-solid fa-camera"></i> <span id="ozCamBtnLabel"><?php esc_html_e( 'Activate WebCam Scanner', 'swimming-pool-manager' ); ?></span>
                 </button>
                 <button type="button" class="oz-btn oz-btn-secondary" style="flex: 1;" onclick="ozResetScannerConsole()">
-                    <i class="fa-solid fa-arrows-rotate"></i> <?php esc_html_e( 'Clear Standby', 'ozone-skypool' ); ?>
+                    <i class="fa-solid fa-arrows-rotate"></i> <?php esc_html_e( 'Clear Standby', 'swimming-pool-manager' ); ?>
                 </button>
             </div>
 
             <!-- Auto-Prefixed Barcode Token Input -->
             <div class="oz-field-group">
                 <label class="oz-field-label" for="ozScanSerialInput">
-                    <?php esc_html_e( 'Pass Barcode / Turnstile Token UID', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Pass Barcode / Turnstile Token UID', 'swimming-pool-manager' ); ?>
                 </label>
                 
                 <div class="oz-split-token-group">
@@ -436,98 +99,158 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                 </div>
 
                 <div style="font-size: 11.5px; color: #64748b; margin-top: 6px; display: flex; justify-content: space-between;">
-                    <span><?php esc_html_e( 'Type number (e.g. 5 pads to 0005) or scan entire barcode.', 'ozone-skypool' ); ?></span>
-                    <kbd style="font-family: var(--ifs-font-mono); background: #f1f5f9; border: 1px solid #cbd5e1; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Enter</kbd>
+                    <span><?php esc_html_e( 'Type digits or scan barcode. Auto-triggers verification.', 'swimming-pool-manager' ); ?></span>
+                    <kbd style="font-family: var(--ifs-font-mono, monospace); background: #f1f5f9; border: 1px solid #cbd5e1; padding: 1px 6px; border-radius: 4px; font-weight: 700;">Auto</kbd>
                 </div>
             </div>
 
             <button type="button" id="ozAuthorizeBtn" class="oz-btn oz-btn-primary oz-btn-lg" style="width: 100%;" onclick="ozExecuteVerification()">
-                <i class="fa-solid fa-shield-check"></i> <?php esc_html_e( 'Verify & Actuate Turnstile Barrier', 'ozone-skypool' ); ?>
+                <i class="fa-solid fa-shield-check"></i> <?php esc_html_e( 'Verify & Actuate Turnstile Barrier', 'swimming-pool-manager' ); ?>
             </button>
 
             <!-- Dynamic Feedback Bar -->
             <div id="ozScannerStatusBar" class="oz-scanner-status-bar">
-                <i class="fa-solid fa-satellite-dish"></i> <?php esc_html_e( 'Terminal Standby • Present pass to scanner', 'ozone-skypool' ); ?>
+                <i class="fa-solid fa-satellite-dish"></i> <?php esc_html_e( 'Terminal Standby • Present pass to scanner', 'swimming-pool-manager' ); ?>
             </div>
         </div>
     </div>
 
-    <!-- RIGHT: Complete Verification Telemetry Stream -->
+    <!-- RIGHT: Complete Verification Telemetry Stream (Full Dossier) -->
     <div class="oz-panel-card">
         <div class="oz-panel-head">
             <h3 class="oz-panel-title">
-                <i class="fa-solid fa-clock-rotate-left" style="color: #475569;"></i>
-                <?php esc_html_e( 'Turnstile Telemetry Stream', 'ozone-skypool' ); ?>
+                <i class="fa-solid fa-radar" style="color: #0284c7;"></i>
+                <?php esc_html_e( 'Turnstile Telemetry Stream', 'swimming-pool-manager' ); ?>
             </h3>
             <span class="ifs-pms-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
-                <?php esc_html_e( 'Active Shift', 'ozone-skypool' ); ?>
+                <i class="fa-solid fa-user-shield" style="color: #0284c7;"></i> <?php echo esc_html( $current_operator ); ?>
             </span>
         </div>
 
         <div class="oz-console-body">
             <!-- Full Info Real-Time Telemetry Card -->
-            <div id="ozResultTelemetryBox" class="oz-telemetry-result-card" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; border-bottom: 1px dashed #e2e8f0;">
-                    <div>
-                        <strong id="ozResultPatron" style="font-size: 16px; color: #0f172a; display: block; font-weight: 800;">Patron Name</strong>
-                        <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px;">
-                            <span id="ozResultClassificationBadge" class="ifs-pms-badge">General Customer</span>
-                            <span id="ozResultPhone" style="font-size: 11px; color: #64748b; font-family: var(--ifs-font-mono);">017XXXXXXXX</span>
+            <div id="ozResultTelemetryBox" class="oz-telemetry-result-card" style="border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 20px; background: #ffffff;">
+                
+                <!-- 1. Patron Dossier Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 14px; border-bottom: 1.5px dashed #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <div id="ozResultAvatar" style="width: 48px; height: 48px; border-radius: 14px; background: #f1f5f9; color: #64748b; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <strong id="ozResultPatron" style="font-size: 17px; color: #0f172a; display: block; font-weight: 800;">
+                                <?php esc_html_e( 'Awaiting Pass Scan...', 'swimming-pool-manager' ); ?>
+                            </strong>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 3px;">
+                                <span id="ozResultClassificationBadge" class="ifs-pms-badge" style="background: #f1f5f9; color: #64748b; font-size: 11px;">
+                                    <?php esc_html_e( 'Idle Standby', 'swimming-pool-manager' ); ?>
+                                </span>
+                                <span id="ozResultPhone" class="ifs-pms-mono" style="font-size: 11.5px; color: #64748b;">—</span>
+                            </div>
                         </div>
                     </div>
-                    <span id="ozResultBadge" class="ifs-pms-badge ifs-pms-badge-success"><?php esc_html_e( 'Admitted', 'ozone-skypool' ); ?></span>
+                    <span id="ozResultBadge" class="ifs-pms-badge" style="background: #f1f5f9; color: #64748b; font-size: 12px; padding: 6px 14px; border-radius: 20px;">
+                        <?php esc_html_e( 'Standby', 'swimming-pool-manager' ); ?>
+                    </span>
                 </div>
 
-                <!-- Comprehensive 4-Column Metric Grid -->
-                <div class="oz-telemetry-grid ifs-pms-mono">
-                    <div class="oz-telemetry-item">
-                        <span><?php esc_html_e( 'Token Code', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultCode" style="color: #0284c7; font-size: 13px;">-</strong>
+                <!-- 2. Full 8-Point Telemetry Metric Matrix -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 16px;">
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-fingerprint" style="color: #0284c7;"></i> <?php esc_html_e( 'Token Code', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultCode" class="ifs-pms-mono" style="color: #0284c7; font-size: 13.5px; margin-top: 2px; display: block;">—</strong>
                     </div>
 
-                    <div class="oz-telemetry-item" id="ozResultRoomWrap" style="display: none;">
-                        <span><?php esc_html_e( 'Hotel Room #', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultRoom" style="color: #0284c7; font-size: 13px;">-</strong>
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-door-closed" style="color: #0284c7;"></i> <?php esc_html_e( 'Barrier Gate Port', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultGatePort" style="color: #0f172a; font-size: 13px; margin-top: 2px; display: block;">
+                            <?php esc_html_e( 'Turnstile Barrier #01', 'swimming-pool-manager' ); ?>
+                        </strong>
                     </div>
 
-                    <div class="oz-telemetry-item">
-                        <span><?php esc_html_e( 'Duration', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultDuration">-</strong>
+                    <div class="oz-telemetry-item" id="ozResultRoomWrap" style="display: none; background: rgba(2, 132, 199, 0.05); padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(2, 132, 199, 0.2);">
+                        <span style="font-size: 10px; font-weight: 700; color: #0284c7; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-hotel"></i> <?php esc_html_e( 'Hotel Room Number', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultRoom" class="ifs-pms-mono" style="color: #0284c7; font-size: 13.5px; margin-top: 2px; display: block;">—</strong>
                     </div>
 
-                    <div class="oz-telemetry-item">
-                        <span><?php esc_html_e( 'Valid Until', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultValidUntil" style="color: #10b981;">-</strong>
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-hourglass-start" style="color: #0284c7;"></i> <?php esc_html_e( 'Booked Session', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultDuration" class="ifs-pms-mono" style="color: #0f172a; font-size: 13px; margin-top: 2px; display: block;">—</strong>
                     </div>
 
-                    <div class="oz-telemetry-item">
-                        <span><?php esc_html_e( 'Amount Paid', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultAmount" style="color: #0f172a;">-</strong>
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-clock" style="color: #10b981;"></i> <?php esc_html_e( 'Valid Until (Exit Window)', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultValidUntil" class="ifs-pms-mono" style="color: #10b981; font-size: 13.5px; margin-top: 2px; display: block;">—</strong>
                     </div>
 
-                    <div class="oz-telemetry-item">
-                        <span><?php esc_html_e( 'Tender Method', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultPayment">-</strong>
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-money-bill-wave" style="color: #10b981;"></i> <?php esc_html_e( 'Total Amount Settled', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultAmount" class="ifs-pms-mono" style="color: #0f172a; font-size: 13.5px; margin-top: 2px; display: block;">—</strong>
                     </div>
 
-                    <div class="oz-telemetry-item-wide">
-                        <span><?php esc_html_e( 'Enrolled Package Items', 'ozone-skypool' ); ?></span>
-                        <strong id="ozResultPackage" style="color: #0f172a; font-family: var(--ifs-font-sans); font-size: 12px; line-height: 1.4;">-</strong>
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-credit-card" style="color: #0284c7;"></i> <?php esc_html_e( 'Payment Tender', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultPayment" style="color: #0f172a; font-size: 13px; margin-top: 2px; display: block;">—</strong>
+                    </div>
+
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-user-check" style="color: #0284c7;"></i> <?php esc_html_e( 'Desk Issuing Staff', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultSoldBy" style="color: #475569; font-size: 12.5px; margin-top: 2px; display: block;">—</strong>
+                    </div>
+
+                    <div class="oz-telemetry-item" style="background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #f1f5f9;">
+                        <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block;">
+                            <i class="fa-solid fa-shield-halved" style="color: #10b981;"></i> <?php esc_html_e( 'Verifying Operator', 'swimming-pool-manager' ); ?>
+                        </span>
+                        <strong id="ozResultScannedBy" style="color: #475569; font-size: 12.5px; margin-top: 2px; display: block;">—</strong>
                     </div>
                 </div>
 
-                <div id="ozResultMessageRow" style="margin-top: 10px; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 8px;">-</div>
+                <!-- 3. Enrolled Packages & Inclusions Full Width Block -->
+                <div style="margin-top: 12px; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 10px; padding: 10px 14px;">
+                    <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">
+                        <i class="fa-solid fa-layer-group" style="color: #0284c7;"></i> <?php esc_html_e( 'Enrolled Package Inclusions & Amenities', 'swimming-pool-manager' ); ?>
+                    </span>
+                    <strong id="ozResultPackage" style="color: #0f172a; font-size: 12.5px; line-height: 1.4; display: block; font-weight: 700;">
+                        <?php esc_html_e( 'No active scan telemetry loaded.', 'swimming-pool-manager' ); ?>
+                    </strong>
+                </div>
+
+                <!-- 4. Security & Actuator Output Log -->
+                <div id="ozResultMessageRow" style="margin-top: 14px; font-size: 12px; font-weight: 700; padding: 8px 14px; border-radius: 8px; color: #64748b; background: #f1f5f9; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-satellite-dish"></i> 
+                    <span id="ozResultMessageTxt"><?php esc_html_e( 'Ready to authorize entry gates.', 'swimming-pool-manager' ); ?></span>
+                </div>
             </div>
 
-            <!-- Recent Scan Feed -->
-            <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.08em; margin-bottom: 4px;">
-                <?php esc_html_e( 'Recent Turnstile Admittances', 'ozone-skypool' ); ?>
+            <!-- Recent Turnstile Admittance Feed -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 20px 0 8px 0;">
+                <div style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.08em;">
+                    <i class="fa-solid fa-list-check" style="color: #0284c7;"></i> <?php esc_html_e( 'Shift Admittance Ledger Stream', 'swimming-pool-manager' ); ?>
+                </div>
+                <span style="font-size: 11px; color: #94a3b8; font-weight: 600;"><?php esc_html_e( 'Auto-synchronized', 'swimming-pool-manager' ); ?></span>
             </div>
 
-            <div id="ozScanSessionLogContainer">
-                <div style="text-align: center; color: #94a3b8; padding: 48px 20px; font-size: 13px;" id="ozScanNoHistory">
-                    <i class="fa-solid fa-fingerprint" style="font-size: 36px; opacity: 0.35; margin-bottom: 12px; display: block;"></i>
-                    <?php esc_html_e( 'No tickets scanned in this session yet.', 'ozone-skypool' ); ?>
+            <div id="ozScanSessionLogContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="text-align: center; color: #94a3b8; padding: 36px 20px; font-size: 13px;" id="ozScanNoHistory">
+                    <i class="fa-solid fa-fingerprint" style="font-size: 36px; opacity: 0.35; margin-bottom: 10px; display: block;"></i>
+                    <?php esc_html_e( 'No tickets scanned in this session yet.', 'swimming-pool-manager' ); ?>
                 </div>
             </div>
         </div>
@@ -543,9 +266,11 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
     let isProcessing    = false;
     let barrierTimer    = null;
     let countdownTimer  = null;
+    let typingTimer     = null;
 
-    const basePrefix  = <?php echo wp_json_encode( $current_mon_prefix ); ?>;
-    const currencySym = <?php echo wp_json_encode( $currency ); ?>;
+    const basePrefix      = <?php echo wp_json_encode( $current_mon_prefix ); ?>;
+    const currencySym     = <?php echo wp_json_encode( $currency ); ?>;
+    const currentOperator = <?php echo wp_json_encode( $current_operator ); ?>;
 
     const audioCtx = (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined')
         ? new (window.AudioContext || window.webkitAudioContext)()
@@ -601,17 +326,14 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         };
     }
 
-    // Automatic zero-padding: "5" -> "0005", "42" -> "0042", handles full barcode dumps
     function constructFullToken(rawVal) {
         let clean = rawVal.trim().toUpperCase();
         if (!clean) return '';
 
-        // If the scanner/cashier provided the entire barcode
-        if (clean.startsWith('OZONE-')) {
+        if (clean.startsWith('OZONE-') || clean.startsWith('OZ-')) {
             return clean;
         }
 
-        // If user input is pure digits (e.g. 5, 24, 100), pad left to 4 digits
         if (/^\d+$/.test(clean)) {
             clean = clean.padStart(4, '0');
         }
@@ -635,7 +357,6 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
             return;
         }
 
-        // Update the visible input to reflect the padded 4 digits
         if (inputEl && /^\d+$/.test(rawVal.trim())) {
             inputEl.value = rawVal.trim().padStart(4, '0');
         }
@@ -643,7 +364,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         isProcessing = true;
         if (authBtn) authBtn.disabled = true;
 
-        statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <?php echo esc_js( __( 'Contacting Turnstile Controller...', 'ozone-skypool' ) ); ?>';
+        statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <?php echo esc_js( __( 'Contacting Turnstile Controller...', 'swimming-pool-manager' ) ); ?>';
         statusEl.style.color = '#475569';
         statusEl.style.background = '#f8fafc';
         statusEl.style.borderColor = '#e2e8f0';
@@ -665,18 +386,18 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
             if (res && res.success) {
                 soundAccessGranted();
 
-                statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <?php echo esc_js( __( 'ACCESS GRANTED • TURNSTILE UNLOCKED', 'ozone-skypool' ) ); ?>';
+                statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> <?php echo esc_js( __( 'ACCESS GRANTED • TURNSTILE UNLOCKED', 'swimming-pool-manager' ) ); ?>';
                 statusEl.style.background = 'rgba(16, 185, 129, 0.12)';
                 statusEl.style.color = '#10b981';
                 statusEl.style.borderColor = 'rgba(16, 185, 129, 0.4)';
 
                 triggerBarrierRelay(true);
                 displayTelemetry(res.data, true);
-                logSessionEntry(codeVal, timeString, true, res.data.customer_name);
+                logSessionEntry(codeVal, timeString, true, res.data.customer_name, res.data.guest_type, res.data.room_no);
             } else {
                 soundAccessDenied();
 
-                const errorMsg = (res && res.data && res.data.message) ? res.data.message : <?php echo wp_json_encode( __( 'Invalid or Expired Pass ID', 'ozone-skypool' ) ); ?>;
+                const errorMsg = (res && res.data && res.data.message) ? res.data.message : <?php echo wp_json_encode( __( 'Invalid or Expired Pass ID', 'swimming-pool-manager' ) ); ?>;
                 statusEl.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> ' + escapeHtml(errorMsg);
                 statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
                 statusEl.style.color = '#ef4444';
@@ -685,21 +406,25 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                 triggerBarrierRelay(false);
                 displayTelemetry({
                     ticket_code: codeVal,
-                    customer_name: <?php echo wp_json_encode( __( 'Access Rejected', 'ozone-skypool' ) ); ?>,
+                    customer_name: <?php echo wp_json_encode( __( 'Access Rejected', 'swimming-pool-manager' ) ); ?>,
                     customer_phone: '-',
-                    package: '-',
+                    guest_type: 'customer',
+                    room_no: '',
+                    package: <?php echo wp_json_encode( __( 'Verification Failed or Voided', 'swimming-pool-manager' ) ); ?>,
                     amount: '0.00',
                     payment_method: '-',
                     duration_hours: 0,
                     valid_until: '-',
+                    sold_by: '-',
+                    scanned_by: currentOperator,
                     message: errorMsg,
                     scanned_at: timeString
                 }, false);
-                logSessionEntry(codeVal, timeString, false, 'Invalid Token');
+                logSessionEntry(codeVal, timeString, false, 'Invalid / Void Pass', 'customer', '');
             }
         })
         .catch(err => {
-            statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <?php echo esc_js( __( 'Gate Controller Timeout', 'ozone-skypool' ) ); ?>';
+            statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <?php echo esc_js( __( 'Gate Controller Timeout', 'swimming-pool-manager' ) ); ?>';
             statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
             statusEl.style.color = '#ef4444';
         })
@@ -738,21 +463,23 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
 
             barrierTimer = setTimeout(() => {
                 pill.className = 'oz-relay-status-pill closed';
-                txt.innerHTML  = '<i class="fa-solid fa-lock"></i> <?php echo esc_js( __( 'BARRIER LOCKED', 'ozone-skypool' ) ); ?>';
-                if (sub) sub.textContent = <?php echo wp_json_encode( __( '4000ms actuation pulse • Auto-relock armed', 'ozone-skypool' ) ); ?>;
+                txt.innerHTML  = '<i class="fa-solid fa-lock"></i> <?php echo esc_js( __( 'BARRIER LOCKED', 'swimming-pool-manager' ) ); ?>';
+                if (sub) sub.textContent = <?php echo wp_json_encode( __( '4000ms actuation pulse • Auto-relock armed', 'swimming-pool-manager' ) ); ?>;
             }, 4000);
         } else {
             pill.className = 'oz-relay-status-pill closed';
-            txt.innerHTML  = '<i class="fa-solid fa-ban"></i> <?php echo esc_js( __( 'ENTRY REJECTED', 'ozone-skypool' ) ); ?>';
+            txt.innerHTML  = '<i class="fa-solid fa-ban"></i> <?php echo esc_js( __( 'ENTRY REJECTED', 'swimming-pool-manager' ) ); ?>';
 
             barrierTimer = setTimeout(() => {
-                txt.innerHTML = '<i class="fa-solid fa-lock"></i> <?php echo esc_js( __( 'BARRIER LOCKED', 'ozone-skypool' ) ); ?>';
+                txt.innerHTML = '<i class="fa-solid fa-lock"></i> <?php echo esc_js( __( 'BARRIER LOCKED', 'swimming-pool-manager' ) ); ?>';
             }, 2500);
         }
     }
 
+    // Complete Telemetry Population
     function displayTelemetry(data, isValid) {
         const card        = document.getElementById('ozResultTelemetryBox');
+        const avatar      = document.getElementById('ozResultAvatar');
         const badge       = document.getElementById('ozResultBadge');
         const patronEl    = document.getElementById('ozResultPatron');
         const phoneEl     = document.getElementById('ozResultPhone');
@@ -764,24 +491,36 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         const validUntil  = document.getElementById('ozResultValidUntil');
         const amountEl    = document.getElementById('ozResultAmount');
         const paymentEl   = document.getElementById('ozResultPayment');
+        const soldByEl    = document.getElementById('ozResultSoldBy');
+        const scannedByEl = document.getElementById('ozResultScannedBy');
         const packageEl   = document.getElementById('ozResultPackage');
-        const msgEl       = document.getElementById('ozResultMessageRow');
+        const msgTxt      = document.getElementById('ozResultMessageTxt');
+        const msgRow      = document.getElementById('ozResultMessageRow');
 
         if (!card) return;
-        card.style.display = 'block';
 
-        codeEl.textContent   = data.ticket_code || '-';
-        patronEl.textContent = data.customer_name || 'Walk-in Guest';
-        phoneEl.textContent  = data.customer_phone || '-';
-        msgEl.textContent    = data.message || '';
+        codeEl.textContent     = data.ticket_code || '-';
+        patronEl.textContent   = data.customer_name || 'Walk-in Guest';
+        phoneEl.textContent    = data.customer_phone || '-';
+        msgTxt.textContent     = data.message || '';
+        soldByEl.textContent   = data.sold_by || 'Front Desk Staff';
+        scannedByEl.textContent= data.scanned_by || currentOperator;
+
+        if (avatar) {
+            avatar.textContent = (data.customer_name && data.customer_name.length > 0) ? data.customer_name.charAt(0).toUpperCase() : 'G';
+        }
 
         if (isValid) {
             card.style.borderColor = 'rgba(16, 185, 129, 0.4)';
             card.style.background  = 'rgba(16, 185, 129, 0.02)';
+            avatar.style.background= 'rgba(16, 185, 129, 0.15)';
+            avatar.style.color     = '#10b981';
+
             badge.className        = 'ifs-pms-badge ifs-pms-badge-success';
-            badge.textContent      = <?php echo wp_json_encode( __( 'Pass Approved', 'ozone-skypool' ) ); ?>;
-            msgEl.style.color      = '#10b981';
-            msgEl.style.background = 'rgba(16, 185, 129, 0.08)';
+            badge.textContent      = <?php echo wp_json_encode( __( 'Pass Authorized', 'swimming-pool-manager' ) ); ?>;
+            
+            msgRow.style.color     = '#10b981';
+            msgRow.style.background= 'rgba(16, 185, 129, 0.08)';
 
             if (data.guest_type === 'room_guest') {
                 classBadge.textContent = 'Hotel Room Guest';
@@ -796,7 +535,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                 if (roomWrap) roomWrap.style.display = 'none';
             }
 
-            durationEl.textContent = (data.duration_hours || 1) + ' Hours';
+            durationEl.textContent = (data.duration_hours || 1) + ' ' + ((data.duration_hours > 1) ? 'Hours' : 'Hour');
             validUntil.textContent = data.valid_until || '-';
             amountEl.textContent   = (data.amount || '0.00') + ' ' + currencySym;
             paymentEl.textContent  = data.payment_method || 'Cash';
@@ -804,11 +543,16 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         } else {
             card.style.borderColor = 'rgba(239, 68, 68, 0.4)';
             card.style.background  = 'rgba(239, 68, 68, 0.02)';
+            avatar.style.background= 'rgba(239, 68, 68, 0.15)';
+            avatar.style.color     = '#ef4444';
+
             badge.className        = 'ifs-pms-badge ifs-pms-badge-danger';
-            badge.textContent      = <?php echo wp_json_encode( __( 'Denied', 'ozone-skypool' ) ); ?>;
-            msgEl.style.color      = '#ef4444';
-            msgEl.style.background = 'rgba(239, 68, 68, 0.08)';
-            classBadge.textContent = 'Verification Failed';
+            badge.textContent      = <?php echo wp_json_encode( __( 'Access Denied', 'swimming-pool-manager' ) ); ?>;
+            
+            msgRow.style.color     = '#ef4444';
+            msgRow.style.background= 'rgba(239, 68, 68, 0.08)';
+            
+            classBadge.textContent = 'Validation Rejected';
             classBadge.className   = 'ifs-pms-badge ifs-pms-badge-danger';
 
             if (roomWrap) roomWrap.style.display = 'none';
@@ -820,7 +564,8 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         }
     }
 
-    function logSessionEntry(code, time, isValid, name) {
+    // Hydrated Multi-Attribute Session Feed Entry
+    function logSessionEntry(code, time, isValid, name, guestType, roomNo) {
         const emptyState = document.getElementById('ozScanNoHistory');
         if (emptyState) emptyState.remove();
 
@@ -828,22 +573,35 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         if (!container) return;
 
         const row = document.createElement('div');
-        row.className = 'oz-feed-item';
+        row.style.background = '#ffffff';
+        row.style.border = isValid ? '1px solid #e2e8f0' : '1px solid rgba(239, 68, 68, 0.2)';
+        row.style.borderRadius = '10px';
+        row.style.padding = '10px 14px';
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
 
         const badgeHtml = isValid 
-            ? '<span class="ifs-pms-badge ifs-pms-badge-success"><?php echo esc_js( __( 'Admitted', 'ozone-skypool' ) ); ?></span>'
-            : '<span class="ifs-pms-badge ifs-pms-badge-danger"><?php echo esc_js( __( 'Denied', 'ozone-skypool' ) ); ?></span>';
+            ? '<span class="ifs-pms-badge ifs-pms-badge-success" style="font-size: 11px;"><i class="fa-solid fa-check"></i> <?php echo esc_js( __( 'Admitted', 'swimming-pool-manager' ) ); ?></span>'
+            : '<span class="ifs-pms-badge ifs-pms-badge-danger" style="font-size: 11px;"><i class="fa-solid fa-xmark"></i> <?php echo esc_js( __( 'Denied', 'swimming-pool-manager' ) ); ?></span>';
+
+        const roomTag = (guestType === 'room_guest' && roomNo) ? `<span style="color:#0284c7; font-weight:700;">[Room ${escapeHtml(roomNo)}]</span>` : '';
 
         row.innerHTML = `
             <div>
-                <strong class="ifs-pms-mono" style="color: #0f172a; font-size: 13px;">${escapeHtml(code)}</strong>
-                <div style="font-size: 11px; color: #64748b; margin-top: 1px;">${escapeHtml(name || 'Guest')} &bull; ${escapeHtml(time)}</div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <strong class="ifs-pms-mono" style="color: #0284c7; font-size: 13px;">${escapeHtml(code)}</strong>
+                    ${roomTag}
+                </div>
+                <div style="font-size: 11px; color: #64748b; margin-top: 2px;">
+                    <strong>${escapeHtml(name || 'Walk-in Guest')}</strong> &bull; <span class="ifs-pms-mono">${escapeHtml(time)}</span>
+                </div>
             </div>
             <div>${badgeHtml}</div>
         `;
 
         container.insertBefore(row, container.firstChild);
-        while (container.children.length > 7) {
+        while (container.children.length > 8) {
             container.removeChild(container.lastChild);
         }
     }
@@ -856,7 +614,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         }
         const statusEl = document.getElementById('ozScannerStatusBar');
         if (statusEl) {
-            statusEl.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> <?php echo esc_js( __( 'Terminal Standby • Present pass to scanner', 'ozone-skypool' ) ); ?>';
+            statusEl.innerHTML = '<i class="fa-solid fa-satellite-dish"></i> <?php echo esc_js( __( 'Terminal Standby • Present pass to scanner', 'swimming-pool-manager' ) ); ?>';
             statusEl.style.color = '#475569';
             statusEl.style.background = '#f8fafc';
             statusEl.style.borderColor = '#e2e8f0';
@@ -879,7 +637,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                 await video.play();
 
                 cameraActive = true;
-                if (label) label.textContent = <?php echo wp_json_encode( __( 'Turn Off Camera', 'ozone-skypool' ) ); ?>;
+                if (label) label.textContent = <?php echo wp_json_encode( __( 'Turn Off Camera', 'swimming-pool-manager' ) ); ?>;
 
                 if (barcodeDetector) {
                     scanInterval = setInterval(async () => {
@@ -895,7 +653,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                     }, 280);
                 }
             } catch (err) {
-                alert(<?php echo wp_json_encode( __( 'Camera stream unavailable. Verify browser video permissions or use an external laser scanner.', 'ozone-skypool' ) ); ?>);
+                alert(<?php echo wp_json_encode( __( 'Camera stream unavailable. Verify browser video permissions or use an external laser scanner.', 'swimming-pool-manager' ) ); ?>);
             }
         } else {
             if (videoStream) {
@@ -904,7 +662,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
             clearInterval(scanInterval);
             video.style.display = 'none';
             if (placeholder) placeholder.style.display = 'block';
-            if (label) label.textContent = <?php echo wp_json_encode( __( 'Activate WebCam Scanner', 'ozone-skypool' ) ); ?>;
+            if (label) label.textContent = <?php echo wp_json_encode( __( 'Activate WebCam Scanner', 'swimming-pool-manager' ) ); ?>;
             cameraActive = false;
         }
     };
@@ -919,6 +677,18 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
         const input = document.getElementById('ozScanSerialInput');
         if (input) {
             input.focus();
+
+            input.addEventListener('input', function() {
+                const val = input.value.trim();
+                clearTimeout(typingTimer);
+
+                if (val.length >= 4 || val.toUpperCase().startsWith('OZONE-') || val.toUpperCase().startsWith('OZ-')) {
+                    typingTimer = setTimeout(() => {
+                        window.ozExecuteVerification();
+                    }, 200);
+                }
+            });
+
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -926,7 +696,6 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
                 }
             });
 
-            // If a USB laser scanner dumps the entire token into this input
             input.addEventListener('paste', function(e) {
                 setTimeout(() => {
                     let pasteVal = input.value.trim().toUpperCase();
@@ -945,6 +714,7 @@ $current_mon_prefix = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . curre
             clearInterval(scanInterval);
             clearTimeout(barrierTimer);
             clearInterval(countdownTimer);
+            clearTimeout(typingTimer);
         });
     }
 

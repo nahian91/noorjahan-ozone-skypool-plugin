@@ -1,12 +1,22 @@
 <?php
 /**
- * View: Financial Performance Reports & Date-Wise Audit Statement (Zero Inline CSS - 100% ifs-pms- CSS Class Namespace)
+ * View: Financial Performance Reports & Date-Wise Audit Statement
  *
  * @package Ozone_Skypool_OS
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
+}
+
+// Enqueue separated Reports stylesheet
+if ( defined( 'IFS_PMS_URL' ) && defined( 'IFS_PMS_VERSION' ) ) {
+    wp_enqueue_style(
+        'ifs-pms-reports-css',
+        IFS_PMS_URL . 'assets/css/reports.css',
+        array(),
+        IFS_PMS_VERSION
+    );
 }
 
 global $wpdb;
@@ -59,11 +69,11 @@ $ticket_stats = $wpdb->get_row(
     )
 );
 
-$ticket_income     = (float) ( $ticket_stats->total_money ?? 0.00 );
-$total_tickets     = (int) ( $ticket_stats->total_count ?? 0 );
-$cash_income       = (float) ( $ticket_stats->cash_money ?? 0.00 );
-$card_income       = (float) ( $ticket_stats->card_money ?? 0.00 );
-$mfs_income        = (float) ( $ticket_stats->mfs_money ?? 0.00 );
+$ticket_income  = (float) ( $ticket_stats->total_money ?? 0.00 );
+$total_tickets  = (int) ( $ticket_stats->total_count ?? 0 );
+$cash_income    = (float) ( $ticket_stats->cash_money ?? 0.00 );
+$card_income    = (float) ( $ticket_stats->card_money ?? 0.00 );
+$mfs_income     = (float) ( $ticket_stats->mfs_money ?? 0.00 );
 
 $member_stats = $wpdb->get_row(
     $wpdb->prepare(
@@ -77,11 +87,11 @@ $member_stats = $wpdb->get_row(
     )
 );
 
-$member_income     = (float) ( $member_stats->total_money ?? 0.00 );
-$total_members     = (int) ( $member_stats->total_count ?? 0 );
-$total_income      = $ticket_income + $member_income;
+$member_income  = (float) ( $member_stats->total_money ?? 0.00 );
+$total_members  = (int) ( $member_stats->total_count ?? 0 );
+$total_income   = $ticket_income + $member_income;
 
-$total_expense     = (float) $wpdb->get_var(
+$total_expense  = (float) $wpdb->get_var(
     $wpdb->prepare(
         "SELECT COALESCE(SUM(amount), 0) 
          FROM {$table_expenses} 
@@ -91,8 +101,8 @@ $total_expense     = (float) $wpdb->get_var(
     )
 );
 
-$net_profit        = $total_income - $total_expense;
-$profit_rate       = $total_income > 0 ? round( ( $net_profit / $total_income ) * 100, 1 ) : 0.0;
+$net_profit  = $total_income - $total_expense;
+$profit_rate = $total_income > 0 ? round( ( $net_profit / $total_income ) * 100, 1 ) : 0.0;
 
 // 4. Detailed Ledger Query Lists based on Filters
 $detailed_tickets     = array();
@@ -145,7 +155,7 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
     <div class="ifs-pms-top-bar">
         <div>
             <div class="ifs-pms-tag-badge">
-                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Date Range Filtered Audit', 'ozone-skypool' ); ?>
+                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Date Range Filtered Audit', 'swimming-pool-manager' ); ?>
             </div>
             <h2 class="ifs-pms-bar-title">
                 <?php echo esc_html( $business_name ); ?> &bull; <?php echo esc_html( $date_range_label ); ?>
@@ -153,27 +163,27 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
         </div>
 
         <div class="ifs-pms-bar-controls">
-            <form method="GET" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="display: flex; gap: 8px; align-items: center; margin: 0;" id="ifsPmsReportGlobalForm">
+            <form method="GET" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="ifs-pms-filter-form" id="ifsPmsReportGlobalForm">
                 <input type="hidden" name="page" value="ifs-pms">
                 <input type="hidden" name="view" value="reports">
                 <input type="hidden" name="sub_tab" id="ifsPmsSubTabInput" value="<?php echo esc_attr( $active_sub_tab ); ?>">
-                <input type="hidden" name="income_filter" value="<?php echo esc_attr( $income_filter ); ?>">
-                <input type="hidden" name="expense_cat" value="<?php echo esc_attr( $expense_cat_filter ); ?>">
+                <input type="hidden" name="income_filter" id="ifsPmsIncomeFilterInput" value="<?php echo esc_attr( $income_filter ); ?>">
+                <input type="hidden" name="expense_cat" id="ifsPmsExpenseCatInput" value="<?php echo esc_attr( $expense_cat_filter ); ?>">
 
                 <div class="ifs-pms-date-picker-pill">
-                    <span class="ifs-pms-date-label"><?php esc_html_e( 'From', 'ozone-skypool' ); ?></span>
+                    <span class="ifs-pms-date-label"><?php esc_html_e( 'From', 'swimming-pool-manager' ); ?></span>
                     <input type="date" name="start_date" value="<?php echo esc_attr( $start_date_input ); ?>">
-                    <span class="ifs-pms-date-label"><?php esc_html_e( 'To', 'ozone-skypool' ); ?></span>
+                    <span class="ifs-pms-date-label"><?php esc_html_e( 'To', 'swimming-pool-manager' ); ?></span>
                     <input type="date" name="end_date" value="<?php echo esc_attr( $end_date_input ); ?>">
                 </div>
 
                 <button type="submit" class="ifs-pms-btn ifs-pms-btn-blue">
-                    <i class="fa-solid fa-filter"></i> <?php esc_html_e( 'Apply Filter', 'ozone-skypool' ); ?>
+                    <i class="fa-solid fa-filter"></i> <?php esc_html_e( 'Apply Filter', 'swimming-pool-manager' ); ?>
                 </button>
             </form>
 
             <button type="button" class="ifs-pms-btn ifs-pms-btn-white" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print', 'ozone-skypool' ); ?>
+                <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print', 'swimming-pool-manager' ); ?>
             </button>
         </div>
     </div>
@@ -182,7 +192,7 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
     <div class="ifs-pms-card-grid">
         <div class="ifs-pms-stat-card">
             <div class="ifs-pms-stat-head">
-                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Total Income', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Total Income', 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-stat-icon ifs-pms-stat-icon-green">
                     <i class="fa-solid fa-wallet"></i>
                 </div>
@@ -191,14 +201,14 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                 <?php echo esc_html( $currency . ' ' . number_format( $total_income, 2 ) ); ?>
             </div>
             <div class="ifs-pms-stat-bottom">
-                <span><?php printf( esc_html__( 'Tickets: %s', 'ozone-skypool' ), esc_html( number_format( $ticket_income, 2 ) ) ); ?></span>
-                <span><?php printf( esc_html__( 'Members: %s', 'ozone-skypool' ), esc_html( number_format( $member_income, 2 ) ) ); ?></span>
+                <span><?php printf( esc_html__( 'Tickets: %s', 'swimming-pool-manager' ), esc_html( number_format( $ticket_income, 2 ) ) ); ?></span>
+                <span><?php printf( esc_html__( 'Members: %s', 'swimming-pool-manager' ), esc_html( number_format( $member_income, 2 ) ) ); ?></span>
             </div>
         </div>
 
         <div class="ifs-pms-stat-card">
             <div class="ifs-pms-stat-head">
-                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Total Expenses', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Total Expenses', 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-stat-icon ifs-pms-stat-icon-red">
                     <i class="fa-solid fa-receipt"></i>
                 </div>
@@ -207,31 +217,31 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                 <?php echo esc_html( $currency . ' ' . number_format( $total_expense, 2 ) ); ?>
             </div>
             <div class="ifs-pms-stat-bottom">
-                <span><?php printf( esc_html__( '%d Vouchers', 'ozone-skypool' ), count( $detailed_expenses ) ); ?></span>
-                <span><?php esc_html_e( 'Outflows', 'ozone-skypool' ); ?></span>
+                <span><?php printf( esc_html__( '%d Vouchers', 'swimming-pool-manager' ), count( $detailed_expenses ) ); ?></span>
+                <span><?php esc_html_e( 'Outflows', 'swimming-pool-manager' ); ?></span>
             </div>
         </div>
 
         <div class="ifs-pms-stat-card">
             <div class="ifs-pms-stat-head">
-                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Net Profit', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Net Profit', 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-stat-icon ifs-pms-stat-icon-blue">
                     <i class="fa-solid fa-chart-line"></i>
                 </div>
             </div>
-            <div class="ifs-pms-stat-number ifs-pms-mono" style="color: <?php echo ( $net_profit >= 0 ) ? '#0f172a' : '#ef4444'; ?>;">
+            <div class="ifs-pms-stat-number ifs-pms-mono <?php echo ( $net_profit >= 0 ) ? 'ifs-pms-stat-number-blue' : 'ifs-pms-stat-number-red'; ?>">
                 <?php echo esc_html( $currency . ' ' . number_format( $net_profit, 2 ) ); ?>
             </div>
             <div class="ifs-pms-stat-bottom">
-                <strong style="color: <?php echo $net_profit >= 0 ? '#10b981' : '#ef4444'; ?>;">
-                    <?php echo esc_html( $net_profit >= 0 ? __( 'Profitable', 'ozone-skypool' ) : __( 'Loss Recorded', 'ozone-skypool' ) ); ?>
+                <strong class="<?php echo $net_profit >= 0 ? 'ifs-pms-text-green' : 'ifs-pms-text-red'; ?>">
+                    <?php echo esc_html( $net_profit >= 0 ? __( 'Profitable', 'swimming-pool-manager' ) : __( 'Loss Recorded', 'swimming-pool-manager' ) ); ?>
                 </strong>
             </div>
         </div>
 
         <div class="ifs-pms-stat-card">
             <div class="ifs-pms-stat-head">
-                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Profit Margin', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Profit Margin', 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-stat-icon ifs-pms-stat-icon-purple">
                     <i class="fa-solid fa-percent"></i>
                 </div>
@@ -240,18 +250,18 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                 <?php echo esc_html( (string) $profit_rate ); ?>%
             </div>
             <div class="ifs-pms-stat-bottom">
-                <span><?php esc_html_e( 'Income vs Cost', 'ozone-skypool' ); ?></span>
+                <span><?php esc_html_e( 'Income vs Cost', 'swimming-pool-manager' ); ?></span>
             </div>
         </div>
     </div>
 
     <!-- Sub Navigation Tabs for Income vs Expense Statements -->
     <div class="ifs-pms-sub-tabs" role="tablist">
-        <button type="button" class="ifs-pms-sub-tab-btn <?php echo ( $active_sub_tab === 'income' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSubTab('income')">
-            <i class="fa-solid fa-circle-arrow-down" style="color: #10b981;"></i> <?php esc_html_e( 'Income Details & Breakdown', 'ozone-skypool' ); ?>
+        <button type="button" class="ifs-pms-sub-tab-btn <?php echo ( $active_sub_tab === 'income' ) ? 'active' : ''; ?>" id="ifsSubTabBtnIncome" onclick="ifsPmsSwitchSubTab('income')">
+            <i class="fa-solid fa-circle-arrow-down ifs-pms-text-green"></i> <?php esc_html_e( 'Income Details & Breakdown', 'swimming-pool-manager' ); ?>
         </button>
-        <button type="button" class="ifs-pms-sub-tab-btn <?php echo ( $active_sub_tab === 'expense' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSubTab('expense')">
-            <i class="fa-solid fa-circle-arrow-up" style="color: #ef4444;"></i> <?php esc_html_e( 'Expense Details & Breakdown', 'ozone-skypool' ); ?>
+        <button type="button" class="ifs-pms-sub-tab-btn <?php echo ( $active_sub_tab === 'expense' ) ? 'active' : ''; ?>" id="ifsSubTabBtnExpense" onclick="ifsPmsSwitchSubTab('expense')">
+            <i class="fa-solid fa-circle-arrow-up ifs-pms-text-red"></i> <?php esc_html_e( 'Expense Details & Breakdown', 'swimming-pool-manager' ); ?>
         </button>
     </div>
 
@@ -261,38 +271,36 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
             <div class="ifs-pms-table-head">
                 <h3 class="ifs-pms-table-title">
                     <i class="fa-solid fa-ticket" style="color: #0284c7;"></i>
-                    <?php esc_html_e( 'Income Ledger Transactions', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Income Ledger Transactions', 'swimming-pool-manager' ); ?>
                 </h3>
 
-                <!-- Income Detailed Filter -->
                 <div class="ifs-pms-table-filter-group">
-                    <span class="ifs-pms-table-filter-label"><?php esc_html_e( 'Filter Type:', 'ozone-skypool' ); ?></span>
+                    <span class="ifs-pms-table-filter-label"><?php esc_html_e( 'Filter Type:', 'swimming-pool-manager' ); ?></span>
                     <select id="ifsPmsIncomeFilterSelect" onchange="ifsPmsApplyIncomeFilter(this.value)">
-                        <option value="all" <?php selected( $income_filter, 'all' ); ?>><?php esc_html_e( 'All Incomes (Tickets + Memberships)', 'ozone-skypool' ); ?></option>
-                        <option value="tickets" <?php selected( $income_filter, 'tickets' ); ?>><?php esc_html_e( 'Ticket Sales Only', 'ozone-skypool' ); ?></option>
-                        <option value="memberships" <?php selected( $income_filter, 'memberships' ); ?>><?php esc_html_e( 'Member Subscriptions Only', 'ozone-skypool' ); ?></option>
+                        <option value="all" <?php selected( $income_filter, 'all' ); ?>><?php esc_html_e( 'All Incomes (Tickets + Memberships)', 'swimming-pool-manager' ); ?></option>
+                        <option value="tickets" <?php selected( $income_filter, 'tickets' ); ?>><?php esc_html_e( 'Ticket Sales Only', 'swimming-pool-manager' ); ?></option>
+                        <option value="memberships" <?php selected( $income_filter, 'memberships' ); ?>><?php esc_html_e( 'Member Subscriptions Only', 'swimming-pool-manager' ); ?></option>
                     </select>
                 </div>
             </div>
 
-            <div style="width: 100%; overflow-x: auto;">
+            <div class="ifs-pms-table-responsive">
                 <table class="ifs-pms-data-table">
                     <thead>
                         <tr>
-                            <th><?php esc_html_e( 'Reference / Code', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Patron / Subscriber', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Type / Details', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Payment Method', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Cashier / Staff', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Date & Time', 'ozone-skypool' ); ?></th>
-                            <th style="text-align: right;"><?php esc_html_e( 'Amount', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Reference / Code', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Patron / Subscriber', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Type / Details', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Payment Method', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Cashier / Staff', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Date & Time', 'swimming-pool-manager' ); ?></th>
+                            <th style="text-align: right;"><?php esc_html_e( 'Amount', 'swimming-pool-manager' ); ?></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php 
                         $has_income_rows = false;
 
-                        // Render Tickets
                         if ( ! empty( $detailed_tickets ) ) {
                             $has_income_rows = true;
                             foreach ( $detailed_tickets as $t ) {
@@ -300,18 +308,18 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                                 <tr>
                                     <td class="ifs-pms-mono ifs-pms-code-cell ifs-pms-code-ticket"><?php echo esc_html( $t->ticket_code ); ?></td>
                                     <td class="ifs-pms-patron-cell">
-                                        <?php echo esc_html( ! empty( $t->customer_name ) ? $t->customer_name : __( 'Walk-in Guest', 'ozone-skypool' ) ); ?>
+                                        <?php echo esc_html( ! empty( $t->customer_name ) ? $t->customer_name : __( 'Walk-in Guest', 'swimming-pool-manager' ) ); ?>
                                         <div class="ifs-pms-patron-sub ifs-pms-mono"><?php echo esc_html( $t->customer_phone ); ?></div>
                                     </td>
                                     <td>
                                         <span class="ifs-pms-badge ifs-pms-badge-ticket">
-                                            <?php echo esc_html( ! empty( $t->package_details ) ? $t->package_details : __( 'Standard Ticket', 'ozone-skypool' ) ); ?>
+                                            <?php echo esc_html( ! empty( $t->package_details ) ? $t->package_details : __( 'Standard Ticket', 'swimming-pool-manager' ) ); ?>
                                         </span>
                                         <?php if ( ! empty( $t->room_no ) ) : ?>
                                             <div class="ifs-pms-room-tag"><i class="fa-solid fa-door-open"></i> <?php echo esc_html( $t->room_no ); ?></div>
                                         <?php endif; ?>
                                     </td>
-                                    <td style="font-weight: 600;"><?php echo esc_html( $t->payment_method ); ?></td>
+                                    <td class="ifs-pms-font-semibold"><?php echo esc_html( $t->payment_method ); ?></td>
                                     <td class="ifs-pms-text-muted"><?php echo esc_html( $t->sold_by ); ?></td>
                                     <td class="ifs-pms-mono ifs-pms-text-date"><?php echo esc_html( $t->sold_at ); ?></td>
                                     <td class="ifs-pms-mono ifs-pms-amount-green">
@@ -322,7 +330,6 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                             }
                         }
 
-                        // Render Memberships
                         if ( ! empty( $detailed_memberships ) ) {
                             $has_income_rows = true;
                             foreach ( $detailed_memberships as $m ) {
@@ -338,8 +345,8 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                                             <?php echo esc_html( $m->plan_type ); ?>
                                         </span>
                                     </td>
-                                    <td style="font-weight: 600;"><?php esc_html_e( 'Subscription', 'ozone-skypool' ); ?></td>
-                                    <td class="ifs-pms-text-muted"><?php esc_html_e( 'Front Desk', 'ozone-skypool' ); ?></td>
+                                    <td class="ifs-pms-font-semibold"><?php esc_html_e( 'Subscription', 'swimming-pool-manager' ); ?></td>
+                                    <td class="ifs-pms-text-muted"><?php esc_html_e( 'Front Desk', 'swimming-pool-manager' ); ?></td>
                                     <td class="ifs-pms-mono ifs-pms-text-date"><?php echo esc_html( $m->created_at ); ?></td>
                                     <td class="ifs-pms-mono ifs-pms-amount-green">
                                         +<?php echo esc_html( $currency . ' ' . number_format( (float) $m->amount, 2 ) ); ?>
@@ -354,7 +361,7 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                             <tr>
                                 <td colspan="7" class="ifs-pms-empty-state">
                                     <i class="fa-solid fa-wallet ifs-pms-empty-icon"></i>
-                                    <?php esc_html_e( 'No income records found for this date range.', 'ozone-skypool' ); ?>
+                                    <?php esc_html_e( 'No income records found for this date range.', 'swimming-pool-manager' ); ?>
                                 </td>
                             </tr>
                             <?php
@@ -365,7 +372,7 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
             </div>
 
             <div class="ifs-pms-table-footer">
-                <span class="ifs-pms-footer-label"><?php esc_html_e( 'Total Filtered Income Inflow', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-footer-label"><?php esc_html_e( 'Total Filtered Income Inflow', 'swimming-pool-manager' ); ?></span>
                 <strong class="ifs-pms-mono ifs-pms-footer-value-green">
                     <?php echo esc_html( $currency . ' ' . number_format( $total_income, 2 ) ); ?>
                 </strong>
@@ -379,14 +386,13 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
             <div class="ifs-pms-table-head">
                 <h3 class="ifs-pms-table-title">
                     <i class="fa-solid fa-receipt" style="color: #ef4444;"></i>
-                    <?php esc_html_e( 'Expense Outflows Ledger', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Expense Outflows Ledger', 'swimming-pool-manager' ); ?>
                 </h3>
 
-                <!-- Expense Category Filter -->
                 <div class="ifs-pms-table-filter-group">
-                    <span class="ifs-pms-table-filter-label"><?php esc_html_e( 'Category:', 'ozone-skypool' ); ?></span>
+                    <span class="ifs-pms-table-filter-label"><?php esc_html_e( 'Category:', 'swimming-pool-manager' ); ?></span>
                     <select id="ifsPmsExpenseCatSelect" onchange="ifsPmsApplyExpenseFilter(this.value)">
-                        <option value="all" <?php selected( $expense_cat_filter, 'all' ); ?>><?php esc_html_e( 'All Categories', 'ozone-skypool' ); ?></option>
+                        <option value="all" <?php selected( $expense_cat_filter, 'all' ); ?>><?php esc_html_e( 'All Categories', 'swimming-pool-manager' ); ?></option>
                         <?php if ( ! empty( $expense_categories ) ) : ?>
                             <?php foreach ( $expense_categories as $cat ) : ?>
                                 <option value="<?php echo esc_attr( $cat['category'] ); ?>" <?php selected( $expense_cat_filter, $cat['category'] ); ?>>
@@ -398,15 +404,15 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                 </div>
             </div>
 
-            <div style="width: 100%; overflow-x: auto;">
+            <div class="ifs-pms-table-responsive">
                 <table class="ifs-pms-data-table">
                     <thead>
                         <tr>
-                            <th><?php esc_html_e( 'Expense Title', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Category', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Logged By', 'ozone-skypool' ); ?></th>
-                            <th><?php esc_html_e( 'Voucher Date', 'ozone-skypool' ); ?></th>
-                            <th style="text-align: right;"><?php esc_html_e( 'Disbursement', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Expense Title', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Category', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Logged By', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Voucher Date', 'swimming-pool-manager' ); ?></th>
+                            <th style="text-align: right;"><?php esc_html_e( 'Disbursement', 'swimming-pool-manager' ); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -430,7 +436,7 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
                             <tr>
                                 <td colspan="5" class="ifs-pms-empty-state">
                                     <i class="fa-solid fa-receipt ifs-pms-empty-icon"></i>
-                                    <?php esc_html_e( 'No expense disbursements recorded for this date range.', 'ozone-skypool' ); ?>
+                                    <?php esc_html_e( 'No expense disbursements recorded for this date range.', 'swimming-pool-manager' ); ?>
                                 </td>
                             </tr>
                         <?php endif; ?>
@@ -439,7 +445,7 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
             </div>
 
             <div class="ifs-pms-table-footer">
-                <span class="ifs-pms-footer-label"><?php esc_html_e( 'Total Filtered Expense Outflow', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-footer-label"><?php esc_html_e( 'Total Filtered Expense Outflow', 'swimming-pool-manager' ); ?></span>
                 <strong class="ifs-pms-mono ifs-pms-footer-value-red">
                     -<?php echo esc_html( $currency . ' ' . number_format( $total_expense, 2 ) ); ?>
                 </strong>
@@ -447,3 +453,57 @@ $date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    'use strict';
+
+    window.ifsPmsSwitchSubTab = function(tabName) {
+        var incomeContent  = document.getElementById('ifsPmsIncomeTabContent');
+        var expenseContent = document.getElementById('ifsPmsExpenseTabContent');
+        var btnIncome      = document.getElementById('ifsSubTabBtnIncome');
+        var btnExpense     = document.getElementById('ifsSubTabBtnExpense');
+        var subTabInput    = document.getElementById('ifsPmsSubTabInput');
+
+        if (subTabInput) {
+            subTabInput.value = tabName;
+        }
+
+        if (tabName === 'income') {
+            if (incomeContent) incomeContent.classList.add('active');
+            if (expenseContent) expenseContent.classList.remove('active');
+            if (btnIncome) btnIncome.classList.add('active');
+            if (btnExpense) btnExpense.classList.remove('active');
+        } else {
+            if (expenseContent) expenseContent.classList.add('active');
+            if (incomeContent) incomeContent.classList.remove('active');
+            if (btnExpense) btnExpense.classList.add('active');
+            if (btnIncome) btnIncome.classList.remove('active');
+        }
+
+        if (window.history.replaceState) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('sub_tab', tabName);
+            window.history.replaceState({}, '', url.toString());
+        }
+    };
+
+    window.ifsPmsApplyIncomeFilter = function(filterVal) {
+        var input = document.getElementById('ifsPmsIncomeFilterInput');
+        var form  = document.getElementById('ifsPmsReportGlobalForm');
+        if (input && form) {
+            input.value = filterVal;
+            form.submit();
+        }
+    };
+
+    window.ifsPmsApplyExpenseFilter = function(filterVal) {
+        var input = document.getElementById('ifsPmsExpenseCatInput');
+        var form  = document.getElementById('ifsPmsReportGlobalForm');
+        if (input && form) {
+            input.value = filterVal;
+            form.submit();
+        }
+    };
+})();
+</script>
