@@ -389,3 +389,1758 @@ html, body {
         display: none !important;
     }
 }
+
+    .ifs-pms-settings-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .ifs-pms-subnav-bar {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+        background: #f1f5f9;
+        padding: 6px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-sizing: border-box;
+    }
+
+    .ifs-pms-subnav-btn {
+        flex: 1 1 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: #475569;
+        border: none !important;
+        outline: none;
+        transition: all 0.2s ease;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .ifs-pms-subnav-btn:hover { 
+        color: #0f172a; 
+    }
+
+    .ifs-pms-subnav-btn.active {
+        background: #ffffff !important;
+        color: #0284c7 !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    .ifs-pms-tab-pane { 
+        display: none; 
+    }
+
+    .ifs-pms-tab-pane.active {
+        display: block;
+        animation: ifsPmsFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes ifsPmsFadeIn {
+        from { opacity: 0; transform: translateY(3px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .ifs-pms-panel-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
+        box-sizing: border-box;
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .ifs-pms-panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 28px;
+        border-bottom: 1px solid #e2e8f0;
+        background: #fafbfd;
+    }
+
+    .ifs-pms-panel-title {
+        margin: 0;
+        font-size: 15.5px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #0f172a;
+    }
+
+    .ifs-pms-panel-icon {
+        color: #0284c7;
+    }
+
+    .ifs-pms-form-stack {
+        padding: 26px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-sizing: border-box;
+    }
+
+    .ifs-pms-field-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 0;
+    }
+
+    .ifs-pms-field-label {
+        font-size: 12.5px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ifs-pms-field-label-compact {
+        font-size: 13px;
+        margin: 0;
+    }
+
+    .ifs-pms-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .ifs-pms-grid-2-compact {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 4px;
+    }
+
+    @media (max-width: 760px) {
+        .ifs-pms-grid-2,
+        .ifs-pms-grid-2-compact { 
+            grid-template-columns: 1fr; 
+        }
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper input[type="text"],
+    #wpcontent .ifs-pms-settings-wrapper input[type="url"],
+    #wpcontent .ifs-pms-settings-wrapper input[type="number"],
+    #wpcontent .ifs-pms-settings-wrapper input[type="time"],
+    #wpcontent .ifs-pms-settings-wrapper textarea,
+    #wpcontent .ifs-pms-settings-wrapper select {
+        display: block !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 11px 16px !important;
+        font-size: 13.5px !important;
+        font-family: inherit !important;
+        color: #0f172a !important;
+        box-sizing: border-box !important;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper input:focus,
+    #wpcontent .ifs-pms-settings-wrapper textarea:focus,
+    #wpcontent .ifs-pms-settings-wrapper select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15) !important;
+        outline: none !important;
+    }
+
+    .ifs-pms-select-heavy {
+        font-weight: 700 !important;
+        height: 46px !important;
+    }
+
+    .ifs-pms-switch-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        padding: 16px 20px;
+        border-radius: 14px;
+        transition: border-color 0.15s ease;
+    }
+
+    .ifs-pms-switch-card-tight {
+        padding: 12px 16px;
+    }
+
+    .ifs-pms-switch-card:hover { 
+        border-color: #cbd5e1; 
+    }
+
+    .ifs-pms-switch-meta { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 2px; 
+    }
+
+    .ifs-pms-switch-title { 
+        font-size: 13.5px; 
+        font-weight: 800; 
+        color: #0f172a; 
+    }
+
+    .ifs-pms-switch-title-sm {
+        font-size: 13px;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .ifs-pms-switch-desc { 
+        font-size: 11.5px; 
+        color: #64748b; 
+    }
+
+    .ifs-pms-switch {
+        position: relative; 
+        display: inline-block; 
+        width: 48px; 
+        height: 26px; 
+        flex-shrink: 0;
+    }
+
+    .ifs-pms-switch input { 
+        opacity: 0; 
+        width: 0; 
+        height: 0; 
+    }
+
+    .ifs-pms-slider {
+        position: absolute; 
+        cursor: pointer; 
+        inset: 0; 
+        background-color: #cbd5e1;
+        transition: 0.25s ease; 
+        border-radius: 26px;
+    }
+
+    .ifs-pms-slider:before {
+        position: absolute; 
+        content: ""; 
+        height: 20px; 
+        width: 20px; 
+        left: 3px; 
+        bottom: 3px;
+        background-color: white; 
+        transition: 0.25s ease; 
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .ifs-pms-switch input:checked + .ifs-pms-slider { 
+        background-color: #0284c7; 
+    }
+
+    .ifs-pms-switch input:checked + .ifs-pms-slider:before { 
+        transform: translateX(22px); 
+    }
+
+    .ifs-pms-schedule-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ifs-pms-switch-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ifs-pms-schedule-row {
+        display: grid;
+        grid-template-columns: 140px 130px 1fr 1fr;
+        gap: 14px;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 10px 16px;
+        border-radius: 12px;
+    }
+
+    .ifs-pms-schedule-day-title {
+        font-size: 13.5px;
+        color: #0f172a;
+    }
+
+    .ifs-pms-schedule-time-block {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ifs-pms-schedule-time-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper input[type="time"].ifs-pms-time-input {
+        height: 36px !important;
+    }
+
+    .ifs-pms-repeater-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 4px; 
+    }
+
+    .ifs-pms-repeater-table th {
+        background: #fafbfd; 
+        color: #64748b; 
+        font-weight: 700; 
+        font-size: 11.5px;
+        text-transform: uppercase; 
+        padding: 10px 14px; 
+        border: 1px solid #e2e8f0; 
+        text-align: left;
+    }
+
+    .ifs-pms-repeater-table td { 
+        padding: 10px 14px; 
+        border: 1px solid #e2e8f0; 
+        vertical-align: middle; 
+    }
+
+    .ifs-pms-th-tier-name { width: 45%; }
+    .ifs-pms-th-tier-age { width: 30%; }
+    .ifs-pms-th-tier-price { width: 17%; }
+    .ifs-pms-th-tier-action { width: 8%; text-align: center; }
+
+    .ifs-pms-th-addon-name { width: 55%; }
+    .ifs-pms-th-addon-price { width: 35%; }
+    .ifs-pms-th-addon-action { width: 10%; text-align: center; }
+
+    .ifs-pms-td-action {
+        text-align: center;
+    }
+
+    .ifs-pms-amenities-box-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 10px 0 8px 0;
+    }
+
+    .ifs-pms-amenities-repeater-wrapper {
+        display: none;
+    }
+
+    .ifs-pms-amenities-repeater-wrapper.is-visible {
+        display: block;
+    }
+
+    .ifs-pms-check-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+        gap: 12px; 
+        margin-top: 4px; 
+    }
+
+    .ifs-pms-separator {
+        border: 0;
+        border-top: 1px solid #e2e8f0;
+        margin: 6px 0;
+    }
+
+    .ifs-pms-logo-upload-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .ifs-pms-logo-preview-box {
+        margin-top: 10px;
+    }
+
+    .ifs-pms-logo-img {
+        max-height: 48px;
+        width: auto;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        padding: 4px;
+        background: #fff;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper .ifs-pms-btn {
+        display: inline-flex !important; 
+        align-items: center !important; 
+        justify-content: center !important;
+        gap: 8px !important; 
+        font-weight: 700 !important; 
+        cursor: pointer !important; 
+        box-sizing: border-box !important; 
+        text-decoration: none !important;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper .ifs-pms-btn-primary.ifs-pms-btn-lg {
+        height: 50px !important; 
+        padding: 0 24px !important; 
+        font-size: 14.5px !important; 
+        font-weight: 800 !important;
+        border-radius: 12px !important; 
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; 
+        color: #ffffff !important;
+        border: 1px solid rgba(2, 132, 199, 0.8) !important; 
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper .ifs-pms-btn-submit-block {
+        width: 100% !important;
+        margin-top: 10px !important;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper .ifs-pms-btn-secondary {
+        height: 38px !important; 
+        padding: 0 16px !important; 
+        font-size: 12.5px !important; 
+        border-radius: 10px !important;
+        background: #ffffff !important; 
+        color: #475569 !important; 
+        border: 1.5px solid #cbd5e1 !important;
+    }
+
+    #wpcontent .ifs-pms-settings-wrapper .ifs-pms-btn-danger.ifs-pms-btn-sm {
+        height: 34px !important; 
+        padding: 0 10px !important; 
+        font-size: 12px !important; 
+        border-radius: 8px !important;
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important; 
+        color: #ffffff !important; 
+        border: 1px solid rgba(225, 29, 72, 0.5) !important;
+    }
+
+    .ifs-pms-empty-table-notice {
+        text-align: center;
+        padding: 24px !important;
+        color: #94a3b8;
+        font-size: 13px;
+    }
+
+    .ifs-pms-report-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Top Filter Bar */
+    .ifs-pms-top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        padding: 22px 28px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+        box-sizing: border-box;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .ifs-pms-tag-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.08);
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .ifs-pms-bar-title {
+        margin: 6px 0 0 0;
+        font-size: 20px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    .ifs-pms-bar-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .ifs-pms-date-picker-pill {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 4px 12px;
+        gap: 8px;
+    }
+
+    .ifs-pms-date-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    #wpcontent .ifs-pms-report-wrap input[type="date"] {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        font-size: 12.5px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        padding: 6px 10px !important;
+        height: 36px !important;
+        cursor: pointer;
+    }
+
+    #wpcontent .ifs-pms-report-wrap select {
+        background: transparent !important;
+        border: none !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        padding: 6px 28px 6px 12px !important;
+        height: 36px !important;
+        cursor: pointer;
+        box-shadow: none !important;
+    }
+
+    /* Summary Card Grid */
+    .ifs-pms-card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 18px;
+    }
+
+    .ifs-pms-stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .ifs-pms-stat-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .ifs-pms-stat-name {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+
+    .ifs-pms-stat-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .ifs-pms-stat-icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .ifs-pms-stat-icon-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .ifs-pms-stat-icon-blue { background: rgba(2, 132, 199, 0.1); color: #0284c7; }
+    .ifs-pms-stat-icon-purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+
+    .ifs-pms-stat-number {
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .ifs-pms-stat-number-green { color: #10b981; }
+    .ifs-pms-stat-number-red { color: #ef4444; }
+    .ifs-pms-stat-number-purple { color: #a855f7; }
+
+    .ifs-pms-stat-bottom {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ifs-pms-sub-tabs {
+        display: flex;
+        gap: 10px;
+        background: #f1f5f9;
+        padding: 6px;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-sizing: border-box;
+    }
+
+    .ifs-pms-sub-tab-btn {
+        flex: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: #475569;
+        border: none !important;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .ifs-pms-sub-tab-btn:hover { color: #0f172a; }
+    .ifs-pms-sub-tab-btn.active {
+        background: #ffffff !important;
+        color: #0284c7 !important;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+    }
+
+    .ifs-pms-tab-content { display: none; }
+    .ifs-pms-tab-content.active { display: block; }
+
+    .ifs-pms-table-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+        overflow: hidden;
+    }
+
+    .ifs-pms-table-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 28px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fafbfd;
+        flex-wrap: wrap;
+        gap: 14px;
+    }
+
+    .ifs-pms-table-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #0f172a;
+    }
+
+    .ifs-pms-table-filter-group {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .ifs-pms-table-filter-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: #64748b;
+    }
+
+    .ifs-pms-data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13.5px;
+        text-align: left;
+    }
+
+    .ifs-pms-data-table th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 11.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .ifs-pms-data-table td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #0f172a;
+        vertical-align: middle;
+    }
+
+    .ifs-pms-data-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    .ifs-pms-table-footer {
+        padding: 18px 28px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .ifs-pms-footer-label {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .ifs-pms-footer-value-green {
+        color: #10b981;
+        font-size: 18px;
+    }
+
+    .ifs-pms-footer-value-red {
+        color: #ef4444;
+        font-size: 18px;
+    }
+
+    .ifs-pms-empty-state {
+        text-align: center;
+        padding: 48px;
+        color: #94a3b8;
+    }
+
+    .ifs-pms-empty-icon {
+        font-size: 32px;
+        margin-bottom: 10px;
+        opacity: 0.3;
+        display: block;
+    }
+
+    .ifs-pms-code-cell {
+        font-weight: 800;
+    }
+
+    .ifs-pms-code-ticket { color: #0284c7; }
+    .ifs-pms-code-member { color: #a855f7; }
+
+    .ifs-pms-patron-cell {
+        font-weight: 700;
+    }
+
+    .ifs-pms-patron-sub {
+        font-size: 11px;
+        color: #64748b;
+    }
+
+    .ifs-pms-badge-ticket { background: rgba(2, 132, 199, 0.08); color: #0284c7; }
+    .ifs-pms-badge-member { background: rgba(168, 85, 247, 0.08); color: #a855f7; }
+    .ifs-pms-badge-expense { background: rgba(239, 68, 68, 0.08); color: #ef4444; }
+
+    .ifs-pms-room-tag {
+        font-size: 11px;
+        color: #0284c7;
+        font-weight: 700;
+        margin-top: 2px;
+    }
+
+    .ifs-pms-text-muted { color: #64748b; }
+    .ifs-pms-text-date { font-size: 12px; color: #475569; }
+
+    .ifs-pms-amount-green {
+        text-align: right;
+        font-weight: 800;
+        color: #10b981;
+    }
+
+    .ifs-pms-amount-red {
+        text-align: right;
+        font-weight: 800;
+        color: #ef4444;
+    }
+
+    /* Buttons */
+    #wpcontent .ifs-pms-report-wrap .ifs-pms-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        box-sizing: border-box !important;
+        text-decoration: none !important;
+    }
+
+    #wpcontent .ifs-pms-report-wrap .ifs-pms-btn-blue {
+        height: 40px !important;
+        padding: 0 18px !important;
+        border-radius: 10px !important;
+        background: #0284c7 !important;
+        color: #ffffff !important;
+        border: 1px solid #0284c7 !important;
+    }
+
+    #wpcontent .ifs-pms-report-wrap .ifs-pms-btn-white {
+        height: 40px !important;
+        padding: 0 16px !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        color: #475569 !important;
+        border: 1.5px solid #cbd5e1 !important;
+    }
+
+    /* Print View */
+    @media print {
+        .ifs-pms-top-bar form,
+        .ifs-pms-bar-controls button,
+        .ifs-pms-sub-tabs,
+        .ifs-pms-aside,
+        #adminmenumain,
+        #wpfooter {
+            display: none !important;
+        }
+        .ifs-pms-canvas {
+            padding: 0 !important;
+            background: #ffffff !important;
+        }
+        .ifs-pms-table-box, 
+        .ifs-pms-top-bar, 
+        .ifs-pms-stat-card {
+            box-shadow: none !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+    }
+
+    /* ==========================================================================
+       EXECUTIVE EXPENSES & OUTFLOW REGISTRY SUITE (Zero Inline CSS)
+       ========================================================================== */
+    .ifs-pms-expense-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Sub Navigation Tabs */
+    .ifs-pms-subnav-bar {
+        display: flex;
+        width: 100%;
+        gap: 10px;
+        background: linear-gradient(135deg, rgba(241, 245, 249, 0.8) 0%, rgba(226, 232, 240, 0.6) 100%);
+        backdrop-filter: blur(12px);
+        padding: 8px;
+        border-radius: 16px;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-sizing: border-box;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .ifs-pms-subnav-btn {
+        flex: 1 1 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        background: transparent;
+        color: #475569;
+        border: none !important;
+        outline: none;
+        transition: all 0.25s ease;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .ifs-pms-subnav-btn:hover {
+        color: #0f172a;
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .ifs-pms-subnav-btn.active {
+        background: #ffffff !important;
+        color: #0284c7 !important;
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15), 0 2px 6px rgba(0, 0, 0, 0.04);
+        transform: translateY(-1px);
+    }
+
+    .ifs-pms-tab-pane {
+        display: none;
+    }
+
+    .ifs-pms-tab-pane.active {
+        display: block;
+        animation: ifsPmsFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes ifsPmsFadeIn {
+        from { opacity: 0; transform: translateY(8px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* KPI Summary Cards */
+    .ifs-pms-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    .ifs-pms-kpi-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.05);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ifs-pms-kpi-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.08);
+    }
+
+    .ifs-pms-kpi-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .ifs-pms-kpi-label {
+        font-size: 11.5px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+    }
+
+    .ifs-pms-kpi-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+    .ifs-pms-kpi-icon-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    .ifs-pms-kpi-icon-amber { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .ifs-pms-kpi-icon-purple { background: rgba(192, 132, 252, 0.1); color: #c084fc; }
+
+    .ifs-pms-kpi-val {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        line-height: 1.1;
+    }
+
+    .ifs-pms-kpi-val-red { color: #ef4444; }
+    .ifs-pms-kpi-val-amber { color: #f59e0b; }
+    .ifs-pms-kpi-val-dark { font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #0f172a; }
+
+    .ifs-pms-kpi-sub {
+        font-size: 12.5px;
+        color: #475569;
+        margin-top: 10px;
+    }
+
+    /* Card Panels */
+    .ifs-pms-panel-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 24px;
+        box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .ifs-pms-panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 32px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(to bottom, #fafbfd, #f8fafc);
+    }
+
+    .ifs-pms-panel-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #0f172a;
+    }
+
+    /* Form Layout */
+    .ifs-pms-form-box-centered {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .ifs-pms-form-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 22px;
+        padding: 36px;
+        box-sizing: border-box;
+    }
+
+    .ifs-pms-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #475569;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    #wpcontent .ifs-pms-expense-wrapper input[type="text"],
+    #wpcontent .ifs-pms-expense-wrapper input[type="number"],
+    #wpcontent .ifs-pms-expense-wrapper input[type="date"],
+    #wpcontent .ifs-pms-expense-wrapper select,
+    #wpcontent .ifs-pms-modal-card input[type="text"],
+    #wpcontent .ifs-pms-modal-card input[type="number"],
+    #wpcontent .ifs-pms-modal-card input[type="date"],
+    #wpcontent .ifs-pms-modal-card select {
+        display: block !important;
+        width: 100% !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 14px !important;
+        padding: 12px 18px !important;
+        font-size: 14.5px !important;
+        font-family: inherit !important;
+        color: #0f172a !important;
+        height: 50px !important;
+        box-sizing: border-box !important;
+        transition: all 0.25s ease !important;
+    }
+
+    #wpcontent .ifs-pms-expense-wrapper input:focus,
+    #wpcontent .ifs-pms-expense-wrapper select:focus,
+    #wpcontent .ifs-pms-modal-card input:focus,
+    #wpcontent .ifs-pms-modal-card select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12) !important;
+        outline: none !important;
+    }
+
+    /* Preset Chips */
+    .ifs-pms-chips-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .ifs-pms-chip {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+    }
+
+    .ifs-pms-chip:hover {
+        background: rgba(2, 132, 199, 0.1);
+        border-color: #0284c7;
+        color: #0284c7;
+        transform: translateY(-1px);
+    }
+
+    /* Advanced Audit Toolbar */
+    .ifs-pms-audit-toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 22px 32px;
+        border-bottom: 1px solid #f1f5f9;
+        background: #ffffff;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .ifs-pms-audit-filters {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        flex: 1;
+    }
+
+    .ifs-pms-date-pill {
+        display: flex;
+        align-items: center;
+        background: #f8fafc;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 4px 12px;
+        gap: 8px;
+    }
+
+    #wpcontent .ifs-pms-audit-toolbar input[type="date"] {
+        background: transparent !important;
+        border: none !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        color: #0f172a !important;
+        height: 38px !important;
+        cursor: pointer;
+        box-shadow: none !important;
+    }
+
+    #wpcontent .ifs-pms-audit-toolbar select {
+        width: auto !important;
+        min-width: 190px !important;
+        height: 46px !important;
+        border-radius: 12px !important;
+    }
+
+    /* Table Architecture */
+    .ifs-pms-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .ifs-pms-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        text-align: left;
+    }
+
+    .ifs-pms-table th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 18px 24px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .ifs-pms-table td {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #0f172a;
+        vertical-align: middle;
+    }
+
+    .ifs-pms-table tr:hover td {
+        background: #f8fafc;
+    }
+
+    .ifs-pms-cat-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Modal Styling */
+    .ifs-pms-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(8px);
+        z-index: 99999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ifs-pms-modal-card {
+        background: #ffffff;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 24px;
+        width: 540px;
+        max-width: 95vw;
+        padding: 36px;
+        box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+        box-sizing: border-box;
+    }
+
+    .ifs-pms-modal-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .ifs-pms-modal-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ifs-pms-modal-close {
+        background: #f1f5f9;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        font-size: 18px;
+        cursor: pointer;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ifs-pms-modal-details-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        font-size: 14px;
+    }
+
+    .ifs-pms-modal-row {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 12px;
+    }
+
+    .ifs-pms-modal-row-last {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .ifs-pms-modal-label {
+        color: #64748b;
+        font-weight: 600;
+    }
+
+    .ifs-pms-modal-val-strong {
+        color: #0f172a;
+    }
+
+    .ifs-pms-modal-val-red {
+        color: #ef4444;
+        font-size: 17px;
+    }
+
+    .ifs-pms-modal-val-muted {
+        color: #475569;
+    }
+
+    /* Buttons */
+    #wpcontent .ifs-pms-expense-wrapper .ifs-pms-btn {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        font-weight: 700 !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+    }
+
+    #wpcontent .ifs-pms-expense-wrapper .ifs-pms-btn-primary.ifs-pms-btn-lg {
+        height: 52px !important;
+        padding: 0 32px !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        border-radius: 14px !important;
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid rgba(2, 132, 199, 0.8) !important;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35) !important;
+    }
+
+    #wpcontent .ifs-pms-expense-wrapper .ifs-pms-btn-primary.ifs-pms-btn-lg:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.45) !important;
+    }
+
+    .ifs-pms-table .ifs-pms-btn-sm {
+        height: 36px !important;
+        padding: 0 14px !important;
+        font-size: 12.5px !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+    }
+
+    .ifs-pms-table .ifs-pms-btn-view { background: rgba(16, 185, 129, 0.08) !important; color: #059669 !important; border: 1.5px solid rgba(16, 185, 129, 0.25) !important; }
+    .ifs-pms-table .ifs-pms-btn-view:hover { background: #10b981 !important; color: #ffffff !important; }
+
+    .ifs-pms-table .ifs-pms-btn-edit { background: rgba(2, 132, 199, 0.08) !important; color: #0284c7 !important; border: 1.5px solid rgba(2, 132, 199, 0.25) !important; }
+    .ifs-pms-table .ifs-pms-btn-edit:hover { background: #0284c7 !important; color: #ffffff !important; }
+
+    .ifs-pms-table .ifs-pms-btn-delete { background: rgba(244, 63, 94, 0.08) !important; color: #f43f5e !important; border: 1.5px solid rgba(244, 63, 94, 0.25) !important; }
+    .ifs-pms-table .ifs-pms-btn-delete:hover { background: #f43f5e !important; color: #ffffff !important; }
+
+    .ifs-pms-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .ifs-pms-flex-gap-8 {
+        display: flex;
+        gap: 8px;
+    }
+
+    .ifs-pms-flex-gap-14 {
+        display: flex;
+        gap: 14px;
+        margin-top: 14px;
+    }
+
+    .ifs-pms-table-footer {
+        padding: 18px 32px;
+        background: #f8fafc;
+        border-top: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /**
+ * Ozone Skypool OS - Dashboard Stylesheet
+ *
+ * @package Ozone_Skypool_OS
+ */
+
+.ifs-pms-dash-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Hero Header Clock & Gate Telemetry Bar */
+.ifs-pms-telemetry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 24px;
+    padding: 24px 32px;
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
+    box-sizing: border-box;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.ifs-pms-clock-wrap {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.ifs-pms-clock-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(2, 132, 199, 0.04) 100%);
+    border: 1px solid rgba(2, 132, 199, 0.2);
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.ifs-pms-clock-digits {
+    font-family: inherit;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: #0f172a;
+    font-variant-numeric: tabular-nums;
+}
+
+.ifs-pms-clock-date {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.ifs-pms-closing-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #0284c7;
+    background: rgba(2, 132, 199, 0.08);
+    border: 1px solid rgba(2, 132, 199, 0.2);
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-top: 6px;
+}
+
+.ifs-pms-operator-meta {
+    text-align: right;
+}
+
+.ifs-pms-operator-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.ifs-pms-operator-role {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.ifs-pms-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 24px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.ifs-pms-status-green { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+.ifs-pms-status-amber { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+.ifs-pms-status-red { background: rgba(239, 68, 68, 0.12); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.25); }
+
+/* Live Occupancy Gauge Card */
+.ifs-pms-gauge-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 24px;
+    padding: 24px 32px;
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 32px;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+    .ifs-pms-gauge-card {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+}
+
+.ifs-pms-gauge-icon-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.14) 0%, rgba(56, 189, 248, 0.05) 100%);
+    border: 1px solid rgba(2, 132, 199, 0.25);
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+}
+
+.ifs-pms-gauge-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+}
+
+.ifs-pms-gauge-numbers {
+    font-size: 30px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.15;
+}
+
+.ifs-pms-gauge-subtitle {
+    font-size: 14.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.ifs-pms-gauge-progress-wrap {
+    width: 100%;
+}
+
+.ifs-pms-gauge-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+
+.ifs-pms-gauge-progress-label {
+    color: #475569;
+}
+
+.ifs-pms-gauge-progress-val {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.ifs-pms-gauge-progress-track {
+    height: 12px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+}
+
+.ifs-pms-gauge-progress-bar {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Fast Operation Tiles */
+.ifs-pms-action-deck {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 18px;
+}
+
+.ifs-pms-action-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 20px;
+    padding: 20px 24px;
+    text-decoration: none !important;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 10px 25px -10px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ifs-pms-action-card:hover {
+    transform: translateY(-3px);
+    border-color: #0284c7;
+    box-shadow: 0 16px 32px -8px rgba(2, 132, 199, 0.12);
+}
+
+.ifs-pms-action-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.ifs-pms-action-icon-blue { background: rgba(2, 132, 199, 0.12); color: #0284c7; }
+.ifs-pms-action-icon-green { background: rgba(16, 185, 129, 0.12); color: #10b981; }
+.ifs-pms-action-icon-purple { background: rgba(192, 132, 252, 0.12); color: #c084fc; }
+.ifs-pms-action-icon-red { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+
+.ifs-pms-action-title {
+    font-size: 14.5px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.ifs-pms-action-sub {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+/* KPI Metrics Matrix */
+.ifs-pms-kpi-quad {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.ifs-pms-kpi-brick {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.ifs-pms-kpi-brick::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: transparent;
+}
+
+.ifs-pms-kpi-brick-inflow::before { background: #10b981; }
+.ifs-pms-kpi-brick-admit::before { background: #0284c7; }
+.ifs-pms-kpi-brick-turnover::before { background: #c084fc; }
+.ifs-pms-kpi-brick-outflow::before { background: #ef4444; }
+
+.ifs-pms-kpi-meta-tag {
+    font-size: 11.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.ifs-pms-kpi-val {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+}
+
+.ifs-pms-kpi-foot {
+    font-size: 12.5px;
+    color: #475569;
+    margin-top: 10px;
+}
+
+/* Activity Stream & Financial Split */
+.ifs-pms-activity-grid {
+    display: grid;
+    grid-template-columns: 1.55fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 1080px) {
+    .ifs-pms-activity-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.ifs-pms-panel-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.ifs-pms-panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 28px;
+    border-bottom: 1px solid #f1f5f9;
+    background: linear-gradient(to bottom, #fafbfd, #f8fafc);
+}
+
+.ifs-pms-panel-header-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.ifs-pms-feed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 28px;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s ease;
+}
+
+.ifs-pms-feed-item:hover {
+    background: #f8fafc;
+}
+
+.ifs-pms-feed-item:last-child {
+    border-bottom: none;
+}
+
+.ifs-pms-feed-guest {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.ifs-pms-feed-meta {
+    font-size: 12px;
+    color: #0284c7;
+    margin-top: 3px;
+}
+
+.ifs-pms-finance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 28px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    color: #475569;
+}
+
+.ifs-pms-finance-row:last-child {
+    border-bottom: none;
+}
+
+.ifs-pms-finance-total {
+    background: #f8fafc;
+    font-weight: 800;
+    border-top: 2px solid #cbd5e1;
+    padding: 20px 28px;
+}

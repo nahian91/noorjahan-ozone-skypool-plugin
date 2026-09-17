@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Financial Performance Reports & Profit-and-Loss Audit Statement (Executive Edition v2)
+ * View: Financial Performance Reports & Date-Wise Audit Statement (Zero Inline CSS - 100% ifs-pms- CSS Class Namespace)
  *
  * @package Ozone_Skypool_OS
  */
@@ -11,582 +11,439 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 global $wpdb;
 
-$t_tick    = $wpdb->prefix . 'ifs_pms_tickets';
-$t_members = $wpdb->prefix . 'ifs_pms_memberships';
-$t_expense = $wpdb->prefix . 'ifs_pms_expenses';
-$currency  = esc_html( get_option( 'ifs_pms_currency', 'BDT' ) );
-$b_name    = esc_html( get_option( 'ifs_pms_business_name', 'Ozone Restaurant & Skypool' ) );
+$table_tickets     = $wpdb->prefix . 'ifs_pms_tickets';
+$table_memberships = $wpdb->prefix . 'ifs_pms_memberships';
+$table_expenses    = $wpdb->prefix . 'ifs_pms_expenses';
+$table_customers   = $wpdb->prefix . 'ifs_pms_customers';
+$currency          = esc_html( (string) get_option( 'ifs_pms_currency', 'BDT' ) );
+$business_name     = esc_html( (string) get_option( 'ifs_pms_business_name', 'Ozone Skypool' ) );
 
-// 1. Sanitize & Normalize Period Selection
-$current_year_int  = (int) current_time( 'Y' );
-$current_month_int = (int) current_time( 'm' );
+// 1. Date Range Filter Parameters
+$today_date_str    = current_time( 'Y-m-d' );
+$default_start     = gmdate( 'Y-m-01', strtotime( $today_date_str ) );
+$default_end       = $today_date_str;
 
-$selected_month = isset( $_GET['report_month'] ) ? absint( $_GET['report_month'] ) : $current_month_int;
-$selected_year  = isset( $_GET['report_year'] ) ? absint( $_GET['report_year'] ) : $current_year_int;
+$start_date_input  = isset( $_GET['start_date'] ) ? sanitize_text_field( wp_unslash( $_GET['start_date'] ) ) : $default_start;
+$end_date_input    = isset( $_GET['end_date'] ) ? sanitize_text_field( wp_unslash( $_GET['end_date'] ) ) : $default_end;
 
-if ( $selected_month < 1 || $selected_month > 12 ) {
-    $selected_month = $current_month_int;
+if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $start_date_input ) ) {
+    $start_date_input = $default_start;
 }
-if ( $selected_year < 2022 || $selected_year > 2035 ) {
-    $selected_year = $current_year_int;
+if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $end_date_input ) ) {
+    $end_date_input = $default_end;
 }
 
-// 2. High-Performance Date Range Boundaries
-$start_date_str  = sprintf( '%04d-%02d-01 00:00:00', $selected_year, $selected_month );
-$last_day_int    = (int) gmdate( 't', strtotime( $start_date_str ) );
-$end_date_str    = sprintf( '%04d-%02d-%02d 23:59:59', $selected_year, $selected_month, $last_day_int );
-$date_only_end   = sprintf( '%04d-%02d-%02d', $selected_year, $selected_month, $last_day_int );
-$date_only_start = sprintf( '%04d-%02d-01', $selected_year, $selected_month );
+$active_sub_tab     = sanitize_key( $_GET['sub_tab'] ?? 'income' );
+$income_filter      = sanitize_key( $_GET['income_filter'] ?? 'all' );
+$expense_cat_filter = sanitize_text_field( wp_unslash( $_GET['expense_cat'] ?? 'all' ) );
 
-// 3. Telemetry Queries
-$ticket_rev = (float) $wpdb->get_var(
+// 2. High-Performance SQL Timestamp Boundaries
+$start_datetime = $start_date_input . ' 00:00:00';
+$end_datetime   = $end_date_input . ' 23:59:59';
+
+// 3. High-Level Summary Statistics
+$ticket_stats = $wpdb->get_row(
     $wpdb->prepare(
-        "SELECT COALESCE(SUM(amount), 0) FROM {$t_tick} 
+        "SELECT 
+            COALESCE(SUM(amount), 0) AS total_money,
+            COUNT(id) AS total_count,
+            SUM(CASE WHEN payment_method = 'Cash' THEN amount ELSE 0 END) AS cash_money,
+            SUM(CASE WHEN payment_method = 'Card POS' THEN amount ELSE 0 END) AS card_money,
+            SUM(CASE WHEN payment_method = 'bKash / Nagad' THEN amount ELSE 0 END) AS mfs_money,
+            SUM(CASE WHEN guest_type = 'room_guest' OR payment_method IN ('Room Guest', 'Complementary') THEN 1 ELSE 0 END) AS free_count,
+            SUM(CASE WHEN status = 'Used' THEN 1 ELSE 0 END) AS used_count
+         FROM {$table_tickets} 
          WHERE sold_at >= %s AND sold_at <= %s AND status != 'Cancelled'",
-        $start_date_str,
-        $end_date_str
+        $start_datetime,
+        $end_datetime
     )
 );
 
-$member_rev = (float) $wpdb->get_var(
+$ticket_income     = (float) ( $ticket_stats->total_money ?? 0.00 );
+$total_tickets     = (int) ( $ticket_stats->total_count ?? 0 );
+$cash_income       = (float) ( $ticket_stats->cash_money ?? 0.00 );
+$card_income       = (float) ( $ticket_stats->card_money ?? 0.00 );
+$mfs_income        = (float) ( $ticket_stats->mfs_money ?? 0.00 );
+
+$member_stats = $wpdb->get_row(
     $wpdb->prepare(
-        "SELECT COALESCE(SUM(amount), 0) FROM {$t_members} 
+        "SELECT 
+            COALESCE(SUM(amount), 0) AS total_money,
+            COUNT(id) AS total_count
+         FROM {$table_memberships} 
          WHERE created_at >= %s AND created_at <= %s",
-        $start_date_str,
-        $end_date_str
+        $start_datetime,
+        $end_datetime
     )
 );
 
-$total_inflow = $ticket_rev + $member_rev;
+$member_income     = (float) ( $member_stats->total_money ?? 0.00 );
+$total_members     = (int) ( $member_stats->total_count ?? 0 );
+$total_income      = $ticket_income + $member_income;
 
-$total_outflow = (float) $wpdb->get_var(
+$total_expense     = (float) $wpdb->get_var(
     $wpdb->prepare(
-        "SELECT COALESCE(SUM(amount), 0) FROM {$t_expense} 
+        "SELECT COALESCE(SUM(amount), 0) 
+         FROM {$table_expenses} 
          WHERE expense_date >= %s AND expense_date <= %s",
-        $date_only_start,
-        $date_only_end
+        $start_date_input,
+        $end_date_input
     )
 );
 
-$net_profit = $total_inflow - $total_outflow;
-$margin_pct = $total_inflow > 0 ? round( ( $net_profit / $total_inflow ) * 100, 1 ) : 0.0;
+$net_profit        = $total_income - $total_expense;
+$profit_rate       = $total_income > 0 ? round( ( $net_profit / $total_income ) * 100, 1 ) : 0.0;
 
-$cat_breakdown = $wpdb->get_results(
-    $wpdb->prepare(
-        "SELECT category, SUM(amount) AS total 
-         FROM {$t_expense} 
-         WHERE expense_date >= %s AND expense_date <= %s 
-         GROUP BY category 
-         ORDER BY total DESC",
-        $date_only_start,
-        $date_only_end
-    )
-);
+// 4. Detailed Ledger Query Lists based on Filters
+$detailed_tickets     = array();
+$detailed_memberships = array();
 
-$month_timestamp = mktime( 0, 0, 0, $selected_month, 1, $selected_year );
-$month_label     = date_i18n( 'F Y', $month_timestamp );
+if ( $income_filter === 'all' || $income_filter === 'tickets' ) {
+    $detailed_tickets = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT t.*, c.name AS customer_name, c.phone AS customer_phone 
+             FROM {$table_tickets} t 
+             LEFT JOIN {$table_customers} c ON t.customer_id = c.id 
+             WHERE t.sold_at >= %s AND t.sold_at <= %s AND t.status != 'Cancelled' 
+             ORDER BY t.id DESC",
+            $start_datetime,
+            $end_datetime
+        )
+    );
+}
+
+if ( $income_filter === 'all' || $income_filter === 'memberships' ) {
+    $detailed_memberships = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT * FROM {$table_memberships} 
+             WHERE created_at >= %s AND created_at <= %s 
+             ORDER BY id DESC",
+            $start_datetime,
+            $end_datetime
+        )
+    );
+}
+
+$expense_categories = $wpdb->get_results( "SELECT DISTINCT category FROM {$table_expenses} ORDER BY category ASC", ARRAY_A );
+
+$expense_query_sql  = "SELECT * FROM {$table_expenses} WHERE expense_date >= %s AND expense_date <= %s";
+$expense_query_args = array( $start_date_input, $end_date_input );
+
+if ( ! empty( $expense_cat_filter ) && $expense_cat_filter !== 'all' ) {
+    $expense_query_sql  .= " AND category = %s";
+    $expense_query_args[] = $expense_cat_filter;
+}
+$expense_query_sql .= " ORDER BY expense_date DESC, id DESC";
+
+$detailed_expenses = $wpdb->get_results( $wpdb->prepare( $expense_query_sql, $expense_query_args ) );
+
+$date_range_label = sprintf( '%s to %s', date_i18n( 'M j, Y', strtotime( $start_date_input ) ), date_i18n( 'M j, Y', strtotime( $end_date_input ) ) );
 ?>
 
-<style>
-    /* ==========================================================================
-       PRO EXECUTIVE FINANCIAL REPORT SUITE (ULTRA-PREMIUM UI/UX V2)
-       ========================================================================== */
-    .oz-report-wrapper {
-        display: flex;
-        flex-direction: column;
-        gap: 28px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Executive Glassmorphic Toolbar */
-    .oz-toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
-        backdrop-filter: blur(16px);
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 24px;
-        padding: 24px 32px;
-        box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
-        box-sizing: border-box;
-        flex-wrap: wrap;
-        gap: 20px;
-    }
-
-    .oz-header-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 11.5px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--ifs-success, #10b981);
-        background: rgba(16, 185, 129, 0.08);
-        padding: 5px 14px;
-        border-radius: 24px;
-        border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .oz-header-title {
-        margin: 8px 0 0 0;
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: -0.025em;
-        color: var(--ifs-text-primary, #0f172a);
-    }
-
-    .oz-controls-group {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        flex-wrap: wrap;
-    }
-
-    .oz-filter-pill {
-        display: flex;
-        align-items: center;
-        background: #f8fafc;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 14px;
-        padding: 4px;
-        gap: 4px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-    }
-
-    #wpcontent .oz-filter-pill select {
-        background: transparent !important;
-        border: none !important;
-        font-size: 13.5px !important;
-        font-weight: 700 !important;
-        color: var(--ifs-text-primary, #0f172a) !important;
-        padding: 8px 32px 8px 14px !important;
-        height: 38px !important;
-        cursor: pointer;
-        box-shadow: none !important;
-    }
-
-    /* KPI Cards Grid */
-    .oz-kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 20px;
-    }
-
-    .oz-kpi-card {
-        background: var(--ifs-surface, #ffffff);
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 24px;
-        padding: 26px;
-        box-shadow: 0 15px 30px -10px rgba(15, 23, 42, 0.05);
-        position: relative;
-        overflow: hidden;
-        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .oz-kpi-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 22px 40px -12px rgba(15, 23, 42, 0.09);
-        border-color: #cbd5e1;
-    }
-
-    .oz-kpi-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 14px;
-    }
-
-    .oz-kpi-label {
-        font-size: 11.5px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--ifs-text-tertiary, #64748b);
-    }
-
-    .oz-kpi-icon-bubble {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-
-    .oz-kpi-value {
-        font-size: 28px;
-        font-weight: 800;
-        letter-spacing: -0.02em;
-        line-height: 1.1;
-        font-variant-numeric: tabular-nums;
-    }
-
-    .oz-kpi-sub {
-        font-size: 12.5px;
-        color: var(--ifs-text-secondary, #475569);
-        margin-top: 10px;
-    }
-
-    /* Statement Panels */
-    .oz-statement-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 24px;
-    }
-
-    @media (max-width: 1120px) {
-        .oz-statement-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .oz-panel {
-        background: var(--ifs-surface, #ffffff);
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 24px;
-        box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-    }
-
-    .oz-panel-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 24px 32px;
-        border-bottom: 1px solid #f1f5f9;
-        background: linear-gradient(to bottom, #fafbfd, #f8fafc);
-    }
-
-    .oz-panel-title {
-        margin: 0;
-        font-size: 16.5px;
-        font-weight: 800;
-        letter-spacing: -0.01em;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: var(--ifs-text-primary, #0f172a);
-    }
-
-    .oz-ledger-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 18px 32px;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 14px;
-        transition: background 0.15s ease;
-    }
-
-    .oz-ledger-row:hover {
-        background: #f8fafc;
-    }
-
-    .oz-ledger-row:last-child {
-        border-bottom: none;
-    }
-
-    .oz-ledger-total {
-        background: #f8fafc;
-        font-weight: 800;
-        border-top: 2px solid #cbd5e1;
-        padding: 20px 32px;
-    }
-
-    .oz-bar-bg {
-        width: 110px;
-        height: 8px;
-        background: #e2e8f0;
-        border-radius: 4px;
-        overflow: hidden;
-    }
-
-    .oz-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #f43f5e 0%, #e11d48 100%);
-        border-radius: 4px;
-        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    /* Enhanced Button Styles Inside Toolbar */
-    #wpcontent .oz-report-wrapper .ifs-pms-btn {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 8px !important;
-        font-weight: 700 !important;
-        cursor: pointer !important;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
-        box-sizing: border-box !important;
-    }
-
-    #wpcontent .oz-report-wrapper .ifs-pms-btn-primary {
-        height: 42px !important;
-        padding: 0 20px !important;
-        border-radius: 12px !important;
-        background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
-        color: #ffffff !important;
-        border: 1px solid rgba(2, 132, 199, 0.8) !important;
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3) !important;
-    }
-    #wpcontent .oz-report-wrapper .ifs-pms-btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45) !important;
-    }
-
-    #wpcontent .oz-report-wrapper .ifs-pms-btn-secondary {
-        height: 42px !important;
-        padding: 0 18px !important;
-        border-radius: 12px !important;
-        background: #ffffff !important;
-        color: var(--ifs-text-secondary, #475569) !important;
-        border: 1.5px solid #cbd5e1 !important;
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03) !important;
-    }
-    #wpcontent .oz-report-wrapper .ifs-pms-btn-secondary:hover {
-        background: #f8fafc !important;
-        border-color: #94a3b8 !important;
-        color: #0f172a !important;
-        transform: translateY(-2px);
-    }
-
-    /* Print Formatting */
-    @media print {
-        .oz-toolbar form,
-        .oz-controls-group button,
-        .ifs-pms-aside {
-            display: none !important;
-        }
-        .ifs-pms-canvas {
-            padding: 0 !important;
-            height: auto !important;
-            overflow: visible !important;
-            background: #ffffff !important;
-        }
-        .oz-panel, .oz-toolbar, .oz-kpi-card {
-            box-shadow: none !important;
-            border: 1px solid #cbd5e1 !important;
-            background: #ffffff !important;
-        }
-    }
-</style>
-
-<div class="oz-report-wrapper">
-    <!-- Top Executive Controls Toolbar -->
-    <div class="oz-toolbar">
+<div class="ifs-pms-report-wrap">
+    <!-- Top Date-Wise Filter Bar -->
+    <div class="ifs-pms-top-bar">
         <div>
-            <div class="oz-header-tag">
-                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Audited Financial Statement', 'ozone-skypool' ); ?>
+            <div class="ifs-pms-tag-badge">
+                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Date Range Filtered Audit', 'ozone-skypool' ); ?>
             </div>
-            <h2 class="oz-header-title">
-                <?php echo esc_html( $b_name ); ?> &bull; <?php echo esc_html( $month_label ); ?>
+            <h2 class="ifs-pms-bar-title">
+                <?php echo esc_html( $business_name ); ?> &bull; <?php echo esc_html( $date_range_label ); ?>
             </h2>
         </div>
 
-        <div class="oz-controls-group">
-            <form method="GET" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+        <div class="ifs-pms-bar-controls">
+            <form method="GET" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" style="display: flex; gap: 8px; align-items: center; margin: 0;" id="ifsPmsReportGlobalForm">
                 <input type="hidden" name="page" value="ifs-pms">
                 <input type="hidden" name="view" value="reports">
+                <input type="hidden" name="sub_tab" id="ifsPmsSubTabInput" value="<?php echo esc_attr( $active_sub_tab ); ?>">
+                <input type="hidden" name="income_filter" value="<?php echo esc_attr( $income_filter ); ?>">
+                <input type="hidden" name="expense_cat" value="<?php echo esc_attr( $expense_cat_filter ); ?>">
 
-                <div class="oz-filter-pill">
-                    <select name="report_month">
-                        <?php for ( $m = 1; $m <= 12; $m++ ) : ?>
-                            <option value="<?php echo esc_attr( (string) $m ); ?>" <?php selected( $selected_month, $m ); ?>>
-                                <?php echo esc_html( date_i18n( 'M', mktime( 0, 0, 0, $m, 1 ) ) ); ?>
-                            </option>
-                        <?php endfor; ?>
-                    </select>
-
-                    <select name="report_year" class="ifs-pms-mono">
-                        <?php for ( $y = $current_year_int - 4; $y <= $current_year_int + 2; $y++ ) : ?>
-                            <option value="<?php echo esc_attr( (string) $y ); ?>" <?php selected( $selected_year, $y ); ?>>
-                                <?php echo esc_html( (string) $y ); ?>
-                            </option>
-                        <?php endfor; ?>
-                    </select>
+                <div class="ifs-pms-date-picker-pill">
+                    <span class="ifs-pms-date-label"><?php esc_html_e( 'From', 'ozone-skypool' ); ?></span>
+                    <input type="date" name="start_date" value="<?php echo esc_attr( $start_date_input ); ?>">
+                    <span class="ifs-pms-date-label"><?php esc_html_e( 'To', 'ozone-skypool' ); ?></span>
+                    <input type="date" name="end_date" value="<?php echo esc_attr( $end_date_input ); ?>">
                 </div>
 
-                <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary">
-                    <i class="fa-solid fa-arrows-rotate"></i> <?php esc_html_e( 'Update', 'ozone-skypool' ); ?>
+                <button type="submit" class="ifs-pms-btn ifs-pms-btn-blue">
+                    <i class="fa-solid fa-filter"></i> <?php esc_html_e( 'Apply Filter', 'ozone-skypool' ); ?>
                 </button>
             </form>
 
-            <button type="button" class="ifs-pms-btn ifs-pms-btn-secondary" onclick="window.print()">
+            <button type="button" class="ifs-pms-btn ifs-pms-btn-white" onclick="window.print()">
                 <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print', 'ozone-skypool' ); ?>
             </button>
-            <button type="button" class="ifs-pms-btn ifs-pms-btn-secondary" onclick="ifsPmsDownloadLedgerCsv()">
-                <i class="fa-solid fa-file-csv"></i> <?php esc_html_e( 'Export CSV', 'ozone-skypool' ); ?>
-            </button>
         </div>
     </div>
 
-    <!-- Executive KPI Grid -->
-    <div class="oz-kpi-grid">
-        <!-- Inflow -->
-        <div class="oz-kpi-card">
-            <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Gross Operating Inflow', 'ozone-skypool' ); ?></span>
-                <div class="oz-kpi-icon-bubble" style="background: rgba(16, 185, 129, 0.1); color: var(--ifs-success, #10b981);">
-                    <i class="fa-solid fa-arrow-trend-up"></i>
+    <!-- 4 Summary Cards -->
+    <div class="ifs-pms-card-grid">
+        <div class="ifs-pms-stat-card">
+            <div class="ifs-pms-stat-head">
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Total Income', 'ozone-skypool' ); ?></span>
+                <div class="ifs-pms-stat-icon ifs-pms-stat-icon-green">
+                    <i class="fa-solid fa-wallet"></i>
                 </div>
             </div>
-            <div class="oz-kpi-value ifs-pms-mono" style="color: var(--ifs-success, #10b981);">
-                <?php echo esc_html( $currency . ' ' . number_format_i18n( $total_inflow, 2 ) ); ?>
+            <div class="ifs-pms-stat-number ifs-pms-mono ifs-pms-stat-number-green">
+                <?php echo esc_html( $currency . ' ' . number_format( $total_income, 2 ) ); ?>
             </div>
-            <div class="oz-kpi-sub">
-                <?php printf( esc_html__( 'Passes: %s &bull; Members: %s', 'ozone-skypool' ), esc_html( number_format_i18n( $ticket_rev, 0 ) ), esc_html( number_format_i18n( $member_rev, 0 ) ) ); ?>
+            <div class="ifs-pms-stat-bottom">
+                <span><?php printf( esc_html__( 'Tickets: %s', 'ozone-skypool' ), esc_html( number_format( $ticket_income, 2 ) ) ); ?></span>
+                <span><?php printf( esc_html__( 'Members: %s', 'ozone-skypool' ), esc_html( number_format( $member_income, 2 ) ) ); ?></span>
             </div>
         </div>
 
-        <!-- Outflow -->
-        <div class="oz-kpi-card">
-            <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Operating Outflows', 'ozone-skypool' ); ?></span>
-                <div class="oz-kpi-icon-bubble" style="background: rgba(239, 68, 68, 0.1); color: var(--ifs-danger, #ef4444);">
-                    <i class="fa-solid fa-arrow-trend-down"></i>
+        <div class="ifs-pms-stat-card">
+            <div class="ifs-pms-stat-head">
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Total Expenses', 'ozone-skypool' ); ?></span>
+                <div class="ifs-pms-stat-icon ifs-pms-stat-icon-red">
+                    <i class="fa-solid fa-receipt"></i>
                 </div>
             </div>
-            <div class="oz-kpi-value ifs-pms-mono" style="color: var(--ifs-danger, #ef4444);">
-                <?php echo esc_html( $currency . ' ' . number_format_i18n( $total_outflow, 2 ) ); ?>
+            <div class="ifs-pms-stat-number ifs-pms-mono ifs-pms-stat-number-red">
+                <?php echo esc_html( $currency . ' ' . number_format( $total_expense, 2 ) ); ?>
             </div>
-            <div class="oz-kpi-sub">
-                <?php esc_html_e( 'F&B, chemical maintenance & overheads', 'ozone-skypool' ); ?>
+            <div class="ifs-pms-stat-bottom">
+                <span><?php printf( esc_html__( '%d Vouchers', 'ozone-skypool' ), count( $detailed_expenses ) ); ?></span>
+                <span><?php esc_html_e( 'Outflows', 'ozone-skypool' ); ?></span>
             </div>
         </div>
 
-        <!-- Net Take-Home -->
-        <div class="oz-kpi-card">
-            <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Net Operating Margin', 'ozone-skypool' ); ?></span>
-                <div class="oz-kpi-icon-bubble" style="background: rgba(2, 132, 199, 0.1); color: var(--ifs-primary, #0284c7);">
-                    <i class="fa-solid fa-scale-balanced"></i>
+        <div class="ifs-pms-stat-card">
+            <div class="ifs-pms-stat-head">
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Net Profit', 'ozone-skypool' ); ?></span>
+                <div class="ifs-pms-stat-icon ifs-pms-stat-icon-blue">
+                    <i class="fa-solid fa-chart-line"></i>
                 </div>
             </div>
-            <div class="oz-kpi-value ifs-pms-mono" style="color: <?php echo ( $net_profit >= 0 ) ? 'var(--ifs-text-primary, #0f172a)' : 'var(--ifs-danger, #ef4444)'; ?>;">
-                <?php echo esc_html( $currency . ' ' . number_format_i18n( $net_profit, 2 ) ); ?>
+            <div class="ifs-pms-stat-number ifs-pms-mono" style="color: <?php echo ( $net_profit >= 0 ) ? '#0f172a' : '#ef4444'; ?>;">
+                <?php echo esc_html( $currency . ' ' . number_format( $net_profit, 2 ) ); ?>
             </div>
-            <div class="oz-kpi-sub">
-                <strong style="color: <?php echo $net_profit >= 0 ? 'var(--ifs-success, #10b981)' : 'var(--ifs-danger, #ef4444)'; ?>;">
-                    <?php echo esc_html( $net_profit >= 0 ? __( 'Net Surplus Available', 'ozone-skypool' ) : __( 'Operating Deficit Recorded', 'ozone-skypool' ) ); ?>
+            <div class="ifs-pms-stat-bottom">
+                <strong style="color: <?php echo $net_profit >= 0 ? '#10b981' : '#ef4444'; ?>;">
+                    <?php echo esc_html( $net_profit >= 0 ? __( 'Profitable', 'ozone-skypool' ) : __( 'Loss Recorded', 'ozone-skypool' ) ); ?>
                 </strong>
             </div>
         </div>
 
-        <!-- Margin Yield -->
-        <div class="oz-kpi-card">
-            <div class="oz-kpi-top">
-                <span class="oz-kpi-label"><?php esc_html_e( 'Profit Margin Yield', 'ozone-skypool' ); ?></span>
-                <div class="oz-kpi-icon-bubble" style="background: rgba(192, 132, 252, 0.1); color: #c084fc;">
-                    <i class="fa-solid fa-chart-pie"></i>
+        <div class="ifs-pms-stat-card">
+            <div class="ifs-pms-stat-head">
+                <span class="ifs-pms-stat-name"><?php esc_html_e( 'Profit Margin', 'ozone-skypool' ); ?></span>
+                <div class="ifs-pms-stat-icon ifs-pms-stat-icon-purple">
+                    <i class="fa-solid fa-percent"></i>
                 </div>
             </div>
-            <div class="oz-kpi-value ifs-pms-mono" style="color: #c084fc;">
-                <?php echo esc_html( (string) $margin_pct ); ?>%
+            <div class="ifs-pms-stat-number ifs-pms-mono ifs-pms-stat-number-purple">
+                <?php echo esc_html( (string) $profit_rate ); ?>%
             </div>
-            <div class="oz-kpi-sub">
-                <?php esc_html_e( 'Operational cash conversion rate', 'ozone-skypool' ); ?>
+            <div class="ifs-pms-stat-bottom">
+                <span><?php esc_html_e( 'Income vs Cost', 'ozone-skypool' ); ?></span>
             </div>
         </div>
     </div>
 
-    <!-- Detailed Ledger Statements -->
-    <div class="oz-statement-grid">
-        <!-- Inflows Statement -->
-        <div class="oz-panel">
-            <div class="oz-panel-head">
-                <h3 class="oz-panel-title">
-                    <i class="fa-solid fa-circle-arrow-down" style="color: var(--ifs-success, #10b981);"></i>
-                    <?php esc_html_e( 'Revenues & Collections Statement', 'ozone-skypool' ); ?>
+    <!-- Sub Navigation Tabs for Income vs Expense Statements -->
+    <div class="ifs-pms-sub-tabs" role="tablist">
+        <button type="button" class="ifs-pms-sub-tab-btn <?php echo ( $active_sub_tab === 'income' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSubTab('income')">
+            <i class="fa-solid fa-circle-arrow-down" style="color: #10b981;"></i> <?php esc_html_e( 'Income Details & Breakdown', 'ozone-skypool' ); ?>
+        </button>
+        <button type="button" class="ifs-pms-sub-tab-btn <?php echo ( $active_sub_tab === 'expense' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSubTab('expense')">
+            <i class="fa-solid fa-circle-arrow-up" style="color: #ef4444;"></i> <?php esc_html_e( 'Expense Details & Breakdown', 'ozone-skypool' ); ?>
+        </button>
+    </div>
+
+    <!-- TAB CONTENT 1: INCOME STATEMENT -->
+    <div id="ifsPmsIncomeTabContent" class="ifs-pms-tab-content <?php echo ( $active_sub_tab === 'income' ) ? 'active' : ''; ?>">
+        <div class="ifs-pms-table-box">
+            <div class="ifs-pms-table-head">
+                <h3 class="ifs-pms-table-title">
+                    <i class="fa-solid fa-ticket" style="color: #0284c7;"></i>
+                    <?php esc_html_e( 'Income Ledger Transactions', 'ozone-skypool' ); ?>
                 </h3>
-                <span class="ifs-pms-badge ifs-pms-badge-success"><?php esc_html_e( 'Credit (+)', 'ozone-skypool' ); ?></span>
+
+                <!-- Income Detailed Filter -->
+                <div class="ifs-pms-table-filter-group">
+                    <span class="ifs-pms-table-filter-label"><?php esc_html_e( 'Filter Type:', 'ozone-skypool' ); ?></span>
+                    <select id="ifsPmsIncomeFilterSelect" onchange="ifsPmsApplyIncomeFilter(this.value)">
+                        <option value="all" <?php selected( $income_filter, 'all' ); ?>><?php esc_html_e( 'All Incomes (Tickets + Memberships)', 'ozone-skypool' ); ?></option>
+                        <option value="tickets" <?php selected( $income_filter, 'tickets' ); ?>><?php esc_html_e( 'Ticket Sales Only', 'ozone-skypool' ); ?></option>
+                        <option value="memberships" <?php selected( $income_filter, 'memberships' ); ?>><?php esc_html_e( 'Member Subscriptions Only', 'ozone-skypool' ); ?></option>
+                    </select>
+                </div>
             </div>
 
-            <div class="oz-ledger-row">
-                <span style="display: flex; align-items: center; gap: 12px; color: var(--ifs-text-primary, #0f172a); font-weight: 600;">
-                    <i class="fa-solid fa-ticket" style="color: var(--ifs-accent, #0284c7);"></i>
-                    <?php esc_html_e( 'Day Passes & Rooftop Combos', 'ozone-skypool' ); ?>
-                </span>
-                <strong class="ifs-pms-mono" style="color: var(--ifs-text-primary, #0f172a); font-size: 14.5px;">
-                    <?php echo esc_html( $currency . ' ' . number_format_i18n( $ticket_rev, 2 ) ); ?>
-                </strong>
+            <div style="width: 100%; overflow-x: auto;">
+                <table class="ifs-pms-data-table">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Reference / Code', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Patron / Subscriber', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Type / Details', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Payment Method', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Cashier / Staff', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Date & Time', 'ozone-skypool' ); ?></th>
+                            <th style="text-align: right;"><?php esc_html_e( 'Amount', 'ozone-skypool' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $has_income_rows = false;
+
+                        // Render Tickets
+                        if ( ! empty( $detailed_tickets ) ) {
+                            $has_income_rows = true;
+                            foreach ( $detailed_tickets as $t ) {
+                                ?>
+                                <tr>
+                                    <td class="ifs-pms-mono ifs-pms-code-cell ifs-pms-code-ticket"><?php echo esc_html( $t->ticket_code ); ?></td>
+                                    <td class="ifs-pms-patron-cell">
+                                        <?php echo esc_html( ! empty( $t->customer_name ) ? $t->customer_name : __( 'Walk-in Guest', 'ozone-skypool' ) ); ?>
+                                        <div class="ifs-pms-patron-sub ifs-pms-mono"><?php echo esc_html( $t->customer_phone ); ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="ifs-pms-badge ifs-pms-badge-ticket">
+                                            <?php echo esc_html( ! empty( $t->package_details ) ? $t->package_details : __( 'Standard Ticket', 'ozone-skypool' ) ); ?>
+                                        </span>
+                                        <?php if ( ! empty( $t->room_no ) ) : ?>
+                                            <div class="ifs-pms-room-tag"><i class="fa-solid fa-door-open"></i> <?php echo esc_html( $t->room_no ); ?></div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td style="font-weight: 600;"><?php echo esc_html( $t->payment_method ); ?></td>
+                                    <td class="ifs-pms-text-muted"><?php echo esc_html( $t->sold_by ); ?></td>
+                                    <td class="ifs-pms-mono ifs-pms-text-date"><?php echo esc_html( $t->sold_at ); ?></td>
+                                    <td class="ifs-pms-mono ifs-pms-amount-green">
+                                        +<?php echo esc_html( $currency . ' ' . number_format( (float) $t->amount, 2 ) ); ?>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        }
+
+                        // Render Memberships
+                        if ( ! empty( $detailed_memberships ) ) {
+                            $has_income_rows = true;
+                            foreach ( $detailed_memberships as $m ) {
+                                ?>
+                                <tr>
+                                    <td class="ifs-pms-mono ifs-pms-code-cell ifs-pms-code-member"><?php echo esc_html( $m->member_code ); ?></td>
+                                    <td class="ifs-pms-patron-cell">
+                                        <?php echo esc_html( $m->name ); ?>
+                                        <div class="ifs-pms-patron-sub ifs-pms-mono"><?php echo esc_html( $m->phone ); ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="ifs-pms-badge ifs-pms-badge-member">
+                                            <?php echo esc_html( $m->plan_type ); ?>
+                                        </span>
+                                    </td>
+                                    <td style="font-weight: 600;"><?php esc_html_e( 'Subscription', 'ozone-skypool' ); ?></td>
+                                    <td class="ifs-pms-text-muted"><?php esc_html_e( 'Front Desk', 'ozone-skypool' ); ?></td>
+                                    <td class="ifs-pms-mono ifs-pms-text-date"><?php echo esc_html( $m->created_at ); ?></td>
+                                    <td class="ifs-pms-mono ifs-pms-amount-green">
+                                        +<?php echo esc_html( $currency . ' ' . number_format( (float) $m->amount, 2 ) ); ?>
+                                    </td>
+                                </tr>
+                                <?php
+                            }
+                        }
+
+                        if ( ! $has_income_rows ) {
+                            ?>
+                            <tr>
+                                <td colspan="7" class="ifs-pms-empty-state">
+                                    <i class="fa-solid fa-wallet ifs-pms-empty-icon"></i>
+                                    <?php esc_html_e( 'No income records found for this date range.', 'ozone-skypool' ); ?>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                    </tbody>
+                </table>
             </div>
 
-            <div class="oz-ledger-row">
-                <span style="display: flex; align-items: center; gap: 12px; color: var(--ifs-text-primary, #0f172a); font-weight: 600;">
-                    <i class="fa-solid fa-id-card" style="color: #c084fc;"></i>
-                    <?php esc_html_e( 'Monthly & Season Memberships', 'ozone-skypool' ); ?>
-                </span>
-                <strong class="ifs-pms-mono" style="color: var(--ifs-text-primary, #0f172a); font-size: 14.5px;">
-                    <?php echo esc_html( $currency . ' ' . number_format_i18n( $member_rev, 2 ) ); ?>
-                </strong>
-            </div>
-
-            <div class="oz-ledger-row oz-ledger-total">
-                <span style="font-size: 15px; color: var(--ifs-text-primary, #0f172a);"><?php esc_html_e( 'Gross Operating Receipts', 'ozone-skypool' ); ?></span>
-                <strong class="ifs-pms-mono" style="color: var(--ifs-success, #10b981); font-size: 18px;">
-                    <?php echo esc_html( $currency . ' ' . number_format_i18n( $total_inflow, 2 ) ); ?>
+            <div class="ifs-pms-table-footer">
+                <span class="ifs-pms-footer-label"><?php esc_html_e( 'Total Filtered Income Inflow', 'ozone-skypool' ); ?></span>
+                <strong class="ifs-pms-mono ifs-pms-footer-value-green">
+                    <?php echo esc_html( $currency . ' ' . number_format( $total_income, 2 ) ); ?>
                 </strong>
             </div>
         </div>
+    </div>
 
-        <!-- Outflows Statement -->
-        <div class="oz-panel">
-            <div class="oz-panel-head">
-                <h3 class="oz-panel-title">
-                    <i class="fa-solid fa-circle-arrow-up" style="color: var(--ifs-danger, #ef4444);"></i>
-                    <?php esc_html_e( 'Operating Disbursements Statement', 'ozone-skypool' ); ?>
+    <!-- TAB CONTENT 2: EXPENSE STATEMENT -->
+    <div id="ifsPmsExpenseTabContent" class="ifs-pms-tab-content <?php echo ( $active_sub_tab === 'expense' ) ? 'active' : ''; ?>">
+        <div class="ifs-pms-table-box">
+            <div class="ifs-pms-table-head">
+                <h3 class="ifs-pms-table-title">
+                    <i class="fa-solid fa-receipt" style="color: #ef4444;"></i>
+                    <?php esc_html_e( 'Expense Outflows Ledger', 'ozone-skypool' ); ?>
                 </h3>
-                <span class="ifs-pms-badge ifs-pms-badge-danger"><?php esc_html_e( 'Debit (-)', 'ozone-skypool' ); ?></span>
+
+                <!-- Expense Category Filter -->
+                <div class="ifs-pms-table-filter-group">
+                    <span class="ifs-pms-table-filter-label"><?php esc_html_e( 'Category:', 'ozone-skypool' ); ?></span>
+                    <select id="ifsPmsExpenseCatSelect" onchange="ifsPmsApplyExpenseFilter(this.value)">
+                        <option value="all" <?php selected( $expense_cat_filter, 'all' ); ?>><?php esc_html_e( 'All Categories', 'ozone-skypool' ); ?></option>
+                        <?php if ( ! empty( $expense_categories ) ) : ?>
+                            <?php foreach ( $expense_categories as $cat ) : ?>
+                                <option value="<?php echo esc_attr( $cat['category'] ); ?>" <?php selected( $expense_cat_filter, $cat['category'] ); ?>>
+                                    <?php echo esc_html( $cat['category'] ); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </select>
+                </div>
             </div>
 
-            <?php if ( ! empty( $cat_breakdown ) ) : ?>
-                <?php foreach ( $cat_breakdown as $c ) :
-                    $cat_pct = $total_outflow > 0 ? (int) round( ( (float) $c->total / $total_outflow ) * 100 ) : 0;
-                ?>
-                    <div class="oz-ledger-row">
-                        <span style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-                            <span style="font-weight: 600; color: var(--ifs-text-primary, #0f172a);"><?php echo esc_html( $c->category ); ?></span>
-                            <span style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-size: 12px; font-weight: 700; color: var(--ifs-text-tertiary);" class="ifs-pms-mono"><?php echo esc_html( (string) $cat_pct ); ?>%</span>
-                                <div class="oz-bar-bg">
-                                    <div class="oz-bar-fill" style="width: <?php echo esc_attr( (string) $cat_pct ); ?>%;"></div>
-                                </div>
-                            </span>
-                        </span>
-                        <strong class="ifs-pms-mono" style="color: var(--ifs-danger, #ef4444); margin-left: 20px; white-space: nowrap; font-size: 14.5px;">
-                            -<?php echo esc_html( $currency . ' ' . number_format_i18n( (float) $c->total, 2 ) ); ?>
-                        </strong>
-                    </div>
-                <?php endforeach; ?>
-            <?php else : ?>
-                <div class="oz-ledger-row" style="color: var(--ifs-text-tertiary, #64748b); justify-content: center; padding: 42px 20px;">
-                    <?php esc_html_e( 'No facility expenditures recorded for this period.', 'ozone-skypool' ); ?>
-                </div>
-            <?php endif; ?>
+            <div style="width: 100%; overflow-x: auto;">
+                <table class="ifs-pms-data-table">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Expense Title', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Category', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Logged By', 'ozone-skypool' ); ?></th>
+                            <th><?php esc_html_e( 'Voucher Date', 'ozone-skypool' ); ?></th>
+                            <th style="text-align: right;"><?php esc_html_e( 'Disbursement', 'ozone-skypool' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ( ! empty( $detailed_expenses ) ) : ?>
+                            <?php foreach ( $detailed_expenses as $e ) : ?>
+                                <tr>
+                                    <td class="ifs-pms-patron-cell"><?php echo esc_html( $e->title ); ?></td>
+                                    <td>
+                                        <span class="ifs-pms-badge ifs-pms-badge-expense">
+                                            <?php echo esc_html( $e->category ); ?>
+                                        </span>
+                                    </td>
+                                    <td class="ifs-pms-text-muted"><?php echo esc_html( $e->added_by ); ?></td>
+                                    <td class="ifs-pms-mono ifs-pms-text-date"><?php echo esc_html( $e->expense_date ); ?></td>
+                                    <td class="ifs-pms-mono ifs-pms-amount-red">
+                                        -<?php echo esc_html( $currency . ' ' . number_format( (float) $e->amount, 2 ) ); ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr>
+                                <td colspan="5" class="ifs-pms-empty-state">
+                                    <i class="fa-solid fa-receipt ifs-pms-empty-icon"></i>
+                                    <?php esc_html_e( 'No expense disbursements recorded for this date range.', 'ozone-skypool' ); ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="oz-ledger-row oz-ledger-total">
-                <span style="font-size: 15px; color: var(--ifs-text-primary, #0f172a);"><?php esc_html_e( 'Total Outflow Deductions', 'ozone-skypool' ); ?></span>
-                <strong class="ifs-pms-mono" style="color: var(--ifs-danger, #ef4444); font-size: 18px;">
-                    -<?php echo esc_html( $currency . ' ' . number_format_i18n( $total_outflow, 2 ) ); ?>
+            <div class="ifs-pms-table-footer">
+                <span class="ifs-pms-footer-label"><?php esc_html_e( 'Total Filtered Expense Outflow', 'ozone-skypool' ); ?></span>
+                <strong class="ifs-pms-mono ifs-pms-footer-value-red">
+                    -<?php echo esc_html( $currency . ' ' . number_format( $total_expense, 2 ) ); ?>
                 </strong>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-function ifsPmsDownloadLedgerCsv() {
-    if (typeof ifs_pms_export_ledger === 'function') {
-        ifs_pms_export_ledger();
-    } else if (typeof ifsPmsConfig !== 'undefined') {
-        window.location.href = ifsPmsConfig.ajax_url + '?action=ifs_pms_export_csv_action&security=' + ifsPmsConfig.nonce;
-    }
-}
-</script>

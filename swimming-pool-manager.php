@@ -3,7 +3,7 @@
  * Plugin Name:       Ozone Skypool Management System (Ozone Skypool OS)
  * Plugin URI:        https://example.com/ozone-skypool
  * Description:       Enterprise Aquatic POS, QR Gate Turnstile Control, RFID/Pass Ledger & Financial Operating System with Role-Based Access Control.
- * Version:           7.2.3
+ * Version:           7.2.9
  * Author:            Ozone Tech
  * Text Domain:       ozone-skypool
  * Domain Path:       /languages
@@ -15,12 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'IFS_PMS_VERSION', '7.2.3' );
+define( 'IFS_PMS_VERSION', '7.2.9' );
 define( 'IFS_PMS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'IFS_PMS_URL', plugin_dir_url( __FILE__ ) );
 
 /**
- * 1. Database Installation, Migration & Initial Seed
+ * 1. Database Installation, Migration & Dynamic Upgrade
  */
 register_activation_hook( __FILE__, 'ifs_pms_install' );
 
@@ -49,6 +49,11 @@ function ifs_pms_install() {
         id mediumint(9) NOT NULL AUTO_INCREMENT,
         ticket_code varchar(50) NOT NULL,
         customer_id mediumint(9) NOT NULL,
+        guest_type varchar(20) DEFAULT 'customer' NOT NULL,
+        package_details text DEFAULT NULL,
+        duration_hours int(3) DEFAULT 1 NOT NULL,
+        payment_method varchar(30) DEFAULT 'Cash' NOT NULL,
+        room_no varchar(20) DEFAULT NULL,
         amount decimal(10,2) NOT NULL DEFAULT 0.00,
         sold_by varchar(100) NOT NULL,
         scanned_by varchar(100) DEFAULT NULL,
@@ -58,6 +63,8 @@ function ifs_pms_install() {
         PRIMARY KEY (id),
         UNIQUE KEY ticket_code (ticket_code),
         KEY idx_customer (customer_id),
+        KEY idx_guest_type (guest_type),
+        KEY idx_payment (payment_method),
         KEY idx_status (status),
         KEY idx_sold_at (sold_at),
         KEY idx_scanned_at (scanned_at)
@@ -73,6 +80,7 @@ function ifs_pms_install() {
         start_date date NOT NULL,
         expiry_date date NOT NULL,
         status varchar(20) DEFAULT 'Active' NOT NULL,
+        profile_image varchar(255) DEFAULT NULL,
         created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
         PRIMARY KEY (id),
         UNIQUE KEY member_code (member_code),
@@ -109,17 +117,52 @@ function ifs_pms_install() {
 
     dbDelta( $sql );
 
-    add_option( 'ifs_pms_business_name', __( 'Ozone Restaurant & Skypool', 'ozone-skypool' ) );
-    add_option( 'ifs_pms_ticket_price', '500.00' );
-    add_option( 'ifs_pms_currency', 'BDT' );
-    add_option( 'ifs_pms_phone', '+880 1700-000000' );
-    add_option( 'ifs_pms_address', '20th Floor, Ritz Tower, Dargah Gate, Sylhet' );
-    add_option( 'ifs_pms_receipt_note', __( 'Proper swimwear compulsory. Deck passes non-refundable. Outside food and beverages not permitted.', 'ozone-skypool' ) );
-    add_option( 'ifs_pms_max_capacity', 80 );
+    add_option( 'ifs_pms_business_name', '' );
+    add_option( 'ifs_pms_ticket_price', '0.00' );
+    add_option( 'ifs_pms_currency', '' );
+    add_option( 'ifs_pms_phone', '' );
+    add_option( 'ifs_pms_address', '' );
+    add_option( 'ifs_pms_receipt_note', '' );
+    add_option( 'ifs_pms_max_capacity', '' );
     add_option( 'ifs_pms_logo_url', '' );
-    add_option( 'ifs_pms_pool_status', 'open' );
-    add_option( 'ifs_pms_enable_amenities', '1' );
+    add_option( 'ifs_pms_pool_status', '' );
+    add_option( 'ifs_pms_enable_amenities', '' );
+    add_option( 'ifs_pms_pricing_tiers', array() );
+    add_option( 'ifs_pms_amenity_addons', array() );
+    add_option( 'ifs_pms_weekly_schedule', array() );
+    add_option( 'ifs_pms_enabled_tenders', array() );
+    add_option( 'ifs_pms_quick_cash_presets', '' );
+    add_option( 'ifs_pms_thermal_paper_width', '' );
+    add_option( 'ifs_pms_enable_strict_scan', '' );
+    add_option( 'ifs_pms_auto_expire_passes', '' );
+    add_option( 'ifs_pms_enable_audio_buzzer', '' );
     add_option( 'ifs_pms_version', IFS_PMS_VERSION );
+}
+
+/**
+ * Migration Check for Existing Database Tables
+ */
+add_action( 'admin_init', 'ifs_pms_check_db_migrations' );
+
+function ifs_pms_check_db_migrations() {
+    global $wpdb;
+    $t_tick = $wpdb->prefix . 'ifs_pms_tickets';
+
+    if ( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $t_tick ) ) === $t_tick ) {
+        $cols = $wpdb->get_col( "DESC {$t_tick}", 0 );
+        if ( ! in_array( 'guest_type', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_tick}` ADD `guest_type` varchar(20) NOT NULL DEFAULT 'customer' AFTER `customer_id`" );
+        }
+        if ( ! in_array( 'package_details', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_tick}` ADD `package_details` text DEFAULT NULL AFTER `guest_type`" );
+        }
+        if ( ! in_array( 'duration_hours', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_tick}` ADD `duration_hours` int(3) NOT NULL DEFAULT 1 AFTER `package_details`" );
+        }
+        if ( ! in_array( 'payment_method', $cols, true ) ) {
+            $wpdb->query( "ALTER TABLE `{$t_tick}` ADD `payment_method` varchar(30) NOT NULL DEFAULT 'Cash' AFTER `duration_hours`" );
+        }
+    }
 }
 
 /**
@@ -147,7 +190,7 @@ function ifs_pms_ensure_capabilities() {
 
     if ( ! get_role( 'ozone_cashier' ) ) {
         add_role( 'ozone_cashier', __( 'Ozone Cashier', 'ozone-skypool' ), array(
-            'read'                 => true,
+            'read'                  => true,
             'ozone_access_terminal' => true,
             'ozone_sell_tickets'    => true,
             'ozone_scan_passes'     => true,
@@ -202,7 +245,7 @@ function ifs_pms_enqueue_assets( $hook ) {
     wp_enqueue_script( 'ifs-pms-qrcode', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', array(), '1.0.0', true );
 
     wp_enqueue_style( 'ozone-skypool-admin-css', IFS_PMS_URL . 'assets/css/style.css', array(), IFS_PMS_VERSION );
-    wp_enqueue_script( 'ozone-skypool-admin-js', IFS_PMS_URL . 'assets/js/main.js', array( 'ifs-pms-qrcode' ), IFS_PMS_VERSION, true );
+    wp_enqueue_script( 'ozone-skypool-admin-js', IFS_PMS_URL . 'assets/js/main.js', array( 'jquery', 'ifs-pms-qrcode' ), IFS_PMS_VERSION, true );
 
     $last_ticket = get_transient( 'ifs_pms_last_ticket_' . get_current_user_id() );
     if ( $last_ticket ) {
@@ -212,8 +255,16 @@ function ifs_pms_enqueue_assets( $hook ) {
     wp_localize_script( 'ozone-skypool-admin-js', 'ifsPmsConfig', array(
         'ajax_url'    => admin_url( 'admin-ajax.php' ),
         'nonce'       => wp_create_nonce( 'ifs_pms_security_token' ),
-        'currency'    => esc_html( get_option( 'ifs_pms_currency', 'BDT' ) ),
+        'currency'    => esc_html( (string) get_option( 'ifs_pms_currency', '' ) ),
         'last_ticket' => $last_ticket ? $last_ticket : null,
+        'i18n'        => array(
+            'packageTitle' => __( 'Package title', 'ozone-skypool' ),
+            'ageCategory'  => __( 'Age/category', 'ozone-skypool' ),
+            'itemName'     => __( 'Item name', 'ozone-skypool' ),
+            'mediaTitle'   => __( 'Select Venue Logo', 'ozone-skypool' ),
+            'mediaBtn'     => __( 'Use this logo', 'ozone-skypool' ),
+            'mediaAlert'   => __( 'WordPress Media Uploader is loading or unavailable. Please refresh the page.', 'ozone-skypool' ),
+        ),
     ) );
 }
 
@@ -279,7 +330,7 @@ function ifs_pms_handle_form_submissions() {
                     array( '%d', '%f', '%f', '%s', '%s', '%s' )
                 );
             }
-            wp_safe_redirect( add_query_arg( array( 'view' => 'staff', 'msg' => 'staff_created', 'tab' => 'list' ), admin_url( 'admin.php?page=ifs-pms' ) ) );
+            wp_safe_redirect( add_query_arg( array( 'view' => 'staff', 'msg' => 'staff_created', 'tab' => 'list' ), $base ) );
             exit;
         }
     }
@@ -345,7 +396,7 @@ function ifs_pms_handle_form_submissions() {
                 );
             }
 
-            wp_safe_redirect( add_query_arg( array( 'view' => 'staff', 'msg' => 'staff_updated', 'tab' => 'list' ), admin_url( 'admin.php?page=ifs-pms' ) ) );
+            wp_safe_redirect( add_query_arg( array( 'view' => 'staff', 'msg' => 'staff_updated', 'tab' => 'list' ), $base ) );
             exit;
         }
     }
@@ -360,7 +411,7 @@ function ifs_pms_handle_form_submissions() {
             require_once ABSPATH . 'wp-admin/includes/user.php';
             wp_delete_user( $user_id );
             $wpdb->delete( $t_salary, array( 'user_id' => $user_id ), array( '%d' ) );
-            wp_safe_redirect( add_query_arg( array( 'view' => 'staff', 'tab' => 'list' ), admin_url( 'admin.php?page=ifs-pms' ) ) );
+            wp_safe_redirect( add_query_arg( array( 'view' => 'staff', 'tab' => 'list' ), $base ) );
             exit;
         }
     }
@@ -372,10 +423,17 @@ function ifs_pms_handle_form_submissions() {
             wp_die( esc_html__( 'Forbidden: Insufficient permissions to issue tickets.', 'ozone-skypool' ) );
         }
 
-        $name   = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
-        $phone  = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
-        $amount = isset( $_POST['amount'] ) ? floatval( $_POST['amount'] ) : 0.00;
-        $staff  = sanitize_text_field( wp_unslash( $_POST['staff'] ?? wp_get_current_user()->display_name ) );
+        $name           = sanitize_text_field( wp_unslash( $_POST['name'] ?? '' ) );
+        $phone          = sanitize_text_field( wp_unslash( $_POST['phone'] ?? '' ) );
+        $guest_type     = sanitize_key( $_POST['guest_type'] ?? 'customer' );
+        $package_name   = sanitize_text_field( wp_unslash( $_POST['package_name'] ?? '' ) );
+        $duration_hours = isset( $_POST['duration_hours'] ) ? max( 1, absint( $_POST['duration_hours'] ) ) : 1;
+        $payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? 'Cash' ) );
+        $room_no        = sanitize_text_field( wp_unslash( $_POST['room_no'] ?? '' ) );
+        
+        $is_free = ( $guest_type === 'room_guest' || $payment_method === 'Room Guest' || $payment_method === 'Complementary' );
+        $amount  = $is_free ? 0.00 : ( isset( $_POST['amount'] ) ? floatval( $_POST['amount'] ) : 0.00 );
+        $staff   = sanitize_text_field( wp_unslash( $_POST['staff'] ?? wp_get_current_user()->display_name ) );
 
         if ( ! empty( $name ) && ! empty( $phone ) ) {
             $customer = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$t_cust} WHERE phone = %s", $phone ) );
@@ -387,23 +445,44 @@ function ifs_pms_handle_form_submissions() {
                 $wpdb->update( $t_cust, array( 'name' => $name ), array( 'id' => $cust_id ) );
             }
 
-            $code = 'OZONE-TKT-' . strtoupper( wp_generate_password( 6, false ) );
+            // Generate Serial Token: OZONE-MON-DAY-XXXX
+            $today_start = current_time( 'Y-m-d 00:00:00' );
+            $today_end   = current_time( 'Y-m-d 23:59:59' );
+            $today_count = (int) $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(id) FROM {$t_tick} WHERE sold_at >= %s AND sold_at <= %s",
+                    $today_start,
+                    $today_end
+                )
+            );
+            $code = 'OZONE-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 'd' ) . '-' . str_pad( $today_count + 1, 4, '0', STR_PAD_LEFT );
+
             $wpdb->insert( $t_tick, array(
-                'ticket_code' => $code,
-                'customer_id' => $cust_id,
-                'amount'      => $amount,
-                'sold_by'     => $staff,
-                'status'      => 'Valid',
-                'sold_at'     => current_time( 'mysql' ),
+                'ticket_code'     => $code,
+                'customer_id'     => $cust_id,
+                'guest_type'      => $guest_type,
+                'package_details' => $package_name,
+                'duration_hours'  => $duration_hours,
+                'payment_method'  => $payment_method,
+                'room_no'         => $room_no,
+                'amount'          => $amount,
+                'sold_by'         => $staff,
+                'status'          => 'Valid',
+                'sold_at'         => current_time( 'mysql' ),
             ) );
 
             set_transient( 'ifs_pms_last_ticket_' . get_current_user_id(), array(
-                'code'   => $code,
-                'name'   => $name,
-                'phone'  => $phone,
-                'amount' => number_format( $amount, 2 ),
-                'staff'  => $staff,
-                'date'   => current_time( 'mysql' ),
+                'code'           => $code,
+                'name'           => $name,
+                'phone'          => $phone,
+                'guest_type'     => $guest_type,
+                'package'        => $package_name,
+                'duration_hours' => $duration_hours,
+                'payment_method' => $payment_method,
+                'room'           => $room_no,
+                'amount'         => number_format( $amount, 2 ),
+                'staff'          => $staff,
+                'date'           => current_time( 'mysql' ),
             ), 60 );
 
             wp_safe_redirect( add_query_arg( array( 'view' => 'tickets', 'msg' => 'ticket_created', 'tab' => 'add' ), $base ) );
@@ -491,25 +570,27 @@ function ifs_pms_handle_form_submissions() {
             wp_die( esc_html__( 'Forbidden: Insufficient permissions to enroll members.', 'ozone-skypool' ) );
         }
 
-        $name     = sanitize_text_field( wp_unslash( $_POST['m_name'] ?? '' ) );
-        $phone    = sanitize_text_field( wp_unslash( $_POST['m_phone'] ?? '' ) );
-        $plan     = sanitize_text_field( wp_unslash( $_POST['plan_type'] ?? 'Monthly Sky Pass' ) );
-        $amount   = isset( $_POST['m_amount'] ) ? floatval( $_POST['m_amount'] ) : 0.00;
-        $duration = isset( $_POST['duration_months'] ) ? absint( $_POST['duration_months'] ) : 1;
+        $name          = sanitize_text_field( wp_unslash( $_POST['m_name'] ?? '' ) );
+        $phone         = sanitize_text_field( wp_unslash( $_POST['m_phone'] ?? '' ) );
+        $plan          = sanitize_text_field( wp_unslash( $_POST['plan_type'] ?? '' ) );
+        $amount        = isset( $_POST['m_amount'] ) ? floatval( $_POST['m_amount'] ) : 0.00;
+        $duration      = isset( $_POST['duration_months'] ) ? absint( $_POST['duration_months'] ) : 1;
+        $profile_image = esc_url_raw( $_POST['profile_image'] ?? '' );
 
         $mem_code = 'OZONE-MEM-' . strtoupper( wp_generate_password( 6, false ) );
         $start    = current_time( 'Y-m-d' );
         $expiry   = gmdate( 'Y-m-d', strtotime( "+{$duration} months", strtotime( $start ) ) );
 
         $wpdb->insert( $t_members, array(
-            'member_code' => $mem_code,
-            'name'        => $name,
-            'phone'       => $phone,
-            'plan_type'   => $plan,
-            'amount'      => $amount,
-            'start_date'  => $start,
-            'expiry_date' => $expiry,
-            'status'      => 'Active',
+            'member_code'   => $mem_code,
+            'name'          => $name,
+            'phone'         => $phone,
+            'plan_type'     => $plan,
+            'amount'        => $amount,
+            'start_date'    => $start,
+            'expiry_date'   => $expiry,
+            'status'        => 'Active',
+            'profile_image' => $profile_image,
         ) );
 
         wp_safe_redirect( add_query_arg( array( 'view' => 'membership', 'msg' => 'membership_enrolled', 'tab' => 'list' ), $base ) );
@@ -521,27 +602,29 @@ function ifs_pms_handle_form_submissions() {
             wp_die( esc_html__( 'Forbidden: Insufficient privileges.', 'ozone-skypool' ) );
         }
 
-        $member_id = absint( $_POST['member_id'] ?? 0 );
-        $name      = sanitize_text_field( wp_unslash( $_POST['m_name'] ?? '' ) );
-        $phone     = sanitize_text_field( wp_unslash( $_POST['m_phone'] ?? '' ) );
-        $plan      = sanitize_text_field( wp_unslash( $_POST['plan_type'] ?? '' ) );
-        $amount    = isset( $_POST['m_amount'] ) ? floatval( $_POST['m_amount'] ) : 0.00;
-        $expiry    = sanitize_text_field( wp_unslash( $_POST['expiry_date'] ?? '' ) );
-        $status    = sanitize_key( $_POST['status'] ?? 'Active' );
+        $member_id     = absint( $_POST['member_id'] ?? 0 );
+        $name          = sanitize_text_field( wp_unslash( $_POST['m_name'] ?? '' ) );
+        $phone         = sanitize_text_field( wp_unslash( $_POST['m_phone'] ?? '' ) );
+        $plan          = sanitize_text_field( wp_unslash( $_POST['plan_type'] ?? '' ) );
+        $amount        = isset( $_POST['m_amount'] ) ? floatval( $_POST['m_amount'] ) : 0.00;
+        $expiry        = sanitize_text_field( wp_unslash( $_POST['expiry_date'] ?? '' ) );
+        $status        = sanitize_key( $_POST['status'] ?? 'Active' );
+        $profile_image = esc_url_raw( $_POST['profile_image'] ?? '' );
 
         if ( $member_id > 0 && ! empty( $name ) && ! empty( $phone ) ) {
             $wpdb->update(
                 $t_members,
                 array(
-                    'name'        => $name,
-                    'phone'       => $phone,
-                    'plan_type'   => $plan,
-                    'amount'      => $amount,
-                    'expiry_date' => $expiry,
-                    'status'      => $status,
+                    'name'          => $name,
+                    'phone'         => $phone,
+                    'plan_type'     => $plan,
+                    'amount'        => $amount,
+                    'expiry_date'   => $expiry,
+                    'status'        => $status,
+                    'profile_image' => $profile_image,
                 ),
                 array( 'id' => $member_id ),
-                array( '%s', '%s', '%s', '%f', '%s', '%s' ),
+                array( '%s', '%s', '%s', '%f', '%s', '%s', '%s' ),
                 array( '%d' )
             );
 
@@ -625,7 +708,7 @@ function ifs_pms_handle_form_submissions() {
         }
     }
 
-    // --- MASTER SETTINGS ---
+    // --- MASTER SETTINGS (100% DYNAMIC STORAGE) ---
 
     if ( $action === 'save_settings' ) {
         if ( ! current_user_can( 'ozone_manage_settings' ) && ! current_user_can( 'manage_options' ) ) {
@@ -635,58 +718,57 @@ function ifs_pms_handle_form_submissions() {
         $active_tab = sanitize_key( $_POST['ifs_pms_active_tab'] ?? 'pos' );
 
         update_option( 'ifs_pms_business_name', sanitize_text_field( wp_unslash( $_POST['ifs_pms_business_name'] ?? '' ) ) );
-        update_option( 'ifs_pms_ticket_price', floatval( $_POST['ifs_pms_ticket_price'] ?? 0.00 ) );
-        update_option( 'ifs_pms_currency', sanitize_text_field( wp_unslash( $_POST['ifs_pms_currency'] ?? 'BDT' ) ) );
+        update_option( 'ifs_pms_currency', sanitize_text_field( wp_unslash( $_POST['ifs_pms_currency'] ?? '' ) ) );
         update_option( 'ifs_pms_phone', sanitize_text_field( wp_unslash( $_POST['ifs_pms_phone'] ?? '' ) ) );
         update_option( 'ifs_pms_address', sanitize_text_field( wp_unslash( $_POST['ifs_pms_address'] ?? '' ) ) );
-        update_option( 'ifs_pms_max_capacity', absint( $_POST['ifs_pms_max_capacity'] ?? 80 ) );
+        update_option( 'ifs_pms_max_capacity', sanitize_text_field( wp_unslash( $_POST['ifs_pms_max_capacity'] ?? '' ) ) );
         update_option( 'ifs_pms_receipt_note', sanitize_textarea_field( wp_unslash( $_POST['ifs_pms_receipt_note'] ?? '' ) ) );
         update_option( 'ifs_pms_logo_url', esc_url_raw( $_POST['ifs_pms_logo_url'] ?? '' ) );
 
         update_option( 'ifs_pms_enable_strict_scan', isset( $_POST['ifs_pms_enable_strict_scan'] ) ? '1' : '0' );
         update_option( 'ifs_pms_auto_expire_passes', isset( $_POST['ifs_pms_auto_expire_passes'] ) ? '1' : '0' );
-        update_option( 'ifs_pms_thermal_paper_width', sanitize_text_field( wp_unslash( $_POST['ifs_pms_thermal_paper_width'] ?? '80mm' ) ) );
-        update_option( 'ifs_pms_print_auto_popup', isset( $_POST['ifs_pms_print_auto_popup'] ) ? '1' : '0' );
+        update_option( 'ifs_pms_thermal_paper_width', sanitize_text_field( wp_unslash( $_POST['ifs_pms_thermal_paper_width'] ?? '' ) ) );
         update_option( 'ifs_pms_enable_audio_buzzer', isset( $_POST['ifs_pms_enable_audio_buzzer'] ) ? '1' : '0' );
         update_option( 'ifs_pms_enable_amenities', isset( $_POST['ifs_pms_enable_amenities'] ) ? '1' : '0' );
-        update_option( 'ifs_pms_pool_status', sanitize_text_field( wp_unslash( $_POST['ifs_pms_pool_status'] ?? 'open' ) ) );
+        update_option( 'ifs_pms_pool_status', sanitize_text_field( wp_unslash( $_POST['ifs_pms_pool_status'] ?? '' ) ) );
 
         $tenders = isset( $_POST['ifs_pms_enabled_tenders'] ) && is_array( $_POST['ifs_pms_enabled_tenders'] )
             ? array_map( 'sanitize_text_field', wp_unslash( $_POST['ifs_pms_enabled_tenders'] ) )
-            : array( 'Cash', 'bKash / Nagad', 'Card POS', 'Complimentary' );
+            : array();
         update_option( 'ifs_pms_enabled_tenders', $tenders );
 
-        $cash_presets = sanitize_text_field( wp_unslash( $_POST['ifs_pms_quick_cash_presets'] ?? '500, 1000' ) );
+        $cash_presets = sanitize_text_field( wp_unslash( $_POST['ifs_pms_quick_cash_presets'] ?? '' ) );
         update_option( 'ifs_pms_quick_cash_presets', $cash_presets );
 
-        // Pricing Tiers with Age Groups
+        // Dynamic Pricing Tiers
         if ( isset( $_POST['ifs_pricing_tier_name'] ) && is_array( $_POST['ifs_pricing_tier_name'] ) ) {
-            $tiers    = array();
-            $names    = $_POST['ifs_pricing_tier_name'];
-            $ages     = $_POST['ifs_pricing_tier_age'] ?? array();
-            $prices   = $_POST['ifs_pricing_tier_price'];
-            $features = $_POST['ifs_pricing_tier_features'];
+            $tiers  = array();
+            $names  = $_POST['ifs_pricing_tier_name'];
+            $ages   = $_POST['ifs_pricing_tier_age'] ?? array();
+            $prices = $_POST['ifs_pricing_tier_price'];
 
             for ( $i = 0; $i < count( $names ); $i++ ) {
-                if ( ! empty( $names[ $i ] ) ) {
+                if ( ! empty( trim( $names[ $i ] ) ) ) {
                     $tiers[] = array(
                         'name'      => sanitize_text_field( wp_unslash( $names[ $i ] ) ),
-                        'age_group' => sanitize_text_field( wp_unslash( $ages[ $i ] ?? 'Adult' ) ),
+                        'age_group' => sanitize_text_field( wp_unslash( $ages[ $i ] ?? '' ) ),
                         'price'     => floatval( $prices[ $i ] ),
-                        'features'  => sanitize_text_field( wp_unslash( $features[ $i ] ) ),
                     );
                 }
             }
             update_option( 'ifs_pms_pricing_tiers', $tiers );
+        } else {
+            update_option( 'ifs_pms_pricing_tiers', array() );
         }
 
+        // Dynamic Amenity Add-Ons
         if ( isset( $_POST['ifs_addon_name'] ) && is_array( $_POST['ifs_addon_name'] ) ) {
             $addons   = array();
             $a_names  = $_POST['ifs_addon_name'];
             $a_prices = $_POST['ifs_addon_price'];
 
             for ( $j = 0; $j < count( $a_names ); $j++ ) {
-                if ( ! empty( $a_names[ $j ] ) ) {
+                if ( ! empty( trim( $a_names[ $j ] ) ) ) {
                     $addons[] = array(
                         'name'  => sanitize_text_field( wp_unslash( $a_names[ $j ] ) ),
                         'price' => floatval( $a_prices[ $j ] ),
@@ -694,16 +776,18 @@ function ifs_pms_handle_form_submissions() {
                 }
             }
             update_option( 'ifs_pms_amenity_addons', $addons );
+        } else {
+            update_option( 'ifs_pms_amenity_addons', array() );
         }
 
         // Day-Wise Operating Hours
         $days_of_week = array( 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday' );
-        $schedule = array();
+        $schedule     = array();
         foreach ( $days_of_week as $day ) {
             $schedule[ $day ] = array(
-                'status' => sanitize_key( $_POST['ifs_pms_schedule_' . $day . '_status'] ?? 'open' ),
-                'open'   => sanitize_text_field( wp_unslash( $_POST['ifs_pms_schedule_' . $day . '_open'] ?? '10:00' ) ),
-                'close'  => sanitize_text_field( wp_unslash( $_POST['ifs_pms_schedule_' . $day . '_close'] ?? '23:00' ) ),
+                'status' => sanitize_key( $_POST['ifs_pms_schedule_' . $day . '_status'] ?? '' ),
+                'open'   => sanitize_text_field( wp_unslash( $_POST['ifs_pms_schedule_' . $day . '_open'] ?? '' ) ),
+                'close'  => sanitize_text_field( wp_unslash( $_POST['ifs_pms_schedule_' . $day . '_close'] ?? '' ) ),
             );
         }
         update_option( 'ifs_pms_weekly_schedule', $schedule );
@@ -755,11 +839,11 @@ function ifs_pms_render_application() {
         $flash_msg = __( 'Master Configuration Saved.', 'ozone-skypool' );
     }
 
-    $b_name       = get_option( 'ifs_pms_business_name', 'Ozone Restaurant & Skypool' );
-    $address      = get_option( 'ifs_pms_address', '' );
-    $phone        = get_option( 'ifs_pms_phone', '' );
-    $receipt_note = get_option( 'ifs_pms_receipt_note', '' );
-    $logo_url     = get_option( 'ifs_pms_logo_url', '' );
+    $b_name       = (string) get_option( 'ifs_pms_business_name', '' );
+    $address      = (string) get_option( 'ifs_pms_address', '' );
+    $phone        = (string) get_option( 'ifs_pms_phone', '' );
+    $receipt_note = (string) get_option( 'ifs_pms_receipt_note', '' );
+    $logo_url     = (string) get_option( 'ifs_pms_logo_url', '' );
     ?>
 
     <div class="ifs-pms-shell" id="ifsPmsAppShell">
@@ -767,7 +851,7 @@ function ifs_pms_render_application() {
             <div>
                 <div class="ifs-pms-brand">
                     <div>
-                        <div style="font-size: 15px; font-weight: 800; color: var(--ifs-text-primary);"><?php esc_html_e( 'Ozone Skypool', 'ozone-skypool' ); ?></div>
+                        <div style="font-size: 15px; font-weight: 800; color: var(--ifs-text-primary);"><?php echo $b_name ? esc_html( $b_name ) : esc_html__( 'Ozone Skypool', 'ozone-skypool' ); ?></div>
                         <div style="font-size: 10px; color: var(--ifs-accent); font-weight: 700; letter-spacing: 0.8px;">
                             <?php echo $is_admin ? esc_html__( 'MANAGER TERMINAL', 'ozone-skypool' ) : esc_html__( 'CASHIER DESK', 'ozone-skypool' ); ?>
                         </div>
@@ -780,7 +864,7 @@ function ifs_pms_render_application() {
                         <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=dashboard' ); ?>"><i class="fa-solid fa-chart-pie"></i> <?php esc_html_e( 'Overview', 'ozone-skypool' ); ?></a>
                     </li>
                     <li class="ifs-pms-nav-item <?php echo ( $current_view === 'tickets' ) ? 'ifs-pms-active' : ''; ?>">
-                        <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=tickets' ); ?>"><i class="fa-solid fa-ticket"></i> <?php esc_html_e( 'Tickets POS', 'ozone-skypool' ); ?></a>
+                        <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=tickets' ); ?>"><i class="fa-solid fa-ticket"></i> <?php esc_html_e( 'Tickets', 'ozone-skypool' ); ?></a>
                     </li>
                     <li class="ifs-pms-nav-item <?php echo ( $current_view === 'scanner' ) ? 'ifs-pms-active' : ''; ?>">
                         <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=scanner' ); ?>"><i class="fa-solid fa-qrcode"></i> <?php esc_html_e( 'Scan Pass', 'ozone-skypool' ); ?></a>
@@ -797,13 +881,13 @@ function ifs_pms_render_application() {
                     <div class="ifs-pms-nav-group-title"><?php esc_html_e( 'Management & Ledger', 'ozone-skypool' ); ?></div>
                     <ul class="ifs-pms-nav">
                         <li class="ifs-pms-nav-item <?php echo ( $current_view === 'staff' ) ? 'ifs-pms-active' : ''; ?>">
-                            <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=staff' ); ?>"><i class="fa-solid fa-user-shield"></i> <?php esc_html_e( 'Staff Sales', 'ozone-skypool' ); ?></a>
+                            <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=staff' ); ?>"><i class="fa-solid fa-user-shield"></i> <?php esc_html_e( 'Staffs', 'ozone-skypool' ); ?></a>
                         </li>
                         <li class="ifs-pms-nav-item <?php echo ( $current_view === 'expenses' ) ? 'ifs-pms-active' : ''; ?>">
                             <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=expenses' ); ?>"><i class="fa-solid fa-receipt"></i> <?php esc_html_e( 'Expenses', 'ozone-skypool' ); ?></a>
                         </li>
                         <li class="ifs-pms-nav-item <?php echo ( $current_view === 'reports' ) ? 'ifs-pms-active' : ''; ?>">
-                            <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=reports' ); ?>"><i class="fa-solid fa-file-invoice-dollar"></i> <?php esc_html_e( 'Reports (P&L)', 'ozone-skypool' ); ?></a>
+                            <a class="ifs-pms-nav-link" href="<?php echo esc_url( $base_url . '&view=reports' ); ?>"><i class="fa-solid fa-file-invoice-dollar"></i> <?php esc_html_e( 'Reports', 'ozone-skypool' ); ?></a>
                         </li>
                     </ul>
 
@@ -850,7 +934,7 @@ function ifs_pms_render_application() {
                         <img src="<?php echo esc_url( $logo_url ); ?>" alt="Logo" style="max-height: 44px; width: auto; border-radius: 10px; border: 1px solid var(--ifs-border-subtle);">
                     <?php endif; ?>
                     <div>
-                        <h1><?php echo esc_html( $b_name ); ?></h1>
+                        <h1><?php echo $b_name ? esc_html( $b_name ) : esc_html__( 'Ozone Skypool', 'ozone-skypool' ); ?></h1>
                         <p><span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Terminal Online', 'ozone-skypool' ); ?> &bull; <?php echo esc_html( current_time( 'l, F j, Y' ) ); ?></p>
                     </div>
                 </div>
@@ -885,7 +969,9 @@ function ifs_pms_render_application() {
             <h2 style="margin: 0; font-size: 16px; font-weight: 800;"><?php echo esc_html( $b_name ); ?></h2>
             <p style="margin: 4px 0 0 0; font-size: 11px; color: #475569;">
                 <?php echo esc_html( $address ); ?><br>
-                <?php echo esc_html__( 'Tel:', 'ozone-skypool' ) . ' ' . esc_html( $phone ); ?>
+                <?php if ( ! empty( $phone ) ) : ?>
+                    <?php echo esc_html__( 'Tel:', 'ozone-skypool' ) . ' ' . esc_html( $phone ); ?>
+                <?php endif; ?>
             </p>
             <div class="ifs-pms-dashed-sep"></div>
             <div id="ifs-pms-thermal-qr" style="display: flex; justify-content: center; margin: 12px 0;"></div>
@@ -893,10 +979,12 @@ function ifs_pms_render_application() {
             <div class="ifs-pms-dashed-sep"></div>
             <div id="ifs-pms-slip-meta" style="font-size: 11.5px; line-height: 1.6; text-align: left;"></div>
             <div class="ifs-pms-dashed-sep"></div>
-            <p style="font-size: 9.5px; color: #64748b; margin: 0;"><?php echo esc_html( $receipt_note ); ?></p>
+            <?php if ( ! empty( $receipt_note ) ) : ?>
+                <p style="font-size: 9.5px; color: #64748b; margin: 0;"><?php echo esc_html( $receipt_note ); ?></p>
+            <?php endif; ?>
             <div class="no-print" style="margin-top: 16px; display: flex; gap: 8px;">
-                <button onclick="window.print()" class="oz-btn oz-btn-primary oz-btn-block"><i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print', 'ozone-skypool' ); ?></button>
-                <button onclick="ifs_pms_close_receipt()" class="oz-btn oz-btn-secondary oz-btn-block"><?php esc_html_e( 'Close', 'ozone-skypool' ); ?></button>
+                <button onclick="window.print()" class="ifs-pms-btn ifs-pms-btn-primary" style="flex: 1;"><i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print', 'ozone-skypool' ); ?></button>
+                <button onclick="ifs_pms_close_receipt()" class="ifs-pms-btn ifs-pms-btn-secondary" style="flex: 1;"><?php esc_html_e( 'Close', 'ozone-skypool' ); ?></button>
             </div>
         </div>
     </div>
@@ -904,7 +992,7 @@ function ifs_pms_render_application() {
 }
 
 /**
- * 7. Secure Pass Verification Endpoint (Turnstile / Scanner)
+ * 7. Secure Pass Verification Endpoint (Turnstile / Scanner with Rich Telemetry)
  */
 add_action( 'wp_ajax_ifs_pms_verify_pass_action', 'ifs_pms_verify_pass_callback' );
 
@@ -925,7 +1013,7 @@ function ifs_pms_verify_pass_callback() {
     }
 
     $ticket = $wpdb->get_row( $wpdb->prepare(
-        "SELECT t.*, c.name as customer_name 
+        "SELECT t.*, c.name as customer_name, c.phone as customer_phone 
          FROM {$t_tick} t 
          LEFT JOIN {$t_cust} c ON t.customer_id = c.id 
          WHERE t.ticket_code = %s",
@@ -937,7 +1025,10 @@ function ifs_pms_verify_pass_callback() {
     }
 
     if ( $ticket->status === 'Used' ) {
-        wp_send_json_error( array( 'message' => sprintf( __( 'Pass already redeemed at %s by %s', 'ozone-skypool' ), $ticket->scanned_at, $ticket->scanned_by ) ) );
+        wp_send_json_error( array( 
+            'message' => sprintf( __( 'Pass already redeemed at %s by %s', 'ozone-skypool' ), $ticket->scanned_at, $ticket->scanned_by ),
+            'ticket'  => $ticket
+        ) );
     }
 
     if ( $ticket->status === 'Cancelled' ) {
@@ -963,11 +1054,22 @@ function ifs_pms_verify_pass_callback() {
         wp_send_json_error( array( 'message' => __( 'Database lock error while updating pass.', 'ozone-skypool' ) ) );
     }
 
+    $duration    = ! empty( $ticket->duration_hours ) ? (int) $ticket->duration_hours : 1;
+    $valid_until = date( 'h:i A', strtotime( "+{$duration} hours", strtotime( $now ) ) );
+
     wp_send_json_success( array(
-        'message'       => __( 'Access Granted: Valid Admission Pass', 'ozone-skypool' ),
-        'ticket_code'   => $code,
-        'customer_name' => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'ozone-skypool' ),
-        'scanned_at'    => $now,
+        'message'        => __( 'Access Granted: Gate Relay Actuated', 'ozone-skypool' ),
+        'ticket_code'    => $code,
+        'customer_name'  => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'ozone-skypool' ),
+        'customer_phone' => ! empty( $ticket->customer_phone ) ? esc_html( $ticket->customer_phone ) : '-',
+        'guest_type'     => ! empty( $ticket->guest_type ) ? $ticket->guest_type : 'customer',
+        'room_no'        => ! empty( $ticket->room_no ) ? $ticket->room_no : '',
+        'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'ozone-skypool' ),
+        'duration_hours' => $duration,
+        'valid_until'    => $valid_until,
+        'amount'         => number_format( (float) $ticket->amount, 2 ),
+        'payment_method' => $ticket->payment_method ?? 'Cash',
+        'scanned_at'     => date( 'h:i:s A', strtotime( $now ) ),
     ) );
 }
 
@@ -988,7 +1090,7 @@ function ifs_pms_export_csv_action_callback() {
     $t_cust = $wpdb->prefix . 'ifs_pms_customers';
 
     $tickets = $wpdb->get_results(
-        "SELECT t.ticket_code, c.name as customer_name, c.phone as customer_phone, t.amount, t.sold_by, t.status, t.sold_at, t.scanned_at, t.scanned_by 
+        "SELECT t.ticket_code, c.name as customer_name, c.phone as customer_phone, t.guest_type, t.package_details, t.duration_hours, t.payment_method, t.room_no, t.amount, t.sold_by, t.status, t.sold_at, t.scanned_at, t.scanned_by 
          FROM {$t_tick} t 
          LEFT JOIN {$t_cust} c ON t.customer_id = c.id 
          ORDER BY t.id DESC",
@@ -1000,7 +1102,7 @@ function ifs_pms_export_csv_action_callback() {
     header( 'Content-Disposition: attachment; filename=ozone_skypool_ledger_' . gmdate( 'Y-m-d' ) . '.csv' );
 
     $output = fopen( 'php://output', 'w' );
-    fputcsv( $output, array( 'Ticket Code', 'Patron Name', 'Phone', 'Amount', 'Sold By', 'Status', 'Sold At', 'Scanned At', 'Scanned By' ) );
+    fputcsv( $output, array( 'Ticket Code', 'Patron Name', 'Phone', 'Guest Type', 'Packages Enrolled', 'Hours', 'Payment Method', 'Room Number', 'Amount', 'Sold By', 'Status', 'Sold At', 'Scanned At', 'Scanned By' ) );
 
     if ( ! empty( $tickets ) ) {
         foreach ( $tickets as $row ) {
@@ -1008,6 +1110,11 @@ function ifs_pms_export_csv_action_callback() {
                 $row['ticket_code'],
                 $row['customer_name'],
                 $row['customer_phone'],
+                $row['guest_type'],
+                $row['package_details'],
+                $row['duration_hours'],
+                $row['payment_method'],
+                $row['room_no'],
                 $row['amount'],
                 $row['sold_by'],
                 $row['status'],
@@ -1020,4 +1127,156 @@ function ifs_pms_export_csv_action_callback() {
 
     fclose( $output );
     exit;
+}
+
+/**
+ * 9. Custom Login Customization: Number Captcha & Auto-Redirect to Plugin Dashboard
+ */
+add_action( 'login_form', 'ifs_pms_add_number_captcha' );
+
+function ifs_pms_add_number_captcha() {
+    $num1 = wp_rand( 1, 9 );
+    $num2 = wp_rand( 1, 9 );
+    $sum  = $num1 + $num2;
+    
+    $captcha_token = wp_generate_password( 12, false );
+    set_transient( 'ifs_captcha_' . $captcha_token, $sum, 300 );
+    
+    ?>
+    <p class="pms-captcha-wrap" style="margin-bottom: 20px;">
+        <label for="pms_captcha_answer" style="display: block; font-weight: 700; margin-bottom: 6px; color: #334155;">
+            <?php printf( esc_html__( 'Security Check: What is %1$d + %2$d?', 'ozone-skypool' ), $num1, $num2 ); ?> <span style="color: #ef4444;">*</span>
+        </label>
+        <input type="number" name="pms_captcha_answer" id="pms_captcha_answer" class="input" value="" size="20" required autocomplete="off" style="border-radius: 8px !important; border: 1.5px solid #cbd5e1 !important; height: 42px !important;">
+        <input type="hidden" name="pms_captcha_token" value="<?php echo esc_attr( $captcha_token ); ?>">
+    </p>
+    <?php
+}
+
+add_filter( 'authenticate', 'ifs_pms_verify_number_captcha', 30, 3 );
+
+function ifs_pms_verify_number_captcha( $user, $username, $password ) {
+    if ( empty( $username ) || empty( $password ) || is_wp_error( $user ) ) {
+        return $user;
+    }
+
+    if ( isset( $_POST['pms_captcha_answer'], $_POST['pms_captcha_token'] ) ) {
+        $token  = sanitize_text_field( wp_unslash( $_POST['pms_captcha_token'] ) );
+        $answer = intval( $_POST['pms_captcha_answer'] );
+        
+        $correct_sum = get_transient( 'ifs_captcha_' . $token );
+        delete_transient( 'ifs_captcha_' . $token );
+
+        if ( false === $correct_sum || $answer !== intval( $correct_sum ) ) {
+            return new WP_Error( 'invalid_captcha', __( '<strong>ERROR</strong>: Incorrect security captcha calculation. Please try again.', 'ozone-skypool' ) );
+        }
+    }
+
+    return $user;
+}
+
+add_filter( 'login_redirect', 'ifs_pms_login_redirect_dashboard', 10, 3 );
+
+function ifs_pms_login_redirect_dashboard( $redirect_to, $requested_redirect_to, $user ) {
+    if ( isset( $user->ID ) ) {
+        if ( user_can( $user, 'ozone_access_terminal' ) || user_can( $user, 'manage_options' ) ) {
+            return admin_url( 'admin.php?page=ifs-pms' );
+        }
+    }
+    return $redirect_to;
+}
+
+add_action( 'login_enqueue_scripts', 'ifs_pms_custom_login_style' );
+
+function ifs_pms_custom_login_style() {
+    ?>
+    <style>
+        body.login {
+            background: linear-gradient(135deg, #0f172a 0%, #0284c7 100%) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        #login {
+            width: 380px !important;
+            padding: 20px !important;
+        }
+        .login form {
+            background: #ffffff !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+            padding: 36px !important;
+        }
+        .login h1 a {
+            background-image: none !important;
+            text-indent: 0 !important;
+            color: #0f172a !important;
+            font-size: 24px !important;
+            font-weight: 800 !important;
+            width: 100% !important;
+            height: auto !important;
+            margin-bottom: 20px !important;
+            text-align: center;
+        }
+        .login h1 a::after {
+            content: 'Ozone Skypool OS';
+        }
+        .login label {
+            color: #334155 !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+        }
+        .login input.input {
+            border-radius: 12px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            padding: 12px 16px !important;
+            height: 48px !important;
+            font-size: 14px !important;
+            background: #f8fafc !important;
+        }
+        .login input.input:focus {
+            border-color: #0284c7 !important;
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15) !important;
+        }
+        .login .button.wp-submit {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+            border: none !important;
+            height: 50px !important;
+            border-radius: 14px !important;
+            font-weight: 800 !important;
+            font-size: 15px !important;
+            width: 100% !important;
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.4) !important;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .login .button.wp-submit:hover {
+            transform: translateY(-2px);
+        }
+        #nav, #backtoblog {
+            text-align: center;
+        }
+        #nav a, #backtoblog a {
+            color: rgba(255,255,255,0.8) !important;
+            font-weight: 600 !important;
+        }
+    </style>
+    <?php
+}
+
+/**
+ * 10. Replace Powered by WordPress Footer Text
+ */
+add_filter( 'login_footertext', 'ifs_pms_custom_login_footer' );
+
+function ifs_pms_custom_login_footer() {
+    $b_name = get_option( 'ifs_pms_business_name', '' );
+    return sprintf( 
+        esc_html__( '&copy; %1$d %2$s &bull; Enterprise Operating System', 'ozone-skypool' ), 
+        current_time( 'Y' ), 
+        esc_html( $b_name ? $b_name : 'Ozone Skypool' ) 
+    );
 }

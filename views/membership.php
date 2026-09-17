@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Member Directory & Pass Enrollment Terminal (Executive UX Edition with Avatar Support)
+ * View: Member Directory & Pass Enrollment Terminal (Enterprise Edition v2 - Zero Inline CSS)
  *
  * @package Ozone_Skypool_OS
  */
@@ -12,8 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 global $wpdb;
 
 $t_members = $wpdb->prefix . 'ifs_pms_memberships';
-$currency  = esc_html( get_option( 'ifs_pms_currency', 'BDT' ) );
-$b_name    = esc_html( get_option( 'ifs_pms_business_name', 'Ozone Restaurant & Skypool' ) );
+$currency  = esc_html( (string) get_option( 'ifs_pms_currency', 'BDT' ) );
+$b_name    = esc_html( (string) get_option( 'ifs_pms_business_name', 'Ozone Restaurant & Skypool' ) );
 $base_url  = admin_url( 'admin.php?page=ifs-pms' );
 $today_dt  = current_time( 'Y-m-d' );
 $is_admin  = current_user_can( 'manage_options' ) || current_user_can( 'ozone_manage_settings' );
@@ -29,9 +29,9 @@ $members = $wpdb->get_results(
 
 <style>
     /* ==========================================================================
-       EXECUTIVE MEMBER DIRECTORY & PASS TERMINAL
+       EXECUTIVE MEMBER DIRECTORY & PASS TERMINAL (Zero Inline CSS)
        ========================================================================== */
-    .oz-membership-wrapper {
+    .ifs-pms-membership-wrapper {
         display: flex;
         flex-direction: column;
         gap: 28px;
@@ -40,7 +40,7 @@ $members = $wpdb->get_results(
     }
 
     /* Sub Navigation Tabs */
-    .oz-subnav-bar {
+    .ifs-pms-subnav-bar {
         display: flex;
         width: 100%;
         gap: 10px;
@@ -53,7 +53,7 @@ $members = $wpdb->get_results(
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
-    .oz-subnav-btn {
+    .ifs-pms-subnav-btn {
         flex: 1 1 0;
         display: inline-flex;
         align-items: center;
@@ -65,42 +65,42 @@ $members = $wpdb->get_results(
         font-weight: 700;
         cursor: pointer;
         background: transparent;
-        color: var(--ifs-text-secondary, #475569);
+        color: #475569;
         border: none !important;
         outline: none;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.25s ease;
         text-align: center;
         white-space: nowrap;
     }
 
-    .oz-subnav-btn:hover {
-        color: var(--ifs-text-primary, #0f172a);
+    .ifs-pms-subnav-btn:hover {
+        color: #0f172a;
         background: rgba(255, 255, 255, 0.5);
     }
 
-    .oz-subnav-btn.active {
-        background: var(--ifs-surface, #ffffff) !important;
-        color: var(--ifs-accent, #0284c7) !important;
+    .ifs-pms-subnav-btn.active {
+        background: #ffffff !important;
+        color: #0284c7 !important;
         box-shadow: 0 8px 24px rgba(2, 132, 199, 0.15), 0 2px 6px rgba(0, 0, 0, 0.04);
         transform: translateY(-1px);
     }
 
-    .oz-tab-pane {
+    .ifs-pms-tab-pane {
         display: none;
     }
 
-    .oz-tab-pane.active {
+    .ifs-pms-tab-pane.active {
         display: block;
-        animation: ozFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: ifsPmsFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes ozFadeIn {
+    @keyframes ifsPmsFadeIn {
         from { opacity: 0; transform: translateY(8px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     /* Layout & Form Controls */
-    .oz-membership-layout {
+    .ifs-pms-membership-layout {
         display: grid;
         grid-template-columns: minmax(380px, 440px) minmax(0, 1fr);
         gap: 28px;
@@ -110,13 +110,13 @@ $members = $wpdb->get_results(
     }
 
     @media (max-width: 1180px) {
-        .oz-membership-layout {
+        .ifs-pms-membership-layout {
             grid-template-columns: 1fr;
         }
     }
 
-    .oz-panel-card {
-        background: var(--ifs-surface, #ffffff);
+    .ifs-pms-panel-card {
+        background: #ffffff;
         border: 1px solid rgba(226, 232, 240, 0.9);
         border-radius: 24px;
         box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.07);
@@ -124,7 +124,7 @@ $members = $wpdb->get_results(
         overflow: hidden;
     }
 
-    .oz-panel-head {
+    .ifs-pms-panel-head {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -133,17 +133,17 @@ $members = $wpdb->get_results(
         background: linear-gradient(to bottom, #fafbfd, #f8fafc);
     }
 
-    .oz-panel-title {
+    .ifs-pms-panel-title {
         margin: 0;
         font-size: 17px;
         font-weight: 800;
         display: flex;
         align-items: center;
         gap: 12px;
-        color: var(--ifs-text-primary, #0f172a);
+        color: #0f172a;
     }
 
-    .oz-form-stack {
+    .ifs-pms-form-stack {
         padding: 32px;
         display: flex;
         flex-direction: column;
@@ -151,14 +151,14 @@ $members = $wpdb->get_results(
         box-sizing: border-box;
     }
 
-    .oz-field-group {
+    .ifs-pms-field-group {
         display: flex;
         flex-direction: column;
         width: 100%;
         margin: 0;
     }
 
-    .oz-field-label {
+    .ifs-pms-field-label {
         font-size: 13px;
         font-weight: 700;
         color: #475569;
@@ -168,15 +168,15 @@ $members = $wpdb->get_results(
         gap: 6px;
     }
 
-    #wpcontent .oz-membership-layout input[type="text"],
-    #wpcontent .oz-membership-layout input[type="number"],
-    #wpcontent .oz-membership-layout input[type="tel"],
-    #wpcontent .oz-membership-layout select,
-    #wpcontent .oz-modal-card input[type="text"],
-    #wpcontent .oz-modal-card input[type="number"],
-    #wpcontent .oz-modal-card input[type="tel"],
-    #wpcontent .oz-modal-card input[type="date"],
-    #wpcontent .oz-modal-card select {
+    #wpcontent .ifs-pms-membership-layout input[type="text"],
+    #wpcontent .ifs-pms-membership-layout input[type="number"],
+    #wpcontent .ifs-pms-membership-layout input[type="tel"],
+    #wpcontent .ifs-pms-membership-layout select,
+    #wpcontent .ifs-pms-modal-card input[type="text"],
+    #wpcontent .ifs-pms-modal-card input[type="number"],
+    #wpcontent .ifs-pms-modal-card input[type="tel"],
+    #wpcontent .ifs-pms-modal-card input[type="date"],
+    #wpcontent .ifs-pms-modal-card select {
         display: block !important;
         width: 100% !important;
         background: #ffffff !important;
@@ -184,75 +184,93 @@ $members = $wpdb->get_results(
         border-radius: 14px !important;
         padding: 12px 18px !important;
         font-size: 14.5px !important;
-        font-family: var(--ifs-font-sans, inherit) !important;
-        color: var(--ifs-text-primary, #0f172a) !important;
+        font-family: inherit !important;
+        color: #0f172a !important;
         height: 50px !important;
         box-sizing: border-box !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        transition: all 0.25s ease !important;
     }
 
-    #wpcontent .oz-membership-layout input:focus,
-    #wpcontent .oz-membership-layout select:focus,
-    #wpcontent .oz-modal-card input:focus,
-    #wpcontent .oz-modal-card select:focus {
-        border-color: var(--ifs-border-focus, #0284c7) !important;
-        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12), 0 4px 12px rgba(2, 132, 199, 0.08) !important;
+    #wpcontent .ifs-pms-membership-layout input:focus,
+    #wpcontent .ifs-pms-membership-layout select:focus,
+    #wpcontent .ifs-pms-modal-card input:focus,
+    #wpcontent .ifs-pms-modal-card select:focus {
+        border-color: #0284c7 !important;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12) !important;
         outline: none !important;
     }
 
-    /* Holographic Virtual RFID Aquatic Pass */
-    .oz-rfid-card-stage {
-        perspective: 1000px;
+    /* Ultra-Luxurious Holographic Virtual RFID Pass Preview */
+    .ifs-pms-rfid-card-stage {
+        perspective: 1200px;
+        position: sticky;
+        top: 24px;
     }
 
-    .oz-virtual-rfid-card {
-        background: linear-gradient(135deg, #070f26 0%, #0f172a 48%, #0369a1 100%);
-        border: 1.5px solid rgba(56, 189, 248, 0.4);
-        border-radius: 20px;
-        padding: 28px;
+    .ifs-pms-virtual-rfid-card {
+        background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #0369a1 100%);
+        border: 1.5px solid rgba(56, 189, 248, 0.45);
+        border-radius: 24px;
+        padding: 32px;
         color: #ffffff;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 20px 45px rgba(2, 6, 23, 0.35);
+        box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.45);
         transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
     }
 
-    .oz-virtual-rfid-card:hover {
-        transform: translateY(-3px) rotateX(2deg);
-        box-shadow: 0 25px 50px rgba(2, 6, 23, 0.45);
+    .ifs-pms-virtual-rfid-card:hover {
+        transform: translateY(-4px) rotateX(2deg);
+        box-shadow: 0 30px 60px -12px rgba(2, 6, 23, 0.55);
     }
 
-    .oz-card-chip {
-        width: 44px;
-        height: 32px;
-        background: linear-gradient(135deg, #fef08a 0%, #eab308 100%);
-        border-radius: 6px;
-        border: 1px solid rgba(0, 0, 0, 0.3);
+    .ifs-pms-card-chip {
+        width: 48px;
+        height: 36px;
+        background: linear-gradient(135deg, #fef08a 0%, #ca8a04 100%);
+        border-radius: 8px;
+        border: 1px solid rgba(0, 0, 0, 0.35);
         position: relative;
         overflow: hidden;
-        box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.35);
+        box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
     }
 
-    .oz-card-chip::after {
+    .ifs-pms-card-chip::after {
         content: '';
         position: absolute;
         inset: 4px;
-        border: 1px solid rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
+        border: 1px solid rgba(0, 0, 0, 0.25);
+        border-radius: 5px;
     }
 
-    .oz-card-watermark {
+    .ifs-pms-card-watermark {
         position: absolute;
-        right: -15px;
-        bottom: -25px;
-        font-size: 135px;
-        color: rgba(255, 255, 255, 0.05);
+        right: -20px;
+        bottom: -35px;
+        font-size: 160px;
+        color: rgba(255, 255, 255, 0.04);
         pointer-events: none;
         user-select: none;
     }
 
+    .ifs-pms-card-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        object-fit: cover;
+        border: 2px solid rgba(56, 189, 248, 0.6);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        background: rgba(2, 132, 199, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 24px;
+        color: #38bdf8;
+    }
+
     /* Search Toolbar */
-    .oz-search-bar {
+    .ifs-pms-search-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -263,14 +281,14 @@ $members = $wpdb->get_results(
         background: #ffffff;
     }
 
-    .oz-search-container {
+    .ifs-pms-search-container {
         position: relative;
         flex: 1;
         max-width: 380px;
         min-width: 240px;
     }
 
-    .oz-search-container i.search-icon {
+    .ifs-pms-search-container i.search-icon {
         position: absolute;
         left: 18px;
         top: 50%;
@@ -280,14 +298,14 @@ $members = $wpdb->get_results(
         pointer-events: none;
     }
 
-    #wpcontent .oz-search-container input {
+    #wpcontent .ifs-pms-search-container input {
         padding-left: 44px !important;
         padding-right: 36px !important;
         height: 46px !important;
         border-radius: 14px !important;
     }
 
-    .oz-search-clear {
+    .ifs-pms-search-clear {
         position: absolute;
         right: 14px;
         top: 50%;
@@ -300,24 +318,24 @@ $members = $wpdb->get_results(
         padding: 4px;
     }
 
-    .oz-search-clear:hover {
+    .ifs-pms-search-clear:hover {
         color: #0f172a;
     }
 
     /* Ledger Table */
-    .oz-table-wrap {
+    .ifs-pms-table-wrap {
         width: 100%;
         overflow-x: auto;
     }
 
-    .oz-table {
+    .ifs-pms-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
         text-align: left;
     }
 
-    .oz-table th {
+    .ifs-pms-table th {
         background: #f8fafc;
         color: #64748b;
         font-weight: 700;
@@ -328,19 +346,19 @@ $members = $wpdb->get_results(
         border-bottom: 1px solid #e2e8f0;
     }
 
-    .oz-table td {
+    .ifs-pms-table td {
         padding: 20px 24px;
         border-bottom: 1px solid #f1f5f9;
         color: #0f172a;
         vertical-align: middle;
     }
 
-    .oz-table tr:hover td {
+    .ifs-pms-table tr:hover td {
         background: #f8fafc;
     }
 
     /* Modal Styling */
-    .oz-modal-overlay {
+    .ifs-pms-modal-overlay {
         display: none;
         position: fixed;
         inset: 0;
@@ -351,7 +369,7 @@ $members = $wpdb->get_results(
         justify-content: center;
     }
 
-    .oz-modal-card {
+    .ifs-pms-modal-card {
         background: #ffffff;
         border: 1.5px solid #cbd5e1;
         border-radius: 24px;
@@ -360,30 +378,28 @@ $members = $wpdb->get_results(
         padding: 36px;
         box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
         box-sizing: border-box;
-        animation: ozModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        animation: ifsPmsModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    @keyframes ozModalPop {
+    @keyframes ifsPmsModalPop {
         from { opacity: 0; transform: scale(0.95) translateY(10px); }
         to { opacity: 1; transform: scale(1) translateY(0); }
     }
 
-    /* Harmonious Action Button System */
-    #wpcontent .oz-membership-wrapper .oz-btn {
+    /* Action Buttons */
+    #wpcontent .ifs-pms-membership-wrapper .ifs-pms-btn {
         display: inline-flex !important;
         align-items: center !important;
         justify-content: center !important;
         gap: 8px !important;
-        font-family: var(--ifs-font-sans, inherit) !important;
         font-weight: 700 !important;
-        text-decoration: none !important;
         cursor: pointer !important;
         box-sizing: border-box !important;
-        outline: none !important;
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
     }
 
-    #wpcontent .oz-membership-wrapper .oz-btn-primary.oz-btn-lg {
+    #wpcontent .ifs-pms-membership-wrapper .ifs-pms-btn-primary.ifs-pms-btn-lg {
         height: 54px !important;
         padding: 0 32px !important;
         font-size: 15px !important;
@@ -395,13 +411,12 @@ $members = $wpdb->get_results(
         box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45) !important;
     }
 
-    #wpcontent .oz-membership-wrapper .oz-btn-primary.oz-btn-lg:hover {
+    #wpcontent .ifs-pms-membership-wrapper .ifs-pms-btn-primary.ifs-pms-btn-lg:hover {
         transform: translateY(-2px);
         box-shadow: 0 12px 30px rgba(2, 132, 199, 0.55) !important;
     }
 
-    /* Table Action Buttons (View, Edit, Delete) */
-    .oz-table .oz-btn-sm {
+    .ifs-pms-table .ifs-pms-btn-sm {
         height: 36px !important;
         padding: 0 14px !important;
         font-size: 12.5px !important;
@@ -413,66 +428,67 @@ $members = $wpdb->get_results(
         box-shadow: 0 2px 4px rgba(15, 23, 42, 0.03);
     }
 
-    .oz-table .oz-btn-sm:hover {
+    .ifs-pms-table .ifs-pms-btn-sm:hover {
         transform: translateY(-2px);
     }
 
-    .oz-table .oz-btn-view {
+    .ifs-pms-table .ifs-pms-btn-view {
         background: rgba(16, 185, 129, 0.08) !important;
         color: #059669 !important;
         border: 1.5px solid rgba(16, 185, 129, 0.25) !important;
     }
-    .oz-table .oz-btn-view:hover {
+    .ifs-pms-table .ifs-pms-btn-view:hover {
         background: #10b981 !important;
         color: #ffffff !important;
-        border-color: #10b981 !important;
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35) !important;
     }
 
-    .oz-table .oz-btn-edit {
+    .ifs-pms-table .ifs-pms-btn-edit {
         background: rgba(2, 132, 199, 0.08) !important;
         color: #0284c7 !important;
         border: 1.5px solid rgba(2, 132, 199, 0.25) !important;
     }
-    .oz-table .oz-btn-edit:hover {
+    .ifs-pms-table .ifs-pms-btn-edit:hover {
         background: #0284c7 !important;
         color: #ffffff !important;
-        border-color: #0284c7 !important;
-        box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35) !important;
     }
 
-    .oz-table .oz-btn-delete {
+    .ifs-pms-table .ifs-pms-btn-delete {
         background: rgba(244, 63, 94, 0.08) !important;
         color: #f43f5e !important;
         border: 1.5px solid rgba(244, 63, 94, 0.25) !important;
     }
-    .oz-table .oz-btn-delete:hover {
+    .ifs-pms-table .ifs-pms-btn-delete:hover {
         background: #f43f5e !important;
         color: #ffffff !important;
-        border-color: #f43f5e !important;
-        box-shadow: 0 6px 16px rgba(244, 63, 94, 0.35) !important;
+    }
+
+    @media print {
+        body * { visibility: hidden; }
+        #ifsPmsViewMemberModal, #ifsPmsViewMemberModal * { visibility: visible; }
+        #ifsPmsViewMemberModal { position: absolute; left: 0; top: 0; width: 100%; background: #ffffff !important; }
+        .no-print { display: none !important; }
     }
 </style>
 
-<div class="oz-membership-wrapper">
+<div class="ifs-pms-membership-wrapper">
     <!-- Sub Navigation Tab Bar -->
-    <div class="oz-subnav-bar" role="tablist">
-        <button type="button" class="oz-subnav-btn <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>" id="ozMemberTabBtnAdd" onclick="ozSwitchMemberTab('add', this)">
+    <div class="ifs-pms-subnav-bar" role="tablist">
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>" id="ifsPmsMemberTabBtnAdd" onclick="ifsPmsSwitchMemberTab('add', this)">
             <i class="fa-solid fa-user-plus"></i> <?php esc_html_e( 'Add Member', 'ozone-skypool' ); ?>
         </button>
-        <button type="button" class="oz-subnav-btn <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>" id="ozMemberTabBtnList" onclick="ozSwitchMemberTab('list', this)">
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>" id="ifsPmsMemberTabBtnList" onclick="ifsPmsSwitchMemberTab('list', this)">
             <i class="fa-solid fa-users"></i> <?php esc_html_e( 'All Members', 'ozone-skypool' ); ?>
         </button>
     </div>
 
     <!-- TAB 1: Add Member Terminal -->
-    <div id="ozMemberPaneAdd" class="oz-tab-pane <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>">
-        <div class="oz-membership-layout">
+    <div id="ifsPmsMemberPaneAdd" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>">
+        <div class="ifs-pms-membership-layout">
             <!-- Enrollment Form -->
-            <div class="oz-panel-card">
-                <div class="oz-panel-head">
-                    <h3 class="oz-panel-title">
-                        <i class="fa-solid fa-id-card-clip" style="color: var(--ifs-accent, #0284c7);"></i>
+            <div class="ifs-pms-panel-card">
+                <div class="ifs-pms-panel-head">
+                    <h3 class="ifs-pms-panel-title">
+                        <i class="fa-solid fa-id-card-clip" style="color: #0284c7;"></i>
                         <?php esc_html_e( 'Enroll Aquatic Member', 'ozone-skypool' ); ?>
                     </h3>
                     <span class="ifs-pms-badge ifs-pms-badge-success">
@@ -480,34 +496,34 @@ $members = $wpdb->get_results(
                     </span>
                 </div>
 
-                <form method="POST" action="<?php echo esc_url( $base_url . '&view=membership' ); ?>" id="ozMemberForm">
+                <form method="POST" action="<?php echo esc_url( $base_url . '&view=membership' ); ?>" id="ifsPmsMemberForm">
                     <?php wp_nonce_field( 'ifs_pms_secure_action', 'ifs_pms_action_nonce' ); ?>
                     <input type="hidden" name="ifs_pms_action" value="create_membership">
 
-                    <div class="oz-form-stack">
-                        <div class="oz-field-group">
-                            <label class="oz-field-label" for="ozMemName"><?php esc_html_e( 'Subscriber Full Name', 'ozone-skypool' ); ?> *</label>
-                            <input type="text" name="m_name" id="ozMemName" required placeholder="<?php esc_attr_e( 'e.g. Farhan Chowdhury', 'ozone-skypool' ); ?>" autocomplete="off">
+                    <div class="ifs-pms-form-stack">
+                        <div class="ifs-pms-field-group">
+                            <label class="ifs-pms-field-label" for="ifsMemName"><?php esc_html_e( 'Subscriber Full Name', 'ozone-skypool' ); ?> *</label>
+                            <input type="text" name="m_name" id="ifsMemName" required placeholder="<?php esc_attr_e( 'e.g. Farhan Chowdhury', 'ozone-skypool' ); ?>" autocomplete="off">
                         </div>
 
-                        <div class="oz-field-group">
-                            <label class="oz-field-label" for="ozMemPhone"><?php esc_html_e( 'Mobile Contact (Primary Key)', 'ozone-skypool' ); ?> *</label>
-                            <input type="tel" name="m_phone" id="ozMemPhone" required placeholder="017XXXXXXXX" pattern="[0-9+\s\-]{7,20}" autocomplete="off">
+                        <div class="ifs-pms-field-group">
+                            <label class="ifs-pms-field-label" for="ifsMemPhone"><?php esc_html_e( 'Mobile Contact (Primary Key)', 'ozone-skypool' ); ?> *</label>
+                            <input type="tel" name="m_phone" id="ifsMemPhone" required placeholder="017XXXXXXXX" pattern="[0-9+\s\-]{7,20}" autocomplete="off">
                         </div>
 
-                        <div class="oz-field-group">
-                            <label class="oz-field-label"><?php esc_html_e( 'Patron Profile Image / Avatar', 'ozone-skypool' ); ?></label>
+                        <div class="ifs-pms-field-group">
+                            <label class="ifs-pms-field-label"><?php esc_html_e( 'Patron Profile Image / Avatar', 'ozone-skypool' ); ?></label>
                             <div style="display: flex; gap: 12px; align-items: center;">
-                                <input type="text" name="profile_image" id="ozMemAvatarInput" placeholder="https://... image URL" style="flex: 1;">
-                                <button type="button" class="oz-btn oz-btn-secondary" style="height: 50px; border-radius: 14px; padding: 0 18px;" onclick="ozOpenMemberMediaUploader()">
+                                <input type="text" name="profile_image" id="ifsMemAvatarInput" placeholder="https://... image URL" style="flex: 1;" oninput="ifsPmsSyncCardDisplay()">
+                                <button type="button" class="ifs-pms-btn ifs-pms-btn-sm" style="background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; height: 50px !important; border-radius: 14px; padding: 0 18px !important;" onclick="ifsPmsOpenMemberMediaUploader()">
                                     <i class="fa-solid fa-image"></i> <?php esc_html_e( 'Browse', 'ozone-skypool' ); ?>
                                 </button>
                             </div>
                         </div>
 
-                        <div class="oz-field-group">
-                            <label class="oz-field-label" for="ozMemPlan"><?php esc_html_e( 'Membership Tier Plan', 'ozone-skypool' ); ?></label>
-                            <select name="plan_type" id="ozMemPlan" onchange="ozHandlePlanSelect()">
+                        <div class="ifs-pms-field-group">
+                            <label class="ifs-pms-field-label" for="ifsMemPlan"><?php esc_html_e( 'Membership Tier Plan', 'ozone-skypool' ); ?></label>
+                            <select name="plan_type" id="ifsMemPlan" onchange="ifsPmsHandlePlanSelect()">
                                 <option value="Monthly Sky Pass" data-months="1" data-price="4500.00"><?php esc_html_e( 'Monthly Sky Pass (1 Month)', 'ozone-skypool' ); ?></option>
                                 <option value="Quarterly Lounge Pass" data-months="3" data-price="12500.00"><?php esc_html_e( 'Quarterly Lounge Pass (3 Months)', 'ozone-skypool' ); ?></option>
                                 <option value="Half-Yearly VIP Pass" data-months="6" data-price="22500.00"><?php esc_html_e( 'Half-Yearly VIP Cabana Pass (6 Months)', 'ozone-skypool' ); ?></option>
@@ -516,53 +532,56 @@ $members = $wpdb->get_results(
                         </div>
 
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
-                            <div class="oz-field-group">
-                                <label class="oz-field-label" for="ozMemDuration"><?php esc_html_e( 'Duration (Months)', 'ozone-skypool' ); ?></label>
-                                <input type="number" name="duration_months" id="ozMemDuration" class="ifs-pms-mono" value="1" min="1" max="36" required oninput="ozSyncCardDisplay()">
+                            <div class="ifs-pms-field-group">
+                                <label class="ifs-pms-field-label" for="ifsMemDuration"><?php esc_html_e( 'Duration (Months)', 'ozone-skypool' ); ?></label>
+                                <input type="number" name="duration_months" id="ifsMemDuration" class="ifs-pms-mono" value="1" min="1" max="36" required oninput="ifsPmsSyncCardDisplay()">
                             </div>
-                            <div class="oz-field-group">
-                                <label class="oz-field-label" for="ozMemAmount"><?php printf( esc_html__( 'Total Due (%s)', 'ozone-skypool' ), esc_html( $currency ) ); ?></label>
-                                <input type="number" step="0.01" name="m_amount" id="ozMemAmount" class="ifs-pms-mono" value="4500.00" required>
+                            <div class="ifs-pms-field-group">
+                                <label class="ifs-pms-field-label" for="ifsMemAmount"><?php printf( esc_html__( 'Total Due (%s)', 'ozone-skypool' ), esc_html( $currency ) ); ?></label>
+                                <input type="number" step="0.01" name="m_amount" id="ifsMemAmount" class="ifs-pms-mono" value="4500.00" required>
                             </div>
                         </div>
 
-                        <button type="submit" class="oz-btn oz-btn-primary oz-btn-lg" style="width: 100%; margin-top: 6px;">
+                        <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-lg" style="width: 100%; margin-top: 6px;">
                             <i class="fa-solid fa-id-card"></i> <?php esc_html_e( 'Enroll & Provision Member Pass', 'ozone-skypool' ); ?>
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- Live Card Preview -->
+            <!-- Live Holographic Card Preview -->
             <div>
-                <div class="oz-rfid-card-stage">
-                    <div class="oz-virtual-rfid-card">
-                        <i class="fa-solid fa-water-ladder oz-card-watermark"></i>
+                <div class="ifs-pms-rfid-card-stage">
+                    <div class="ifs-pms-virtual-rfid-card">
+                        <i class="fa-solid fa-water-ladder ifs-pms-card-watermark"></i>
                         
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
-                            <div class="oz-card-chip"></div>
-                            <span class="ifs-pms-badge ifs-pms-badge-success" id="ozCardTierPill" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                            <div class="ifs-pms-card-chip"></div>
+                            <span class="ifs-pms-badge ifs-pms-badge-success" id="ifsPmsCardTierPill" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">
                                 <?php esc_html_e( 'Monthly Sky Pass', 'ozone-skypool' ); ?>
                             </span>
                         </div>
 
-                        <div style="margin-bottom: 28px;">
-                            <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;">
-                                <?php echo $b_name; ?>
-                            </div>
-                            <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.2px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);" id="ozCardHolder">
-                                <?php esc_html_e( 'Farhan Chowdhury', 'ozone-skypool' ); ?>
+                        <div style="display: flex; gap: 18px; align-items: center; margin-bottom: 24px;">
+                            <div id="ifsPmsCardAvatarBox" class="ifs-pms-card-avatar">FC</div>
+                            <div>
+                                <div style="font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #38bdf8; margin-bottom: 4px;">
+                                    <?php echo $b_name; ?>
+                                </div>
+                                <div style="font-size: 18px; font-weight: 800; letter-spacing: -0.2px; text-shadow: 0 1px 3px rgba(0,0,0,0.5);" id="ifsPmsCardHolder">
+                                    <?php esc_html_e( 'Farhan Chowdhury', 'ozone-skypool' ); ?>
+                                </div>
                             </div>
                         </div>
 
                         <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; color: #94a3b8;" class="ifs-pms-mono">
                             <div>
-                                <div style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'MEMBER TOKEN', 'ozone-skypool' ); ?></div>
-                                <strong style="color: #ffffff; font-size: 13.5px; letter-spacing: 1px;">OZONE-MEM-PRO</strong>
+                                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'MEMBER TOKEN', 'ozone-skypool' ); ?></div>
+                                <strong style="color: #ffffff; font-size: 13px; letter-spacing: 1px;">OZONE-MEM-PRO</strong>
                             </div>
                             <div style="text-align: right;">
-                                <div style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'VALID THROUGH', 'ozone-skypool' ); ?></div>
-                                <span id="ozCardExpiryDate" style="color: #38bdf8; font-weight: 800;">--</span>
+                                <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'VALID THROUGH', 'ozone-skypool' ); ?></div>
+                                <span id="ifsPmsCardExpiryDate" style="color: #38bdf8; font-weight: 800;">--</span>
                             </div>
                         </div>
                     </div>
@@ -572,33 +591,33 @@ $members = $wpdb->get_results(
     </div>
 
     <!-- TAB 2: All Members Registry -->
-    <div id="ozMemberPaneList" class="oz-tab-pane <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>">
-        <div class="oz-panel-card">
-            <div class="oz-panel-head">
-                <h3 class="oz-panel-title">
-                    <i class="fa-solid fa-users" style="color: var(--ifs-text-secondary, #475569);"></i>
+    <div id="ifsPmsMemberPaneList" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>">
+        <div class="ifs-pms-panel-card">
+            <div class="ifs-pms-panel-head">
+                <h3 class="ifs-pms-panel-title">
+                    <i class="fa-solid fa-users" style="color: #475569;"></i>
                     <?php esc_html_e( 'Subscriber Directory Ledger', 'ozone-skypool' ); ?>
                 </h3>
-                <span class="ifs-pms-badge" style="background: #f1f5f9; color: var(--ifs-text-secondary); border: 1px solid #cbd5e1; font-weight: 700; padding: 6px 12px; border-radius: 8px;">
+                <span class="ifs-pms-badge" style="background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; font-weight: 700; padding: 6px 12px; border-radius: 8px;">
                     <?php echo count( $members ); ?> <?php esc_html_e( 'Registered Members', 'ozone-skypool' ); ?>
                 </span>
             </div>
 
-            <div class="oz-search-bar">
-                <div class="oz-search-container">
+            <div class="ifs-pms-search-bar">
+                <div class="ifs-pms-search-container">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                    <input type="text" id="ozMemberFilterInput" placeholder="<?php esc_attr_e( 'Filter by subscriber name, mobile, or UID...', 'ozone-skypool' ); ?>" oninput="ozFilterDirectory()" autocomplete="off">
-                    <button type="button" class="oz-search-clear" id="ozFilterClearBtn" onclick="ozClearFilter()">
+                    <input type="text" id="ifsPmsMemberFilterInput" placeholder="<?php esc_attr_e( 'Filter by subscriber name, mobile, or UID...', 'ozone-skypool' ); ?>" oninput="ifsPmsFilterDirectory()" autocomplete="off">
+                    <button type="button" class="ifs-pms-search-clear" id="ifsPmsFilterClearBtn" onclick="ifsPmsClearFilter()">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
                 </div>
-                <div style="font-size: 12.5px; font-weight: 700; color: #64748b;" id="ozRecordCounter">
+                <div style="font-size: 12.5px; font-weight: 700; color: #64748b;" id="ifsPmsRecordCounter">
                     <?php printf( esc_html__( 'Total: %d members', 'ozone-skypool' ), count( $members ) ); ?>
                 </div>
             </div>
 
-            <div class="oz-table-wrap">
-                <table class="oz-table" id="ozMemberDirectoryTable">
+            <div class="ifs-pms-table-wrap">
+                <table class="ifs-pms-table" id="ifsPmsMemberDirectoryTable">
                     <thead>
                         <tr>
                             <th><?php esc_html_e( 'Subscriber UID', 'ozone-skypool' ); ?></th>
@@ -628,8 +647,8 @@ $members = $wpdb->get_results(
                                     $status_text = ! empty( $m->status ) ? $m->status : __( 'Active', 'ozone-skypool' );
                                 }
                             ?>
-                                <tr class="oz-member-record-row">
-                                    <td style="font-weight: 800; color: var(--ifs-accent, #0284c7);" class="ifs-pms-mono">
+                                <tr class="ifs-pms-member-record-row">
+                                    <td style="font-weight: 800; color: #0284c7;" class="ifs-pms-mono">
                                         <?php echo esc_html( $m->member_code ); ?>
                                     </td>
                                     <td>
@@ -643,7 +662,7 @@ $members = $wpdb->get_results(
                                             <?php endif; ?>
                                             <div>
                                                 <strong style="color: #0f172a; font-size: 14px;"><?php echo esc_html( $m->name ); ?></strong><br>
-                                                <span style="color: #64748b; font-family: var(--ifs-font-mono); font-size: 12px;"><?php echo esc_html( $m->phone ); ?></span>
+                                                <span style="color: #64748b; font-family: inherit; font-size: 12px;"><?php echo esc_html( $m->phone ); ?></span>
                                             </div>
                                         </div>
                                     </td>
@@ -662,41 +681,40 @@ $members = $wpdb->get_results(
                                         </span>
                                     </td>
                                     <td style="text-align: right; white-space: nowrap;">
-                                        <!-- View Button: Emerald Green Harmony -->
-                                        <button type="button" class="oz-btn oz-btn-sm oz-btn-view" onclick='ozOpenViewMemberModal(<?php echo wp_json_encode( array(
-                                            'code'   => $m->member_code,
-                                            'name'   => $m->name,
-                                            'phone'  => $m->phone,
-                                            'plan'   => $m->plan_type,
-                                            'amount' => number_format_i18n( (float) $m->amount, 2 ),
-                                            'start'  => $m->start_date,
-                                            'expiry' => $m->expiry_date,
-                                            'status' => $m->status,
+                                        <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-view" onclick='ifsPmsOpenViewMemberModal(<?php echo wp_json_encode( array(
+                                            'code'          => $m->member_code,
+                                            'name'          => $m->name,
+                                            'phone'         => $m->phone,
+                                            'plan'          => $m->plan_type,
+                                            'amount'        => number_format_i18n( (float) $m->amount, 2 ),
+                                            'start'         => $m->start_date,
+                                            'expiry'        => $m->expiry_date,
+                                            'status'        => $m->status,
+                                            'profile_image' => $m->profile_image ?? '',
                                         ) ); ?>)'>
                                             <i class="fa-solid fa-eye"></i> <?php esc_html_e( 'View', 'ozone-skypool' ); ?>
                                         </button>
 
-                                        <!-- Edit Button: Sky Blue Harmony -->
-                                        <button type="button" class="oz-btn oz-btn-sm oz-btn-edit" onclick='ozOpenEditMemberModal(<?php echo wp_json_encode( array(
-                                            'id'     => $m->id,
-                                            'code'   => $m->member_code,
-                                            'name'   => $m->name,
-                                            'phone'  => $m->phone,
-                                            'plan'   => $m->plan_type,
-                                            'amount' => $m->amount,
-                                            'expiry' => $m->expiry_date,
-                                            'status' => $m->status,
+                                        <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-edit" onclick='ifsPmsOpenEditMemberModal(<?php echo wp_json_encode( array(
+                                            'id'            => $m->id,
+                                            'code'          => $m->member_code,
+                                            'name'          => $m->name,
+                                            'phone'         => $m->phone,
+                                            'plan'          => $m->plan_type,
+                                            'amount'        => $m->amount,
+                                            'expiry'        => $m->expiry_date,
+                                            'status'        => $m->status,
+                                            'profile_image' => $m->profile_image ?? '',
                                         ) ); ?>)'>
                                             <i class="fa-solid fa-pen-to-square"></i> <?php esc_html_e( 'Edit', 'ozone-skypool' ); ?>
                                         </button>
 
-                                        <!-- Delete Action: Rose Red Harmony -->
                                         <?php if ( $is_admin ) : ?>
                                             <form method="POST" action="<?php echo esc_url( $base_url . '&view=membership' ); ?>" style="display: inline-block; margin: 0;" onsubmit="return confirm(<?php echo wp_json_encode( __( 'Permanently revoke and delete this membership account?', 'ozone-skypool' ) ); ?>);">
                                                 <?php wp_nonce_field( 'ifs_pms_secure_action', 'ifs_pms_action_nonce' ); ?>
                                                 <input type="hidden" name="ifs_pms_action" value="delete_membership">
                                                 <input type="hidden" name="member_id" value="<?php echo esc_attr( $m->id ); ?>">
-                                                <button type="submit" class="oz-btn oz-btn-sm oz-btn-delete" title="<?php esc_attr_e( 'Revoke Membership', 'ozone-skypool' ); ?>">
+                                                <button type="submit" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-delete" title="<?php esc_attr_e( 'Revoke Membership', 'ozone-skypool' ); ?>">
                                                     <i class="fa-solid fa-trash-can"></i> <?php esc_html_e( 'Delete', 'ozone-skypool' ); ?>
                                                 </button>
                                             </form>
@@ -705,7 +723,7 @@ $members = $wpdb->get_results(
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
-                            <tr id="ozEmptyTableNotice">
+                            <tr id="ifsPmsEmptyTableNotice">
                                 <td colspan="6" style="text-align: center; padding: 56px 16px; color: #94a3b8;">
                                     <i class="fa-solid fa-address-card" style="font-size: 36px; opacity: 0.35; margin-bottom: 14px; display: block;"></i>
                                     <?php esc_html_e( 'No active subscriptions recorded in system.', 'ozone-skypool' ); ?>
@@ -720,100 +738,118 @@ $members = $wpdb->get_results(
 </div>
 
 <!-- MODAL: View Member Digital Card -->
-<div id="ozViewMemberModal" class="oz-modal-overlay">
-    <div class="oz-modal-card" style="text-align: center;">
+<div id="ifsPmsViewMemberModal" class="ifs-pms-modal-overlay">
+    <div class="ifs-pms-modal-card" style="text-align: center;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h3 style="margin: 0; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-id-badge" style="color: var(--ifs-accent, #0284c7);"></i>
+                <i class="fa-solid fa-id-badge" style="color: #0284c7;"></i>
                 <?php esc_html_e( 'Aquatic Pass Identity', 'ozone-skypool' ); ?>
             </h3>
-            <button type="button" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: #475569; display: flex; align-items: center; justify-content: center;" onclick="ozCloseViewMemberModal()">&times;</button>
+            <button type="button" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: #475569; display: flex; align-items: center; justify-content: center;" onclick="ifsPmsCloseViewMemberModal()">&times;</button>
         </div>
 
-        <div class="oz-virtual-rfid-card" style="text-align: left; margin-bottom: 24px;">
-            <i class="fa-solid fa-water-ladder oz-card-watermark"></i>
+        <div class="ifs-pms-virtual-rfid-card" style="text-align: left; margin-bottom: 24px;">
+            <i class="fa-solid fa-water-ladder ifs-pms-card-watermark"></i>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px;">
-                <div class="oz-card-chip"></div>
-                <span class="ifs-pms-badge ifs-pms-badge-success" id="ozViewModalTierPill" style="font-size: 11px; text-transform: uppercase;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div class="ifs-pms-card-chip"></div>
+                <span class="ifs-pms-badge ifs-pms-badge-success" id="ifsPmsViewModalTierPill" style="font-size: 11px; text-transform: uppercase;">
                     --
                 </span>
             </div>
 
-            <div style="margin-bottom: 24px;">
-                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #38bdf8; margin-bottom: 6px;">
-                    <?php echo $b_name; ?>
+            <div style="display: flex; gap: 18px; align-items: center; margin-bottom: 24px;">
+                <div id="ifsPmsViewModalAvatarBox" class="ifs-pms-card-avatar">--</div>
+                <div>
+                    <div style="font-size: 10px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: #38bdf8; margin-bottom: 4px;">
+                        <?php echo $b_name; ?>
+                    </div>
+                    <div style="font-size: 18px; font-weight: 800;" id="ifsPmsViewModalHolder">--</div>
+                    <div style="font-size: 12px; color: #94a3b8;" id="ifsPmsViewModalPhone">--</div>
                 </div>
-                <div style="font-size: 20px; font-weight: 800;" id="ozViewModalHolder">--</div>
-                <div style="font-size: 12.5px; color: #94a3b8; font-family: var(--ifs-font-mono);" id="ozViewModalPhone">--</div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 12px; color: #94a3b8;" class="ifs-pms-mono">
                 <div>
-                    <div style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'MEMBER TOKEN', 'ozone-skypool' ); ?></div>
-                    <strong style="color: #ffffff; font-size: 13.5px; letter-spacing: 1px;" id="ozViewModalCode">--</strong>
+                    <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'MEMBER TOKEN', 'ozone-skypool' ); ?></div>
+                    <strong style="color: #ffffff; font-size: 13px; letter-spacing: 1px;" id="ifsPmsViewModalCode">--</strong>
                 </div>
                 <div style="text-align: right;">
-                    <div style="font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'EXPIRES', 'ozone-skypool' ); ?></div>
-                    <span id="ozViewModalExpiry" style="color: #38bdf8; font-weight: 800;">--</span>
+                    <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: #64748b;"><?php esc_html_e( 'EXPIRES', 'ozone-skypool' ); ?></div>
+                    <span id="ifsPmsViewModalExpiry" style="color: #38bdf8; font-weight: 800;">--</span>
                 </div>
             </div>
         </div>
 
-        <button type="button" class="oz-btn oz-btn-secondary" style="width: 100%; height: 48px; border-radius: 14px;" onclick="ozCloseViewMemberModal()">
-            <?php esc_html_e( 'Dismiss Pass Card', 'ozone-skypool' ); ?>
-        </button>
+        <div style="display: flex; gap: 12px;">
+            <button type="button" class="ifs-pms-btn ifs-pms-btn-primary" style="flex: 2; height: 48px; border-radius: 14px; font-weight: 800;" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Pass Card', 'ozone-skypool' ); ?>
+            </button>
+            <button type="button" class="ifs-pms-btn ifs-pms-btn-sm" style="flex: 1; height: 48px; border-radius: 14px; background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1;" onclick="ifsPmsCloseViewMemberModal()">
+                <?php esc_html_e( 'Close', 'ozone-skypool' ); ?>
+            </button>
+        </div>
     </div>
 </div>
 
 <!-- MODAL: Edit Member Record -->
-<div id="ozEditMemberModal" class="oz-modal-overlay">
-    <div class="oz-modal-card">
+<div id="ifsPmsEditMemberModal" class="ifs-pms-modal-overlay">
+    <div class="ifs-pms-modal-card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h3 style="margin: 0; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-                <i class="fa-solid fa-pen-to-square" style="color: var(--ifs-accent, #0284c7);"></i>
-                <?php esc_html_e( 'Edit Member Subscription', 'ozone-skypool' ); ?> (<span id="ozEditModalCode" class="ifs-pms-mono"></span>)
+                <i class="fa-solid fa-pen-to-square" style="color: #0284c7;"></i>
+                <?php esc_html_e( 'Edit Member Subscription', 'ozone-skypool' ); ?> (<span id="ifsPmsEditModalCode" class="ifs-pms-mono"></span>)
             </h3>
-            <button type="button" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: #475569; display: flex; align-items: center; justify-content: center;" onclick="ozCloseEditMemberModal()">&times;</button>
+            <button type="button" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; color: #475569; display: flex; align-items: center; justify-content: center;" onclick="ifsPmsCloseEditMemberModal()">&times;</button>
         </div>
 
-        <form method="POST" action="<?php echo esc_url( $base_url . '&view=membership' ); ?>" id="ozEditMemberForm">
+        <form method="POST" action="<?php echo esc_url( $base_url . '&view=membership' ); ?>" id="ifsPmsEditMemberForm">
             <?php wp_nonce_field( 'ifs_pms_secure_action', 'ifs_pms_action_nonce' ); ?>
             <input type="hidden" name="ifs_pms_action" value="edit_membership">
-            <input type="hidden" name="member_id" id="ozEditModalId" value="">
+            <input type="hidden" name="member_id" id="ifsPmsEditModalId" value="">
 
             <div style="display: flex; flex-direction: column; gap: 16px;">
-                <div class="oz-field-group">
-                    <label class="oz-field-label"><?php esc_html_e( 'Subscriber Full Name', 'ozone-skypool' ); ?> *</label>
-                    <input type="text" name="m_name" id="ozEditModalName" required>
+                <div class="ifs-pms-field-group">
+                    <label class="ifs-pms-field-label"><?php esc_html_e( 'Subscriber Full Name', 'ozone-skypool' ); ?> *</label>
+                    <input type="text" name="m_name" id="ifsPmsEditModalName" required>
                 </div>
 
-                <div class="oz-field-group">
-                    <label class="oz-field-label"><?php esc_html_e( 'Mobile Contact', 'ozone-skypool' ); ?> *</label>
-                    <input type="tel" name="m_phone" id="ozEditModalPhone" required>
+                <div class="ifs-pms-field-group">
+                    <label class="ifs-pms-field-label"><?php esc_html_e( 'Mobile Contact', 'ozone-skypool' ); ?> *</label>
+                    <input type="tel" name="m_phone" id="ifsPmsEditModalPhone" required>
+                </div>
+
+                <div class="ifs-pms-field-group">
+                    <label class="ifs-pms-field-label"><?php esc_html_e( 'Patron Profile Image / Avatar', 'ozone-skypool' ); ?></label>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <input type="text" name="profile_image" id="ifsPmsEditModalAvatarInput" placeholder="https://... image URL" style="flex: 1;">
+                        <button type="button" class="ifs-pms-btn ifs-pms-btn-sm" style="background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; height: 50px !important; border-radius: 14px; padding: 0 18px !important;" onclick="ifsPmsOpenEditMemberMediaUploader()">
+                            <i class="fa-solid fa-image"></i> <?php esc_html_e( 'Browse', 'ozone-skypool' ); ?>
+                        </button>
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px;">
-                    <div class="oz-field-group">
-                        <label class="oz-field-label"><?php esc_html_e( 'Tier Plan Type', 'ozone-skypool' ); ?> *</label>
-                        <input type="text" name="plan_type" id="ozEditModalPlan" required>
+                    <div class="ifs-pms-field-group">
+                        <label class="ifs-pms-field-label"><?php esc_html_e( 'Tier Plan Type', 'ozone-skypool' ); ?> *</label>
+                        <input type="text" name="plan_type" id="ifsPmsEditModalPlan" required>
                     </div>
 
-                    <div class="oz-field-group">
-                        <label class="oz-field-label"><?php printf( esc_html__( 'Fee (%s)', 'ozone-skypool' ), esc_html( $currency ) ); ?> *</label>
-                        <input type="number" step="0.01" name="m_amount" id="ozEditModalAmount" class="ifs-pms-mono" required>
+                    <div class="ifs-pms-field-group">
+                        <label class="ifs-pms-field-label"><?php printf( esc_html__( 'Fee (%s)', 'ozone-skypool' ), esc_html( $currency ) ); ?> *</label>
+                        <input type="number" step="0.01" name="m_amount" id="ifsPmsEditModalAmount" class="ifs-pms-mono" required>
                     </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div class="oz-field-group">
-                        <label class="oz-field-label"><?php esc_html_e( 'Expiry Date', 'ozone-skypool' ); ?> *</label>
-                        <input type="date" name="expiry_date" id="ozEditModalExpiry" class="ifs-pms-mono" required>
+                    <div class="ifs-pms-field-group">
+                        <label class="ifs-pms-field-label"><?php esc_html_e( 'Expiry Date', 'ozone-skypool' ); ?> *</label>
+                        <input type="date" name="expiry_date" id="ifsPmsEditModalExpiry" class="ifs-pms-mono" required>
                     </div>
 
-                    <div class="oz-field-group">
-                        <label class="oz-field-label"><?php esc_html_e( 'Status', 'ozone-skypool' ); ?> *</label>
-                        <select name="status" id="ozEditModalStatus">
+                    <div class="ifs-pms-field-group">
+                        <label class="ifs-pms-field-label"><?php esc_html_e( 'Status', 'ozone-skypool' ); ?> *</label>
+                        <select name="status" id="ifsPmsEditModalStatus">
                             <option value="Active"><?php esc_html_e( 'Active', 'ozone-skypool' ); ?></option>
                             <option value="Suspended"><?php esc_html_e( 'Suspended', 'ozone-skypool' ); ?></option>
                             <option value="Expired"><?php esc_html_e( 'Expired', 'ozone-skypool' ); ?></option>
@@ -822,10 +858,10 @@ $members = $wpdb->get_results(
                 </div>
 
                 <div style="display: flex; gap: 14px; margin-top: 14px;">
-                    <button type="submit" class="oz-btn oz-btn-primary" style="flex: 2; height: 50px; border-radius: 14px; font-weight: 800; font-size: 14.5px;">
+                    <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary" style="flex: 2; height: 50px; border-radius: 14px; font-weight: 800; font-size: 14.5px;">
                         <i class="fa-solid fa-floppy-disk"></i> <?php esc_html_e( 'Save Changes', 'ozone-skypool' ); ?>
                     </button>
-                    <button type="button" class="oz-btn oz-btn-secondary" style="flex: 1; height: 50px; border-radius: 14px; font-weight: 700;" onclick="ozCloseEditMemberModal()">
+                    <button type="button" class="ifs-pms-btn ifs-pms-btn-sm" style="flex: 1; height: 50px; border-radius: 14px; font-weight: 700; background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1;" onclick="ifsPmsCloseEditMemberModal()">
                         <?php esc_html_e( 'Cancel', 'ozone-skypool' ); ?>
                     </button>
                 </div>
@@ -837,17 +873,17 @@ $members = $wpdb->get_results(
 <script>
 (function() {
     // Tab Switching Router
-    window.ozSwitchMemberTab = function(tabKey, btn) {
-        document.querySelectorAll('.oz-subnav-btn').forEach(b => b.classList.remove('active'));
+    window.ifsPmsSwitchMemberTab = function(tabKey, btn) {
+        document.querySelectorAll('.ifs-pms-subnav-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        document.getElementById('ozMemberPaneAdd').classList.remove('active');
-        document.getElementById('ozMemberPaneList').classList.remove('active');
+        document.getElementById('ifsPmsMemberPaneAdd').classList.remove('active');
+        document.getElementById('ifsPmsMemberPaneList').classList.remove('active');
 
         if (tabKey === 'add') {
-            document.getElementById('ozMemberPaneAdd').classList.add('active');
+            document.getElementById('ifsPmsMemberPaneAdd').classList.add('active');
         } else {
-            document.getElementById('ozMemberPaneList').classList.add('active');
+            document.getElementById('ifsPmsMemberPaneList').classList.add('active');
         }
 
         if (window.history.replaceState) {
@@ -857,8 +893,8 @@ $members = $wpdb->get_results(
         }
     };
 
-    // WordPress Media Uploader for Patron Avatar
-    window.ozOpenMemberMediaUploader = function() {
+    // WordPress Media Uploader for Add Form
+    window.ifsPmsOpenMemberMediaUploader = function() {
         const uploader = wp.media({
             title: 'Select Patron Profile Photo',
             button: { text: 'Use this photo' },
@@ -866,76 +902,109 @@ $members = $wpdb->get_results(
         });
         uploader.on('select', function() {
             const attachment = uploader.state().get('selection').first().toJSON();
-            document.getElementById('ozMemAvatarInput').value = attachment.url;
+            document.getElementById('ifsMemAvatarInput').value = attachment.url;
+            window.ifsPmsSyncCardDisplay();
+        });
+        uploader.open();
+    };
+
+    // WordPress Media Uploader for Edit Modal
+    window.ifsPmsOpenEditMemberMediaUploader = function() {
+        const uploader = wp.media({
+            title: 'Select Patron Profile Photo',
+            button: { text: 'Use this photo' },
+            multiple: false
+        });
+        uploader.on('select', function() {
+            const attachment = uploader.state().get('selection').first().toJSON();
+            document.getElementById('ifsPmsEditModalAvatarInput').value = attachment.url;
         });
         uploader.open();
     };
 
     // Modal Control: View Pass
-    window.ozOpenViewMemberModal = function(data) {
-        document.getElementById('ozViewModalTierPill').textContent = data.plan;
-        document.getElementById('ozViewModalHolder').textContent   = data.name;
-        document.getElementById('ozViewModalPhone').textContent    = data.phone;
-        document.getElementById('ozViewModalCode').textContent     = data.code;
-        document.getElementById('ozViewModalExpiry').textContent   = data.expiry;
+    window.ifsPmsOpenViewMemberModal = function(data) {
+        document.getElementById('ifsPmsViewModalTierPill').textContent = data.plan;
+        document.getElementById('ifsPmsViewModalHolder').textContent   = data.name;
+        document.getElementById('ifsPmsViewModalPhone').textContent    = data.phone;
+        document.getElementById('ifsPmsViewModalCode').textContent     = data.code;
+        document.getElementById('ifsPmsViewModalExpiry').textContent   = data.expiry;
 
-        document.getElementById('ozViewMemberModal').style.display = 'flex';
+        const avatarBox = document.getElementById('ifsPmsViewModalAvatarBox');
+        if (data.profile_image) {
+            avatarBox.innerHTML = '<img src="' + data.profile_image + '" alt="Avatar" style="width: 100%; height: 100%; border-radius: 14px; object-fit: cover;">';
+        } else {
+            avatarBox.textContent = data.name ? data.name.charAt(0).toUpperCase() : 'M';
+        }
+
+        document.getElementById('ifsPmsViewMemberModal').style.display = 'flex';
     };
 
-    window.ozCloseViewMemberModal = function() {
-        document.getElementById('ozViewMemberModal').style.display = 'none';
+    window.ifsPmsCloseViewMemberModal = function() {
+        document.getElementById('ifsPmsViewMemberModal').style.display = 'none';
     };
 
     // Modal Control: Edit Member
-    window.ozOpenEditMemberModal = function(data) {
-        document.getElementById('ozEditModalId').value     = data.id;
-        document.getElementById('ozEditModalCode').textContent = data.code;
-        document.getElementById('ozEditModalName').value   = data.name;
-        document.getElementById('ozEditModalPhone').value  = data.phone;
-        document.getElementById('ozEditModalPlan').value   = data.plan;
-        document.getElementById('ozEditModalAmount').value = parseFloat(data.amount).toFixed(2);
-        document.getElementById('ozEditModalExpiry').value = data.expiry;
-        document.getElementById('ozEditModalStatus').value = data.status;
+    window.ifsPmsOpenEditMemberModal = function(data) {
+        document.getElementById('ifsPmsEditModalId').value     = data.id;
+        document.getElementById('ifsPmsEditModalCode').textContent = data.code;
+        document.getElementById('ifsPmsEditModalName').value   = data.name;
+        document.getElementById('ifsPmsEditModalPhone').value  = data.phone;
+        document.getElementById('ifsPmsEditModalPlan').value   = data.plan;
+        document.getElementById('ifsPmsEditModalAmount').value = parseFloat(data.amount).toFixed(2);
+        document.getElementById('ifsPmsEditModalExpiry').value = data.expiry;
+        document.getElementById('ifsPmsEditModalStatus').value = data.status;
+        document.getElementById('ifsPmsEditModalAvatarInput').value = data.profile_image || '';
 
-        document.getElementById('ozEditMemberModal').style.display = 'flex';
+        document.getElementById('ifsPmsEditMemberModal').style.display = 'flex';
     };
 
-    window.ozCloseEditMemberModal = function() {
-        document.getElementById('ozEditMemberModal').style.display = 'none';
+    window.ifsPmsCloseEditMemberModal = function() {
+        document.getElementById('ifsPmsEditMemberModal').style.display = 'none';
     };
 
     // Auto Plan Selection
-    window.ozHandlePlanSelect = function() {
-        const selectBox = document.getElementById('ozMemPlan');
+    window.ifsPmsHandlePlanSelect = function() {
+        const selectBox = document.getElementById('ifsMemPlan');
         if (!selectBox) return;
 
         const activeOpt = selectBox.options[selectBox.selectedIndex];
         const months    = activeOpt.getAttribute('data-months');
         const price     = activeOpt.getAttribute('data-price');
 
-        const durationInput = document.getElementById('ozMemDuration');
-        const amountInput   = document.getElementById('ozMemAmount');
+        const durationInput = document.getElementById('ifsMemDuration');
+        const amountInput   = document.getElementById('ifsMemAmount');
 
         if (durationInput) durationInput.value = months;
         if (amountInput) amountInput.value = parseFloat(price).toFixed(2);
 
-        window.ozSyncCardDisplay();
+        window.ifsPmsSyncCardDisplay();
     };
 
     // Sync Live Digital Card
-    window.ozSyncCardDisplay = function() {
-        const nameVal       = document.getElementById('ozMemName').value.trim();
-        const selectBox     = document.getElementById('ozMemPlan');
+    window.ifsPmsSyncCardDisplay = function() {
+        const nameVal       = document.getElementById('ifsMemName').value.trim();
+        const avatarUrl     = document.getElementById('ifsMemAvatarInput').value.trim();
+        const selectBox     = document.getElementById('ifsMemPlan');
         const planName      = selectBox ? selectBox.options[selectBox.selectedIndex].value : 'Monthly Sky Pass';
-        const durationInput = document.getElementById('ozMemDuration');
+        const durationInput = document.getElementById('ifsMemDuration');
         const monthsCount   = durationInput ? (parseInt(durationInput.value, 10) || 1) : 1;
 
-        const holderEl = document.getElementById('ozCardHolder');
-        const tierPill = document.getElementById('ozCardTierPill');
-        const expiryEl = document.getElementById('ozCardExpiryDate');
+        const holderEl  = document.getElementById('ifsPmsCardHolder');
+        const tierPill  = document.getElementById('ifsPmsCardTierPill');
+        const expiryEl  = document.getElementById('ifsPmsCardExpiryDate');
+        const avatarBox = document.getElementById('ifsPmsCardAvatarBox');
 
         if (holderEl) holderEl.textContent = nameVal ? nameVal : <?php echo wp_json_encode( __( 'Farhan Chowdhury', 'ozone-skypool' ) ); ?>;
         if (tierPill) tierPill.textContent = planName;
+
+        if (avatarBox) {
+            if (avatarUrl) {
+                avatarBox.innerHTML = '<img src="' + avatarUrl + '" alt="Avatar" style="width: 100%; height: 100%; border-radius: 14px; object-fit: cover;">';
+            } else {
+                avatarBox.textContent = nameVal ? nameVal.charAt(0).toUpperCase() : 'FC';
+            }
+        }
 
         const calcDate = new Date();
         calcDate.setMonth(calcDate.getMonth() + monthsCount);
@@ -948,11 +1017,11 @@ $members = $wpdb->get_results(
     };
 
     // Filter Directory
-    window.ozFilterDirectory = function() {
-        const inputEl   = document.getElementById('ozMemberFilterInput');
-        const clearBtn  = document.getElementById('ozFilterClearBtn');
+    window.ifsPmsFilterDirectory = function() {
+        const inputEl   = document.getElementById('ifsPmsMemberFilterInput');
+        const clearBtn  = document.getElementById('ifsPmsFilterClearBtn');
         const filterStr = inputEl ? inputEl.value.toLowerCase().trim() : '';
-        const rows      = document.querySelectorAll('.oz-member-record-row');
+        const rows      = document.querySelectorAll('.ifs-pms-member-record-row');
         let matched     = 0;
 
         if (clearBtn) {
@@ -969,7 +1038,7 @@ $members = $wpdb->get_results(
             }
         });
 
-        const counterEl = document.getElementById('ozRecordCounter');
+        const counterEl = document.getElementById('ifsPmsRecordCounter');
         if (counterEl) {
             counterEl.textContent = filterStr 
                 ? <?php echo wp_json_encode( __( 'Matching records: ', 'ozone-skypool' ) ); ?> + matched
@@ -977,22 +1046,22 @@ $members = $wpdb->get_results(
         }
     };
 
-    window.ozClearFilter = function() {
-        const inputEl = document.getElementById('ozMemberFilterInput');
+    window.ifsPmsClearFilter = function() {
+        const inputEl = document.getElementById('ifsPmsMemberFilterInput');
         if (inputEl) {
             inputEl.value = '';
-            window.ozFilterDirectory();
+            window.ifsPmsFilterDirectory();
             inputEl.focus();
         }
     };
 
     function init() {
-        ['ozMemName', 'ozMemPhone'].forEach(id => {
+        ['ifsMemName', 'ifsMemPhone'].forEach(id => {
             const input = document.getElementById(id);
-            if (input) input.addEventListener('input', window.ozSyncCardDisplay);
+            if (input) input.addEventListener('input', window.ifsPmsSyncCardDisplay);
         });
 
-        window.ozSyncCardDisplay();
+        window.ifsPmsSyncCardDisplay();
     }
 
     if (document.readyState === 'loading') {
