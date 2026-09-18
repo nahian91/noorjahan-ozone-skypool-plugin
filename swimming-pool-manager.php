@@ -1437,7 +1437,7 @@ function ifs_pms_add_number_captcha() {
         <label for="pms_captcha_answer" style="display: block; font-weight: 700; margin-bottom: 6px; color: #334155;">
             <?php
             /* translators: 1: first integer in security sum, 2: second integer in security sum */
-            printf( esc_html__( 'Security Check: What is %1$d + \%2$d ?', 'swimming-pool-manager' ), absint( $num1 ), absint($num2 ) );
+            printf( esc_html__( 'Security Check: What is %1$d + %2$d ?', 'swimming-pool-manager' ), absint( $num1 ), absint($num2 ) );
             ?>
             <span style="color: #ef4444;">*</span>
         </label>
