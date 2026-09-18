@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Live Pool Floor Status & Active Swimmer Telemetry (Live Surcharge Edition)
+ * View: Live Pool Floor Status & Active Swimmer Telemetry (Dashicons UI with Pagination & Live Search)
  *
  * @package Ozone_Skypool_OS
  */
@@ -24,8 +24,14 @@ if ( $max_capacity <= 0 ) {
     $max_capacity = 80;
 }
 
+// Pagination & Search parameters
+$paged       = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1;
+$per_page    = 10;
+$offset      = ( $paged - 1 ) * $per_page;
+$search_query = isset( $_GET['s_patron'] ) ? sanitize_text_field( wp_unslash( $_GET['s_patron'] ) ) : '';
+
 // Handle manual checkout/exit action
-if ( isset( $_POST['ifs_pms_action'] ) && $_POST['ifs_pms_action'] === 'checkout_swimmer' ) {
+if ( isset( $_POST['ifs_pms_action'] ) && 'checkout_swimmer' === $_POST['ifs_pms_action'] ) {
     check_admin_referer( 'ifs_pms_secure_action', 'ifs_pms_action_nonce' );
     $checkout_id = absint( $_POST['ticket_id'] ?? 0 );
     if ( $checkout_id > 0 ) {
@@ -40,21 +46,34 @@ if ( isset( $_POST['ifs_pms_action'] ) && $_POST['ifs_pms_action'] === 'checkout
     }
 }
 
-// Fetch active admissions for today
-$active_swimmers = $wpdb->get_results(
-    $wpdb->prepare(
-        "SELECT t.id, t.ticket_code, t.customer_id, t.duration_hours, t.amount, t.sold_at, t.scanned_at
-         FROM {$t_tick} t
-         WHERE t.status = 'Used'
-           AND (
-               DATE(COALESCE(NULLIF(t.scanned_at, '0000-00-00 00:00:00'), t.sold_at)) = %s
-           )
-         ORDER BY COALESCE(NULLIF(t.scanned_at, '0000-00-00 00:00:00'), t.sold_at) DESC",
-        $today_ymd
-    )
-);
+// Build SQL where clauses for filtering and pagination
+$where_sql = "t.status = 'Used' AND (DATE(COALESCE(NULLIF(t.scanned_at, '0000-00-00 00:00:00'), t.sold_at)) = %s)";
+$query_params = array( $today_ymd );
 
-$current_count = count( $active_swimmers );
+if ( ! empty( $search_query ) ) {
+    $where_sql .= " AND (t.ticket_code LIKE %s OR c.name LIKE %s OR c.phone LIKE %s)";
+    $like = '%' . $wpdb->esc_like( $search_query ) . '%';
+    array_push( $query_params, $like, $like, $like );
+}
+
+// Total count for pagination calculation
+$total_query = "SELECT COUNT(t.id) FROM {$t_tick} t LEFT JOIN {$t_cust} c ON t.customer_id = c.id WHERE " . $where_sql;
+$total_items = (int) $wpdb->get_var( $wpdb->prepare( $total_query, $query_params ) );
+$total_pages = max( 1, ceil( $total_items / $per_page ) );
+
+// Fetch active admissions for today with limit and offset
+$sql_active = "SELECT t.id, t.ticket_code, t.customer_id, t.duration_hours, t.amount, t.sold_at, t.scanned_at, c.name as customer_name, c.phone as customer_phone
+               FROM {$t_tick} t
+               LEFT JOIN {$t_cust} c ON t.customer_id = c.id
+               WHERE " . $where_sql . "
+               ORDER BY COALESCE(NULLIF(t.scanned_at, '0000-00-00 00:00:00'), t.sold_at) DESC
+               LIMIT %d OFFSET %d";
+
+array_push( $query_params, $per_page, $offset );
+$active_swimmers = $wpdb->get_results( $wpdb->prepare( $sql_active, $query_params ) );
+
+// Unfiltered total count for census gauge calculations
+$current_count = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(t.id) FROM {$t_tick} t WHERE t.status = 'Used' AND (DATE(COALESCE(NULLIF(t.scanned_at, '0000-00-00 00:00:00'), t.sold_at)) = %s)", $today_ymd ) );
 $capacity_pct  = min( 100, (int) round( ( $current_count / $max_capacity ) * 100 ) );
 
 if ( $capacity_pct >= 85 ) {
@@ -77,7 +96,7 @@ if ( $capacity_pct >= 85 ) {
     <div class="oz-status-hero">
         <div class="oz-status-hero-left">
             <div class="oz-status-orb">
-                <i class="fa-solid fa-person-swimming"></i>
+                <span class="dashicons dashicons-groups"></span>
             </div>
             <div>
                 <div class="oz-status-title-tag"><?php esc_html_e( 'Live In-Pool Census', 'swimming-pool-manager' ); ?></div>
@@ -105,16 +124,31 @@ if ( $capacity_pct >= 85 ) {
         </div>
     </div>
 
-    <!-- Active Swimmers Registry -->
+    <!-- Active Swimmers Registry & Live Search Toolbar -->
     <div class="oz-telemetry-panel">
-        <div class="oz-telemetry-head">
-            <h3 class="oz-telemetry-title">
-                <i class="fa-solid fa-tower-broadcast oz-telemetry-icon"></i>
+        <div class="oz-telemetry-head" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <h3 class="oz-telemetry-title" style="margin: 0;">
+                <span class="dashicons dashicons-building"></span>
                 <?php esc_html_e( 'Active Pool Floor Patrons & Duration Watchdog', 'swimming-pool-manager' ); ?>
             </h3>
-            <div class="oz-live-clock-pill">
-                <i class="fa-regular fa-clock"></i>
-                <span class="ifs-pms-mono" id="ozWatcherClock">--:--:-- --</span>
+
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <!-- Live Search Form -->
+                <form method="get" action="" style="display: flex; align-items: center; gap: 6px;">
+                    <input type="hidden" name="page" value="ifs-pms-live-status">
+                    <div style="position: relative;">
+                        <input type="text" name="s_patron" value="<?php echo esc_attr( $search_query ); ?>" placeholder="<?php esc_attr_e( 'Search code or name...', 'swimming-pool-manager' ); ?>" style="padding: 6px 12px 6px 30px; border-radius: 8px; border: 1.5px solid #cbd5e1; font-size: 13px; width: 220px;">
+                        <span class="dashicons dashicons-search" style="position: absolute; left: 8px; top: 9px; color: #94a3b8; font-size: 16px;"></span>
+                    </div>
+                    <?php if ( ! empty( $search_query ) ) : ?>
+                        <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms-live-status' ) ); ?>" class="button" style="border-radius: 8px;"><?php esc_html_e( 'Reset', 'swimming-pool-manager' ); ?></a>
+                    <?php endif; ?>
+                </form>
+
+                <div class="oz-live-clock-pill">
+                    <span class="dashicons dashicons-clock"></span>
+                    <span class="ifs-pms-mono" id="ozWatcherClock">--:--:-- --</span>
+                </div>
             </div>
         </div>
 
@@ -123,6 +157,7 @@ if ( $capacity_pct >= 85 ) {
                 <thead>
                     <tr>
                         <th><?php esc_html_e( 'Pass Code', 'swimming-pool-manager' ); ?></th>
+                        <th><?php esc_html_e( 'Patron Name', 'swimming-pool-manager' ); ?></th>
                         <th><?php esc_html_e( 'Entry Time', 'swimming-pool-manager' ); ?></th>
                         <th><?php esc_html_e( 'Duration', 'swimming-pool-manager' ); ?></th>
                         <th><?php esc_html_e( 'Target Exit', 'swimming-pool-manager' ); ?></th>
@@ -133,11 +168,11 @@ if ( $capacity_pct >= 85 ) {
                 <tbody id="ozActiveSwimmersTbody">
                     <?php if ( ! empty( $active_swimmers ) ) : ?>
                         <?php foreach ( $active_swimmers as $swimmer ) :
-                            $hours  = max( 1, (int) $swimmer->duration_hours );
-                            $amount = max( 0.00, (float) $swimmer->amount );
+                            $hours       = max( 1, (int) $swimmer->duration_hours );
+                            $amount      = max( 0.00, (float) $swimmer->amount );
                             $hourly_rate = $amount > 0 ? ( $amount / $hours ) : 100.00;
                             
-                            $entry_raw = ( ! empty( $swimmer->scanned_at ) && $swimmer->scanned_at !== '0000-00-00 00:00:00' ) 
+                            $entry_raw = ( ! empty( $swimmer->scanned_at ) && '0000-00-00 00:00:00' !== $swimmer->scanned_at ) 
                                 ? $swimmer->scanned_at 
                                 : $swimmer->sold_at;
 
@@ -163,7 +198,11 @@ if ( $capacity_pct >= 85 ) {
                                     <?php echo esc_html( $swimmer->ticket_code ); ?>
                                 </td>
 
-                                <td class="ifs-pms-mono oz-text-dark oz-text-weight-bold">
+                                <td class="oz-text-dark oz-text-weight-bold">
+                                    <?php echo esc_html( ! empty( $swimmer->customer_name ) ? $swimmer->customer_name : __( 'Walk-in Guest', 'swimming-pool-manager' ) ); ?>
+                                </td>
+
+                                <td class="ifs-pms-mono oz-text-dark">
                                     <?php echo esc_html( $entry_formatted ); ?>
                                 </td>
 
@@ -179,22 +218,24 @@ if ( $capacity_pct >= 85 ) {
 
                                 <td>
                                     <span class="oz-row-clock-pill oz-clock-safe oz-timer-display" id="ozTimer-<?php echo esc_attr( (string) $swimmer->id ); ?>">
-                                        <i class="fa-regular fa-clock"></i>
+                                        <span class="dashicons dashicons-clock"></span>
                                         <span class="oz-clock-digits">00:00:00 left</span>
                                     </span>
                                 </td>
 
                                 <td class="oz-td-right">
                                     <button type="button" class="oz-checkout-btn" onclick="ozCheckoutSwimmer(<?php echo esc_attr( (string) $swimmer->id ); ?>, this)">
-                                        <i class="fa-solid fa-person-walking-arrow-right"></i> <?php esc_html_e( 'Check Out', 'swimming-pool-manager' ); ?>
+                                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Check Out', 'swimming-pool-manager' ); ?>
                                     </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr id="ozEmptyNoticeRow">
-                            <td colspan="6" class="oz-empty-state">
-                                <i class="fa-solid fa-water-ladder oz-empty-icon"></i>
+                            <td colspan="7" class="oz-empty-state">
+                                <div class="oz-empty-state-icon">
+                                    <span class="dashicons dashicons-groups"></span>
+                                </div>
                                 <?php esc_html_e( 'No swimmers currently registered inside the pool.', 'swimming-pool-manager' ); ?>
                             </td>
                         </tr>
@@ -202,231 +243,44 @@ if ( $capacity_pct >= 85 ) {
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination Footer Controls -->
+        <?php if ( $total_pages > 1 ) : ?>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-top: 1px solid #e2e8f0; background: #f8fafc; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                <div style="font-size: 12.5px; color: #64748b; font-weight: 600;">
+                    <?php
+                    printf(
+                        /* translators: 1: current page, 2: total pages */
+                        esc_html__( 'Page %1$d of %2$d', 'swimming-pool-manager' ),
+                        $paged,
+                        $total_pages
+                    );
+                    ?>
+                </div>
+
+                <div style="display: flex; gap: 6px;">
+                    <?php
+                    $base_url = remove_query_arg( 'paged' );
+                    if ( $paged > 1 ) :
+                        $prev_url = add_query_arg( 'paged', $paged - 1, $base_url );
+                        if ( ! empty( $search_query ) ) {
+                            $prev_url = add_query_arg( 's_patron', urlencode( $search_query ), $prev_url );
+                        }
+                    ?>
+                        <a href="<?php echo esc_url( $prev_url ); ?>" class="button" style="border-radius: 6px; font-weight: 700;"><?php esc_html_e( '&laquo; Previous', 'swimming-pool-manager' ); ?></a>
+                    <?php endif; ?>
+
+                    <?php
+                    if ( $paged < $total_pages ) :
+                        $next_url = add_query_arg( 'paged', $paged + 1, $base_url );
+                        if ( ! empty( $search_query ) ) {
+                            $next_url = add_query_arg( 's_patron', urlencode( $search_query ), $next_url );
+                        }
+                    ?>
+                        <a href="<?php echo esc_url( $next_url ); ?>" class="button button-primary" style="border-radius: 6px; font-weight: 700;"><?php esc_html_e( 'Next &raquo;', 'swimming-pool-manager' ); ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
-
-<script>
-(function($) {
-    'use strict';
-
-    let serverStartEpoch = <?php echo (int) $server_epoch; ?>;
-    let clientMountTime  = Date.now();
-    let currencySymbol   = <?php echo wp_json_encode( $currency ); ?>;
-    let isPolling        = false;
-
-    const txtNoSwimmers = <?php echo wp_json_encode( __( 'No swimmers currently registered inside the pool.', 'swimming-pool-manager' ) ); ?>;
-    const txtCheckoutBtn = <?php echo wp_json_encode( __( 'Check Out', 'swimming-pool-manager' ) ); ?>;
-    const txtConfirmCheckout = <?php echo wp_json_encode( __( 'Check out patron from pool deck?', 'swimming-pool-manager' ) ); ?>;
-
-    function getSyncedEpoch() {
-        const elapsedSeconds = Math.floor((Date.now() - clientMountTime) / 1000);
-        return serverStartEpoch + elapsedSeconds;
-    }
-
-    function formatDigitalClock(totalSeconds) {
-        const hrs  = Math.floor(totalSeconds / 3600);
-        const mins = Math.floor((totalSeconds % 3600) / 60);
-        const secs = totalSeconds % 60;
-
-        return String(hrs).padStart(2, '0') + ':' + 
-               String(mins).padStart(2, '0') + ':' + 
-               String(secs).padStart(2, '0');
-    }
-
-    function renderTimeBadge(rowEl, badgeEl, diff) {
-        const hourlyRate = parseFloat(rowEl.getAttribute('data-hourly-rate')) || 100.00;
-
-        if (diff > 0) {
-            const timeDigits = formatDigitalClock(diff);
-
-            if (diff <= 900) {
-                badgeEl.className = 'oz-row-clock-pill oz-clock-warning oz-timer-display';
-                badgeEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> <span class="oz-clock-digits">' + timeDigits + ' left</span>';
-            } else {
-                badgeEl.className = 'oz-row-clock-pill oz-clock-safe oz-timer-display';
-                badgeEl.innerHTML = '<i class="fa-regular fa-clock"></i> <span class="oz-clock-digits">' + timeDigits + ' left</span>';
-            }
-        } else {
-            const overstaySeconds = Math.abs(diff);
-            const timeDigits = formatDigitalClock(overstaySeconds);
-            
-            const extraHours = overstaySeconds / 3600;
-            const surchargeAmount = (extraHours * hourlyRate).toFixed(2);
-
-            badgeEl.className = 'oz-row-clock-pill oz-clock-overstay oz-timer-display';
-            badgeEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> ' +
-                                '<span class="oz-clock-digits">+' + timeDigits + ' extra</span>' +
-                                '<span class="oz-surcharge-text">Fee: +' + surchargeAmount + ' ' + currencySymbol + '</span>';
-        }
-    }
-
-    function runLiveClockAndCounters() {
-        const currentEpoch = getSyncedEpoch();
-        const serverDate   = new Date(currentEpoch * 1000);
-
-        let hours = serverDate.getUTCHours();
-        const minutes = String(serverDate.getUTCMinutes()).padStart(2, '0');
-        const seconds = String(serverDate.getUTCSeconds()).padStart(2, '0');
-        const ampm = hours >= 12 ? 'PM' : 'AM';
-        hours = hours % 12;
-        hours = hours ? hours : 12;
-        const clockStr = String(hours).padStart(2, '0') + ':' + minutes + ':' + seconds + ' ' + ampm;
-        
-        const clockEl = document.getElementById('ozWatcherClock');
-        if (clockEl) {
-            clockEl.textContent = clockStr;
-        }
-
-        const rows = document.querySelectorAll('.oz-swimmer-row');
-        rows.forEach(function(row) {
-            const exitStamp = parseInt(row.getAttribute('data-exit-timestamp'), 10);
-            const badgeEl = row.querySelector('.oz-timer-display');
-            if (!badgeEl || isNaN(exitStamp)) return;
-
-            const diff = exitStamp - currentEpoch;
-            renderTimeBadge(row, badgeEl, diff);
-        });
-    }
-
-    function pollPoolFloorData() {
-        if (isPolling) return;
-        isPolling = true;
-
-        $.ajax({
-            url: window.ajaxurl || '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'ifs_pms_get_live_telemetry_action',
-                security: '<?php echo wp_create_nonce( 'ifs_pms_security_token' ); ?>'
-            },
-            success: function(res) {
-                isPolling = false;
-                if (!res || !res.success || !res.data) return;
-
-                const data = res.data;
-
-                if (data.server_epoch) {
-                    serverStartEpoch = data.server_epoch;
-                    clientMountTime  = Date.now();
-                }
-
-                $('#ozLiveCensusCount').text(data.current_count);
-                $('#ozLiveCensusCapacity').text(data.max_capacity);
-                $('#ozLiveCapacityPctText').text(data.capacity_pct + '%');
-                $('#ozLiveCapacityBar').css({
-                    'width': data.capacity_pct + '%',
-                    'background': data.bar_gradient
-                });
-                $('#ozLiveStatusPill').attr('class', 'ifs-pms-badge ' + data.status_badge + ' oz-status-pill-padded');
-                $('#ozLiveStatusText').text(data.status_label);
-
-                const tbody = $('#ozActiveSwimmersTbody');
-                if (!data.swimmers || data.swimmers.length === 0) {
-                    tbody.html(
-                        '<tr id="ozEmptyNoticeRow">' +
-                            '<td colspan="6" class="oz-empty-state">' +
-                                '<i class="fa-solid fa-water-ladder oz-empty-icon-large"></i>' +
-                                txtNoSwimmers +
-                            '</td>' +
-                        '</tr>'
-                    );
-                    return;
-                }
-
-                $('#ozEmptyNoticeRow').remove();
-
-                const existingRowIds = [];
-                $('.oz-swimmer-row').each(function() {
-                    existingRowIds.push(parseInt($(this).attr('data-id'), 10));
-                });
-
-                const incomingIds = data.swimmers.map(s => parseInt(s.id, 10));
-
-                existingRowIds.forEach(function(id) {
-                    if (!incomingIds.includes(id)) {
-                        $('#ozRow-' + id).fadeOut(250, function() { $(this).remove(); });
-                    }
-                });
-
-                data.swimmers.forEach(function(swimmer) {
-                    const rowEl = $('#ozRow-' + swimmer.id);
-                    if (rowEl.length === 0) {
-                        const newRowHtml = 
-                            '<tr class="oz-swimmer-row" id="ozRow-' + swimmer.id + '" data-id="' + swimmer.id + '" data-hourly-rate="' + swimmer.hourly_rate + '" data-exit-timestamp="' + swimmer.exit_stamp + '" data-entry-timestamp="' + swimmer.entry_stamp + '">' +
-                                '<td class="ifs-pms-mono oz-text-blue oz-text-weight-heavy">' + swimmer.ticket_code + '</td>' +
-                                '<td class="ifs-pms-mono oz-text-dark oz-text-weight-bold">' + swimmer.entry_formatted + '</td>' +
-                                '<td class="ifs-pms-mono"><span class="ifs-pms-badge oz-badge-soft-blue">' + swimmer.duration_hours + (swimmer.duration_hours > 1 ? ' Hrs' : ' Hr') + '</span></td>' +
-                                '<td class="ifs-pms-mono oz-text-sub oz-text-weight-heavy">' + swimmer.exit_formatted + '</td>' +
-                                '<td><span class="oz-row-clock-pill oz-clock-safe oz-timer-display" id="ozTimer-' + swimmer.id + '"><i class="fa-regular fa-clock"></i> <span class="oz-clock-digits">00:00:00 left</span></span></td>' +
-                                '<td class="oz-td-right"><button type="button" class="oz-checkout-btn" onclick="ozCheckoutSwimmer(' + swimmer.id + ', this)"><i class="fa-solid fa-person-walking-arrow-right"></i> ' + txtCheckoutBtn + '</button></td>' +
-                            '</tr>';
-                        tbody.prepend($(newRowHtml).hide().fadeIn(300));
-                    } else {
-                        rowEl.attr('data-exit-timestamp', swimmer.exit_stamp);
-                        rowEl.attr('data-entry-timestamp', swimmer.entry_stamp);
-                        rowEl.attr('data-hourly-rate', swimmer.hourly_rate);
-                    }
-                });
-
-                runLiveClockAndCounters();
-            },
-            error: function() {
-                isPolling = false;
-            }
-        });
-    }
-
-    window.ozCheckoutSwimmer = function(ticketId, btn) {
-        if (!confirm(txtConfirmCheckout)) {
-            return;
-        }
-
-        const $btn = $(btn);
-        $btn.prop('disabled', true).html('<i class="fa-solid fa-spinner fa-spin"></i>');
-
-        $.ajax({
-            url: window.ajaxurl || '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-            type: 'POST',
-            dataType: 'json',
-            data: {
-                action: 'ifs_pms_checkout_swimmer_ajax',
-                ticket_id: ticketId,
-                security: '<?php echo wp_create_nonce( 'ifs_pms_security_token' ); ?>'
-            },
-            success: function(res) {
-                if (res && res.success) {
-                    $('#ozRow-' + ticketId).fadeOut(300, function() {
-                        $(this).remove();
-                        if ($('.oz-swimmer-row').length === 0) {
-                            $('#ozActiveSwimmersTbody').html(
-                                '<tr id="ozEmptyNoticeRow">' +
-                                    '<td colspan="6" class="oz-empty-state">' +
-                                        '<i class="fa-solid fa-water-ladder oz-empty-icon-large"></i>' +
-                                        txtNoSwimmers +
-                                    '</td>' +
-                                '</tr>'
-                            );
-                        }
-                    });
-                    pollPoolFloorData();
-                } else {
-                    alert((res && res.data && res.data.message) ? res.data.message : 'Checkout failed');
-                    $btn.prop('disabled', false).html('<i class="fa-solid fa-person-walking-arrow-right"></i> ' + txtCheckoutBtn);
-                }
-            },
-            error: function() {
-                alert('Connection error during checkout.');
-                $btn.prop('disabled', false).html('<i class="fa-solid fa-person-walking-arrow-right"></i> ' + txtCheckoutBtn);
-            }
-        });
-    };
-
-    $(document).ready(function() {
-        runLiveClockAndCounters();
-        setInterval(runLiveClockAndCounters, 1000);
-        setInterval(pollPoolFloorData, 5000);
-    });
-
-})(jQuery);
-</script>

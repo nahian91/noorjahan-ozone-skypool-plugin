@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Patron Directory & Complete Ticket Intelligence Registry (Zero Inline CSS - Enhanced Executive Details Edition)
+ * View: Patron Directory & Complete Ticket Intelligence Registry (Dashicons UI)
  *
  * @package Ozone_Skypool_OS
  */
@@ -52,7 +52,7 @@ $customers = $wpdb->get_results(
 $single_customer  = null;
 $customer_tickets = array();
 $customer_metrics = null;
-if ( $action_mode === 'view' && $target_id > 0 ) {
+if ( 'view' === $action_mode && $target_id > 0 ) {
     $single_customer = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t_cust} WHERE id = %d", $target_id ) );
     if ( $single_customer ) {
         $customer_tickets = $wpdb->get_results( $wpdb->prepare( 
@@ -79,28 +79,28 @@ if ( $action_mode === 'view' && $target_id > 0 ) {
 
 // If editing a customer inline
 $edit_customer = null;
-if ( $action_mode === 'edit' && $target_id > 0 ) {
+if ( 'edit' === $action_mode && $target_id > 0 ) {
     $edit_customer = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$t_cust} WHERE id = %d", $target_id ) );
 }
 ?>
 
 <div class="ifs-pms-customer-wrapper">
-<?php if ( $action_mode === 'view' && $single_customer ) : ?>
+<?php if ( 'view' === $action_mode && $single_customer ) : ?>
     <!-- ========================================================================== -->
     <!-- VIEW MODE: DETAILED PATRON INTELLIGENCE & ANALYTICS MATRIX -->
     <!-- ========================================================================== -->
     <div class="ifs-pms-pos-card">
         <div class="ifs-pms-pos-head">
             <h3 class="ifs-pms-pos-title">
-                <i class="fa-solid fa-address-card ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-groups"></span>
                 <?php printf( esc_html__( 'Executive Patron Profile: %s', 'swimming-pool-manager' ), esc_html( $single_customer->name ) ); ?>
             </h3>
             <div class="ifs-pms-flex-gap-10">
                 <button type="button" class="ifs-pms-btn-sm ifs-pms-btn-edit ifs-pms-btn-action-print" onclick="window.print()">
-                    <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Dossier', 'swimming-pool-manager' ); ?>
+                    <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Print Dossier', 'swimming-pool-manager' ); ?>
                 </button>
                 <a href="<?php echo esc_url( $base_url ); ?>" class="ifs-pms-btn-sm ifs-pms-btn-edit ifs-pms-btn-action-back">
-                    <i class="fa-solid fa-arrow-left"></i> <?php esc_html_e( 'Back to Directory', 'swimming-pool-manager' ); ?>
+                    <span class="dashicons dashicons-dashboard"></span> <?php esc_html_e( 'Back to Directory', 'swimming-pool-manager' ); ?>
                 </a>
             </div>
         </div>
@@ -130,7 +130,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
             <div class="ifs-pms-analytics-grid-2">
                 <div class="ifs-pms-analytics-box">
                     <h5 class="ifs-pms-analytics-title">
-                        <i class="fa-solid fa-wallet ifs-pms-icon-primary"></i> <?php esc_html_e( 'Payment Method Breakdown', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-id-alt"></span> <?php esc_html_e( 'Payment Method Breakdown', 'swimming-pool-manager' ); ?>
                     </h5>
                     <div class="ifs-pms-analytics-stack">
                         <div class="ifs-pms-analytics-row">
@@ -150,7 +150,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
 
                 <div class="ifs-pms-analytics-box">
                     <h5 class="ifs-pms-analytics-title">
-                        <i class="fa-solid fa-clock-rotate-left ifs-pms-icon-success"></i> <?php esc_html_e( 'Engagement Timeline', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-clock"></span> <?php esc_html_e( 'Engagement Timeline', 'swimming-pool-manager' ); ?>
                     </h5>
                     <div class="ifs-pms-analytics-stack">
                         <div class="ifs-pms-analytics-row">
@@ -170,7 +170,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
             </div>
 
             <h4 class="ifs-pms-section-title">
-                <i class="fa-solid fa-ticket ifs-pms-icon-primary"></i> <?php esc_html_e( 'Associated Ticket & Pass History Ledger', 'swimming-pool-manager' ); ?>
+                <span class="dashicons dashicons-tickets-alt"></span> <?php esc_html_e( 'Associated Ticket & Pass History Ledger', 'swimming-pool-manager' ); ?>
             </h4>
 
             <div class="ifs-pms-table-wrap ifs-pms-table-container-bordered">
@@ -189,8 +189,8 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
                     <tbody>
                         <?php if ( ! empty( $customer_tickets ) ) : ?>
                             <?php foreach ( $customer_tickets as $tkt ) : 
-                                $is_valid = ( $tkt->status === 'Valid' );
-                                $status_class = $is_valid ? 'ifs-pms-badge-success' : ( $tkt->status === 'Used' ? 'ifs-pms-badge-warning' : 'ifs-pms-badge-danger' );
+                                $is_valid    = ( 'Valid' === $tkt->status );
+                                $status_class = $is_valid ? 'ifs-pms-badge-success' : ( 'Used' === $tkt->status ? 'ifs-pms-badge-warning' : 'ifs-pms-badge-danger' );
                             ?>
                                 <tr>
                                     <td class="ifs-pms-mono ifs-pms-text-blue ifs-pms-text-weight-bold">
@@ -199,7 +199,9 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
                                     <td>
                                         <span class="ifs-pms-text-dark ifs-pms-text-weight-bold"><?php echo esc_html( ! empty( $tkt->package_details ) ? $tkt->package_details : __( 'Standard Ticket', 'swimming-pool-manager' ) ); ?></span>
                                         <?php if ( ! empty( $tkt->room_no ) ) : ?>
-                                            <div class="ifs-pms-room-badge"><i class="fa-solid fa-door-open"></i> Room <?php echo esc_html( $tkt->room_no ); ?></div>
+                                            <div class="ifs-pms-room-badge">
+                                                <span class="dashicons dashicons-building"></span> Room <?php echo esc_html( $tkt->room_no ); ?>
+                                            </div>
                                         <?php endif; ?>
                                     </td>
                                     <td class="ifs-pms-mono ifs-pms-text-weight-bold">
@@ -234,18 +236,18 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
         </div>
     </div>
 
-<?php elseif ( $action_mode === 'edit' && $edit_customer ) : ?>
+<?php elseif ( 'edit' === $action_mode && $edit_customer ) : ?>
     <!-- ========================================================================== -->
     <!-- EDIT MODE: INLINE EDIT FORM -->
     <!-- ========================================================================== -->
     <div class="ifs-pms-pos-card">
         <div class="ifs-pms-pos-head">
             <h3 class="ifs-pms-pos-title">
-                <i class="fa-solid fa-user-pen ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-admin-settings"></span>
                 <?php esc_html_e( 'Edit Patron Profile Details', 'swimming-pool-manager' ); ?>
             </h3>
             <a href="<?php echo esc_url( $base_url ); ?>" class="ifs-pms-btn-sm ifs-pms-btn-edit ifs-pms-btn-action-back">
-                <i class="fa-solid fa-arrow-left"></i> <?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?>
+                <span class="dashicons dashicons-dashboard"></span> <?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?>
             </a>
         </div>
 
@@ -268,7 +270,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
 
                     <div class="ifs-pms-modal-actions-split">
                         <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-submit-action">
-                            <i class="fa-solid fa-floppy-disk"></i> <?php esc_html_e( 'Update Patron Profile', 'swimming-pool-manager' ); ?>
+                            <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Update Patron Profile', 'swimming-pool-manager' ); ?>
                         </button>
                         <a href="<?php echo esc_url( $base_url ); ?>" class="ifs-pms-btn ifs-pms-btn-cancel-action">
                             <?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?>
@@ -286,7 +288,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
     <div class="ifs-pms-pos-card">
         <div class="ifs-pms-pos-head">
             <h3 class="ifs-pms-pos-title">
-                <i class="fa-solid fa-users ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-groups"></span>
                 <?php esc_html_e( 'Patron Directory & Ticket Intelligence', 'swimming-pool-manager' ); ?>
             </h3>
             <span class="ifs-pms-badge ifs-pms-badge-neutral">
@@ -296,7 +298,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
 
         <div class="ifs-pms-search-bar">
             <div class="ifs-pms-search-box">
-                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <span class="search-icon"><span class="dashicons dashicons-search"></span></span>
                 <input type="text" id="ifsPmsCustomerSearchInput" placeholder="<?php esc_attr_e( 'Search patrons by name or phone...', 'swimming-pool-manager' ); ?>" oninput="ifsPmsFilterCustomerTable()" autocomplete="off">
             </div>
         </div>
@@ -341,12 +343,12 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
                                 <td class="ifs-pms-td-actions">
                                     <!-- View Intelligence Matrix Button -->
                                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=customers&mode=view&customer_id=' . $cust->id ) ); ?>" class="ifs-pms-btn-sm ifs-pms-btn-view">
-                                        <i class="fa-solid fa-eye"></i> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
+                                        <span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
                                     </a>
 
                                     <!-- Edit Inline Button -->
                                     <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=customers&mode=edit&customer_id=' . $cust->id ) ); ?>" class="ifs-pms-btn-sm ifs-pms-btn-edit">
-                                        <i class="fa-solid fa-pen-to-square"></i> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
+                                        <span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
                                     </a>
 
                                     <?php if ( $is_admin ) : ?>
@@ -355,7 +357,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
                                             <input type="hidden" name="ifs_pms_action" value="delete_customer">
                                             <input type="hidden" name="customer_id" value="<?php echo esc_attr( $cust->id ); ?>">
                                             <button type="submit" class="ifs-pms-btn-sm ifs-pms-btn-delete" title="<?php esc_attr_e( 'Delete Profile', 'swimming-pool-manager' ); ?>">
-                                                <i class="fa-solid fa-trash-can"></i>
+                                                <span class="dashicons dashicons-trash"></span>
                                             </button>
                                         </form>
                                     <?php endif; ?>
@@ -365,7 +367,9 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
                     <?php else : ?>
                         <tr>
                             <td colspan="7" class="ifs-pms-empty-state-large">
-                                <i class="fa-solid fa-users-slash ifs-pms-empty-icon-large"></i>
+                                <div class="ifs-pms-empty-state-icon">
+                                    <span class="dashicons dashicons-groups"></span>
+                                </div>
                                 <?php esc_html_e( 'No customer profiles found in database.', 'swimming-pool-manager' ); ?>
                             </td>
                         </tr>
@@ -387,7 +391,7 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
                 <div class="ifs-pms-flex-gap-6">
                     <?php for ( $i = 1; $i <= $total_pages; $i++ ) : ?>
                         <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=customers&paged=' . $i ) ); ?>" 
-                           class="ifs-pms-page-num <?php echo ( $i == $paged ) ? 'active' : ''; ?>">
+                           class="ifs-pms-page-num <?php echo ( $i === $paged ) ? 'active' : ''; ?>">
                             <?php echo esc_html( $i ); ?>
                         </a>
                     <?php endfor; ?>
@@ -397,15 +401,3 @@ if ( $action_mode === 'edit' && $target_id > 0 ) {
     </div>
 <?php endif; ?>
 </div>
-
-<script>
-function ifsPmsFilterCustomerTable() {
-    const query = document.getElementById('ifsPmsCustomerSearchInput').value.toLowerCase().trim();
-    const rows = document.querySelectorAll('.ifs-pms-customer-row');
-
-    rows.forEach(r => {
-        const text = r.textContent.toLowerCase();
-        r.style.display = (!query || text.includes(query)) ? '' : 'none';
-    });
-}
-</script>

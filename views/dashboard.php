@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Operations Dashboard & Executive Command Center (Enterprise Edition v7 - Native SVG Icons)
+ * View: Operations Dashboard & Executive Command Center (Dashicons UI)
  *
  * @package Ozone_Skypool_OS
  */
@@ -22,7 +22,7 @@ $today_ymd     = current_time( 'Y-m-d' );
 $base_dash_url = admin_url( 'admin.php?page=ifs-pms' );
 
 // Enqueue standalone dashboard stylesheet and script
-wp_enqueue_style( 'ifs-pms-dashboard-css', IFS_PMS_URL . 'assets/css/dashboard.css', array(), IFS_PMS_VERSION );
+wp_enqueue_style( 'ifs-pms-dashboard-css', IFS_PMS_URL . 'assets/css/dashboard.css', array( 'dashicons' ), IFS_PMS_VERSION );
 wp_enqueue_script( 'ifs-pms-dashboard-js', IFS_PMS_URL . 'assets/js/dashboard.js', array(), IFS_PMS_VERSION, true );
 
 // 2. Financial Telemetry
@@ -76,29 +76,37 @@ $current_swimmers = max( 0, $today_admitted );
 $capacity_pct     = min( 100, (int) round( ( $current_swimmers / $max_pool_capacity ) * 100 ) );
 
 if ( $capacity_pct >= 85 ) {
-    $status_label = __( 'Near Peak Capacity', 'ozone-skypool' );
+    $status_label = __( 'Near Peak Capacity', 'swimming-pool-manager' );
     $status_class = 'ifs-pms-status-red';
     $bar_gradient = 'linear-gradient(90deg, #f59e0b 0%, #ef4444 100%)';
 } elseif ( $capacity_pct >= 55 ) {
-    $status_label = __( 'Moderate Traffic', 'ozone-skypool' );
+    $status_label = __( 'Moderate Traffic', 'swimming-pool-manager' );
     $status_class = 'ifs-pms-status-amber';
     $bar_gradient = 'linear-gradient(90deg, #0284c7 0%, #f59e0b 100%)';
 } else {
-    $status_label = __( 'Optimal Space', 'ozone-skypool' );
+    $status_label = __( 'Optimal Space', 'swimming-pool-manager' );
     $status_class = 'ifs-pms-status-green';
     $bar_gradient = 'linear-gradient(90deg, #0284c7 0%, #10b981 100%)';
 }
 
-// 4. Operating Hours & Closing Time Calculation
+// 4. Operating Hours & Schedule Calculation from Settings
 $weekly_schedule  = get_option( 'ifs_pms_weekly_schedule', array() );
 $day_key          = strtolower( current_time( 'l' ) );
 $today_sched      = $weekly_schedule[ $day_key ] ?? array();
+$opening_time_str = $today_sched['open'] ?? '08:00';
 $closing_time_str = $today_sched['close'] ?? '23:00';
+$day_status       = $today_sched['status'] ?? 'open';
 
-// Pass closing time safely to client engine
-wp_localize_script( 'ifs-pms-dashboard-js', 'ifsPmsDashboardConfig', array(
-    'closing_time' => $closing_time_str,
-) );
+// Pass opening and closing time safely to client engine
+wp_localize_script(
+    'ifs-pms-dashboard-js',
+    'ifsPmsDashboardConfig',
+    array(
+        'opening_time' => $opening_time_str,
+        'closing_time' => $closing_time_str,
+        'day_status'   => $day_status,
+    )
+);
 
 // 5. Live Admissions Stream (Strictly Latest 5 Records)
 $recent_admissions = $wpdb->get_results(
@@ -115,13 +123,13 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-telemetry-header">
         <div class="ifs-pms-clock-wrap">
             <div class="ifs-pms-clock-icon">
-                <?php echo wp_kses( ifs_pms_get_svg( 'clock', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span class="dashicons dashicons-clock"></span>
             </div>
             <div>
                 <div class="ifs-pms-clock-digits" id="ifsPmsLiveClock">--:--:-- --</div>
                 <div class="ifs-pms-clock-date" id="ifsPmsLiveDate"><?php echo esc_html( current_time( 'l, F j, Y' ) ); ?></div>
-                <div class="ifs-pms-closing-countdown" id="ifsPmsClosingCountdown">
-                    <span id="ifsPmsCountdownText">--</span>
+                <div class="ifs-pms-closing-countdown" id="ifsPmsClosingCountdown" style="margin-top: 4px; font-size: 11.5px; font-weight: 700; color: var(--ifs-accent, #0284c7);">
+                    <span id="ifsPmsCountdownText"><?php esc_html_e( 'Syncing schedule...', 'swimming-pool-manager' ); ?></span>
                 </div>
             </div>
         </div>
@@ -129,10 +137,10 @@ $recent_admissions = $wpdb->get_results(
         <div style="display: flex; align-items: center; gap: 24px;">
             <div class="ifs-pms-operator-meta">
                 <div class="ifs-pms-operator-name"><?php echo esc_html( wp_get_current_user()->display_name ); ?></div>
-                <div class="ifs-pms-operator-role"><?php esc_html_e( 'Terminal Operator • Desk Active', 'ozone-skypool' ); ?></div>
+                <div class="ifs-pms-operator-role"><?php esc_html_e( 'Terminal Operator • Desk Active', 'swimming-pool-manager' ); ?></div>
             </div>
             <div class="ifs-pms-status-pill ifs-pms-status-green">
-                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Turnstiles Synchronized', 'ozone-skypool' ); ?>
+                <span class="ifs-pms-pulse-dot"></span> <?php esc_html_e( 'Turnstiles Synchronized', 'swimming-pool-manager' ); ?>
             </div>
         </div>
     </div>
@@ -141,22 +149,22 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-gauge-card">
         <div style="display: flex; align-items: center; gap: 20px;">
             <div class="ifs-pms-gauge-icon-box">
-                <?php echo wp_kses( ifs_pms_get_svg( 'users', '', 20 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span class="dashicons dashicons-groups"></span>
             </div>
             <div>
                 <div class="ifs-pms-gauge-title">
-                    <?php esc_html_e( 'Rooftop Skypool Occupancy', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Rooftop Skypool Occupancy', 'swimming-pool-manager' ); ?>
                 </div>
                 <div class="ifs-pms-gauge-numbers">
                     <span class="ifs-pms-mono"><?php echo esc_html( (string) $current_swimmers ); ?></span>
-                    <span class="ifs-pms-gauge-subtitle">/ <span class="ifs-pms-mono"><?php echo esc_html( (string) $max_pool_capacity ); ?></span> <?php esc_html_e( 'max swimmers', 'ozone-skypool' ); ?></span>
+                    <span class="ifs-pms-gauge-subtitle">/ <span class="ifs-pms-mono"><?php echo esc_html( (string) $max_pool_capacity ); ?></span> <?php esc_html_e( 'max swimmers', 'swimming-pool-manager' ); ?></span>
                 </div>
             </div>
         </div>
 
         <div class="ifs-pms-gauge-progress-wrap">
             <div class="ifs-pms-gauge-progress-meta">
-                <span class="ifs-pms-gauge-progress-label"><?php esc_html_e( 'Water & Deck Utilization', 'ozone-skypool' ); ?></span>
+                <span class="ifs-pms-gauge-progress-label"><?php esc_html_e( 'Water & Deck Utilization', 'swimming-pool-manager' ); ?></span>
                 <span class="ifs-pms-mono ifs-pms-gauge-progress-val">
                     <?php echo esc_html( (string) $capacity_pct ); ?>%
                 </span>
@@ -177,41 +185,41 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-action-deck">
         <a href="<?php echo esc_url( $base_dash_url . '&view=tickets' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-blue">
-                <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span class="dashicons dashicons-tickets-alt"></span>
             </div>
             <div>
-                <div class="ifs-pms-action-title"><?php esc_html_e( 'Sell Ticket Pass', 'ozone-skypool' ); ?></div>
-                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Single, Combo & VIP passes', 'ozone-skypool' ); ?></div>
+                <div class="ifs-pms-action-title"><?php esc_html_e( 'Sell Ticket Pass', 'swimming-pool-manager' ); ?></div>
+                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Single, Combo & VIP passes', 'swimming-pool-manager' ); ?></div>
             </div>
         </a>
 
         <a href="<?php echo esc_url( $base_dash_url . '&view=scanner' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-green">
-                <?php echo wp_kses( ifs_pms_get_svg( 'qrcode', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span class="dashicons dashicons-fullscreen-alt"></span>
             </div>
             <div>
-                <div class="ifs-pms-action-title"><?php esc_html_e( 'Gate Turnstile Scan', 'ozone-skypool' ); ?></div>
-                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Check-in admission QR codes', 'ozone-skypool' ); ?></div>
+                <div class="ifs-pms-action-title"><?php esc_html_e( 'Gate Turnstile Scan', 'swimming-pool-manager' ); ?></div>
+                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Check-in admission QR codes', 'swimming-pool-manager' ); ?></div>
             </div>
         </a>
 
         <a href="<?php echo esc_url( $base_dash_url . '&view=membership' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-purple">
-                <?php echo wp_kses( ifs_pms_get_svg( 'card', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span class="dashicons dashicons-id-alt"></span>
             </div>
             <div>
-                <div class="ifs-pms-action-title"><?php esc_html_e( 'Enroll Members', 'ozone-skypool' ); ?></div>
-                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Monthly & Season Passes', 'ozone-skypool' ); ?></div>
+                <div class="ifs-pms-action-title"><?php esc_html_e( 'Enroll Members', 'swimming-pool-manager' ); ?></div>
+                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Monthly & Season Passes', 'swimming-pool-manager' ); ?></div>
             </div>
         </a>
 
         <a href="<?php echo esc_url( $base_dash_url . '&view=expenses' ); ?>" class="ifs-pms-action-card">
             <div class="ifs-pms-action-icon ifs-pms-action-icon-red">
-                <?php echo wp_kses( ifs_pms_get_svg( 'receipt', '', 18 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span class="dashicons dashicons-media-text"></span>
             </div>
             <div>
-                <div class="ifs-pms-action-title"><?php esc_html_e( 'Record Outflow', 'ozone-skypool' ); ?></div>
-                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Salary, Utility, Fuel & Bills', 'ozone-skypool' ); ?></div>
+                <div class="ifs-pms-action-title"><?php esc_html_e( 'Record Outflow', 'swimming-pool-manager' ); ?></div>
+                <div class="ifs-pms-action-sub"><?php esc_html_e( 'Salary, Utility, Fuel & Bills', 'swimming-pool-manager' ); ?></div>
             </div>
         </a>
     </div>
@@ -220,14 +228,14 @@ $recent_admissions = $wpdb->get_results(
     <div class="ifs-pms-kpi-quad">
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-inflow">
             <div class="ifs-pms-kpi-meta-tag">
-                <span><?php esc_html_e( 'Shift Gross Receipts', 'ozone-skypool' ); ?></span>
-                <?php echo wp_kses( ifs_pms_get_svg( 'check', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span><?php esc_html_e( 'Shift Gross Receipts', 'swimming-pool-manager' ); ?></span>
+                <span class="dashicons dashicons-yes-alt"></span>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #10b981;">
                 <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_revenue, 2 ) ); ?>
             </div>
             <div class="ifs-pms-kpi-foot">
-                <?php esc_html_e( 'Net Take-Home:', 'ozone-skypool' ); ?> 
+                <?php esc_html_e( 'Net Take-Home:', 'swimming-pool-manager' ); ?> 
                 <strong style="color: <?php echo $today_net_margin >= 0 ? '#10b981' : '#ef4444'; ?>;" class="ifs-pms-mono">
                     <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_net_margin, 2 ) ); ?>
                 </strong>
@@ -236,41 +244,41 @@ $recent_admissions = $wpdb->get_results(
 
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-admit">
             <div class="ifs-pms-kpi-meta-tag">
-                <span><?php esc_html_e( 'Passes Issued Today', 'ozone-skypool' ); ?></span>
-                <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span><?php esc_html_e( 'Passes Issued Today', 'swimming-pool-manager' ); ?></span>
+                <span class="dashicons dashicons-tickets-alt"></span>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #0f172a;">
                 <?php echo esc_html( number_format_i18n( $today_tickets_issued ) ); ?>
             </div>
             <div class="ifs-pms-kpi-foot">
-                <?php esc_html_e( 'Tickets sold during current session', 'ozone-skypool' ); ?>
+                <?php esc_html_e( 'Tickets sold during current session', 'swimming-pool-manager' ); ?>
             </div>
         </div>
 
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-turnover">
             <div class="ifs-pms-kpi-meta-tag">
-                <span><?php esc_html_e( 'Gate Turnstile Verified', 'ozone-skypool' ); ?></span>
-                <?php echo wp_kses( ifs_pms_get_svg( 'qrcode', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span><?php esc_html_e( 'Gate Turnstile Verified', 'swimming-pool-manager' ); ?></span>
+                <span class="dashicons dashicons-fullscreen-alt"></span>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #c084fc;">
                 <?php echo esc_html( number_format_i18n( $today_admitted ) ); ?>
             </div>
             <div class="ifs-pms-kpi-foot">
-                <?php esc_html_e( 'Verification Conversion:', 'ozone-skypool' ); ?> 
+                <?php esc_html_e( 'Verification Conversion:', 'swimming-pool-manager' ); ?> 
                 <strong style="color: #0f172a;" class="ifs-pms-mono"><?php echo esc_html( (string) $entry_turnover ); ?>%</strong>
             </div>
         </div>
 
         <div class="ifs-pms-kpi-brick ifs-pms-kpi-brick-outflow">
             <div class="ifs-pms-kpi-meta-tag">
-                <span><?php esc_html_e( 'Operating Outflows', 'ozone-skypool' ); ?></span>
-                <?php echo wp_kses( ifs_pms_get_svg( 'receipt', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
+                <span><?php esc_html_e( 'Operating Outflows', 'swimming-pool-manager' ); ?></span>
+                <span class="dashicons dashicons-media-text"></span>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono" style="color: #ef4444;">
                 <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_expenses, 2 ) ); ?>
             </div>
             <div class="ifs-pms-kpi-foot">
-                <?php esc_html_e( 'Logged disbursements & supplies', 'ozone-skypool' ); ?>
+                <?php esc_html_e( 'Logged disbursements & supplies', 'swimming-pool-manager' ); ?>
             </div>
         </div>
     </div>
@@ -281,30 +289,30 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-top">
                 <h3 class="ifs-pms-panel-header-title">
-                    <?php echo wp_kses( ifs_pms_get_svg( 'tower', '', 16 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
-                    <?php esc_html_e( 'Live Turnstile Activity Stream (Latest 5)', 'ozone-skypool' ); ?>
+                    <span class="dashicons dashicons-building"></span>
+                    <?php esc_html_e( 'Live Turnstile Activity Stream (Latest 5)', 'swimming-pool-manager' ); ?>
                 </h3>
-                <a href="<?php echo esc_url( $base_dash_url . '&view=history' ); ?>" style="color: #0284c7; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                    <?php esc_html_e( 'Full Pass Ledger', 'ozone-skypool' ); ?> &rarr;
+                <a href="<?php echo esc_url( $base_dash_url . '&view=tickets&tab=list' ); ?>" style="color: #0284c7; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                    <?php esc_html_e( 'Full Pass Ledger', 'swimming-pool-manager' ); ?> &rarr;
                 </a>
             </div>
 
             <?php if ( ! empty( $recent_admissions ) ) : ?>
                 <?php foreach ( $recent_admissions as $act ) : 
-                    $is_valid = ( $act->status === 'Valid' );
+                    $is_valid    = ( 'Valid' === $act->status );
                     $badge_class = $is_valid 
                         ? 'ifs-pms-status-green' 
-                        : ( $act->status === 'Used' 
+                        : ( 'Used' === $act->status 
                             ? 'ifs-pms-status-amber' 
                             : 'ifs-pms-status-red' );
                 ?>
                     <div class="ifs-pms-feed-item">
                         <div>
                             <div class="ifs-pms-feed-guest">
-                                <?php echo esc_html( ! empty( $act->customer_name ) ? $act->customer_name : __( 'Walk-in Guest', 'ozone-skypool' ) ); ?>
+                                <?php echo esc_html( ! empty( $act->customer_name ) ? $act->customer_name : __( 'Walk-in Guest', 'swimming-pool-manager' ) ); ?>
                             </div>
                             <div class="ifs-pms-feed-meta ifs-pms-mono">
-                                <?php echo esc_html( $act->ticket_code ); ?> &bull; <?php echo esc_html( number_format_i18n( $act->amount, 2 ) . ' ' . $currency ); ?>
+                                <?php echo esc_html( $act->ticket_code ); ?> &bull; <?php echo esc_html( number_format_i18n( (float) $act->amount, 2 ) . ' ' . $currency ); ?>
                             </div>
                         </div>
 
@@ -313,15 +321,15 @@ $recent_admissions = $wpdb->get_results(
                                 <?php echo esc_html( $act->status ); ?>
                             </span>
                             <div style="font-size: 11.5px; color: #64748b; margin-top: 5px;" class="ifs-pms-mono">
-                                <?php echo esc_html( $act->status === 'Used' ? ( $act->scanned_at ?: $act->sold_at ) : $act->sold_at ); ?>
+                                <?php echo esc_html( 'Used' === $act->status ? ( $act->scanned_at ?: $act->sold_at ) : $act->sold_at ); ?>
                             </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
             <?php else : ?>
                 <div style="text-align: center; color: #64748b; padding: 56px 20px;">
-                    <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 32 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
-                    <div style="margin-top: 12px;"><?php esc_html_e( 'No tickets issued or scanned yet today.', 'ozone-skypool' ); ?></div>
+                    <span class="dashicons dashicons-tickets-alt" style="font-size: 32px; width: 32px; height: 32px;"></span>
+                    <div style="margin-top: 12px;"><?php esc_html_e( 'No tickets issued or scanned yet today.', 'swimming-pool-manager' ); ?></div>
                 </div>
             <?php endif; ?>
         </div>
@@ -330,18 +338,18 @@ $recent_admissions = $wpdb->get_results(
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-top">
                 <h3 class="ifs-pms-panel-header-title">
-                    <?php echo wp_kses( ifs_pms_get_svg( 'sliders', '', 16 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
-                    <?php esc_html_e( 'Shift Balance Breakdown', 'ozone-skypool' ); ?>
+                    <span class="dashicons dashicons-admin-settings"></span>
+                    <?php esc_html_e( 'Shift Balance Breakdown', 'swimming-pool-manager' ); ?>
                 </h3>
                 <span class="ifs-pms-status-pill ifs-pms-status-green" style="font-size: 11px; padding: 4px 10px;">
-                    <?php esc_html_e( 'Audited', 'ozone-skypool' ); ?>
+                    <?php esc_html_e( 'Audited', 'swimming-pool-manager' ); ?>
                 </span>
             </div>
 
             <div class="ifs-pms-finance-row">
                 <span style="display: flex; align-items: center; gap: 12px; color: #0f172a;">
-                    <?php echo wp_kses( ifs_pms_get_svg( 'ticket', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
-                    <?php esc_html_e( 'Day Admission Tickets', 'ozone-skypool' ); ?>
+                    <span class="dashicons dashicons-tickets-alt"></span>
+                    <?php esc_html_e( 'Day Admission Tickets', 'swimming-pool-manager' ); ?>
                 </span>
                 <strong class="ifs-pms-mono" style="color: #0f172a;">
                     <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_tickets_rev, 2 ) ); ?>
@@ -350,8 +358,8 @@ $recent_admissions = $wpdb->get_results(
 
             <div class="ifs-pms-finance-row">
                 <span style="display: flex; align-items: center; gap: 12px; color: #0f172a;">
-                    <?php echo wp_kses( ifs_pms_get_svg( 'card', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
-                    <?php esc_html_e( 'Pass Subscriptions', 'ozone-skypool' ); ?>
+                    <span class="dashicons dashicons-id-alt"></span>
+                    <?php esc_html_e( 'Pass Subscriptions', 'swimming-pool-manager' ); ?>
                 </span>
                 <strong class="ifs-pms-mono" style="color: #0f172a;">
                     <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_members_rev, 2 ) ); ?>
@@ -360,8 +368,8 @@ $recent_admissions = $wpdb->get_results(
 
             <div class="ifs-pms-finance-row">
                 <span style="display: flex; align-items: center; gap: 12px; color: #0f172a;">
-                    <?php echo wp_kses( ifs_pms_get_svg( 'receipt', '', 14 ), array( 'svg' => array( 'xmlns' => true, 'viewBox' => true, 'width' => true, 'height' => true, 'fill' => true, 'class' => true ), 'path' => array( 'd' => true ) ) ); ?>
-                    <?php esc_html_e( 'Operational Outflows', 'ozone-skypool' ); ?>
+                    <span class="dashicons dashicons-media-text"></span>
+                    <?php esc_html_e( 'Operational Outflows', 'swimming-pool-manager' ); ?>
                 </span>
                 <strong class="ifs-pms-mono" style="color: #ef4444;">
                     -<?php echo esc_html( $currency . ' ' . number_format_i18n( $today_expenses, 2 ) ); ?>
@@ -369,7 +377,7 @@ $recent_admissions = $wpdb->get_results(
             </div>
 
             <div class="ifs-pms-finance-row ifs-pms-finance-total">
-                <span style="font-size: 15px; color: #0f172a;"><?php esc_html_e( 'Daily Cash Margin', 'ozone-skypool' ); ?></span>
+                <span style="font-size: 15px; color: #0f172a;"><?php esc_html_e( 'Daily Cash Margin', 'swimming-pool-manager' ); ?></span>
                 <strong class="ifs-pms-mono" style="font-size: 19px; color: <?php echo $today_net_margin >= 0 ? '#10b981' : '#ef4444'; ?>;">
                     <?php echo esc_html( $currency . ' ' . number_format_i18n( $today_net_margin, 2 ) ); ?>
                 </strong>

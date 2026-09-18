@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Staff Management & Unified Operator Salary Provisioning (Enterprise Edition v4 - Custom Avatar Upload & Zero Inline CSS)
+ * View: Staff Management & Unified Operator Salary Provisioning (Dashicons UI)
  *
  * @package Ozone_Skypool_OS
  */
@@ -18,7 +18,7 @@ $base_url = admin_url( 'admin.php?page=ifs-pms&view=staff' );
 $is_admin = current_user_can( 'manage_options' );
 
 // Active Tab Router ('add' or 'list')
-$active_tab = isset( $_GET['tab'] ) && $_GET['tab'] === 'list' ? 'list' : 'add';
+$active_tab = isset( $_GET['tab'] ) && 'list' === $_GET['tab'] ? 'list' : 'add';
 
 // Fetch WordPress Users with salaries joined
 $staff_users = get_users( array(
@@ -37,24 +37,26 @@ foreach ( $salaries_raw as $sal ) {
 <div class="ifs-pms-staff-wrapper">
     <!-- Sub Navigation Tab Bar -->
     <div class="ifs-pms-subnav-bar" role="tablist">
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchStaffTab('add', this)">
-            <i class="fa-solid fa-user-plus"></i> <?php esc_html_e( 'Add Staff & Salary', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'add' === $active_tab ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchStaffTab('add', this)">
+            <span class="dashicons dashicons-id"></span> <?php esc_html_e( 'Add Staff & Salary', 'swimming-pool-manager' ); ?>
         </button>
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchStaffTab('list', this)">
-            <i class="fa-solid fa-users"></i> <?php esc_html_e( 'All Staff Directory', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchStaffTab('list', this)">
+            <span class="dashicons dashicons-groups"></span> <?php esc_html_e( 'All Staff Directory', 'swimming-pool-manager' ); ?>
         </button>
     </div>
 
     <!-- TAB 1: Add Staff & Salary Terminal -->
-    <div id="ifsPmsStaffPaneAdd" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>">
+    <div id="ifsPmsStaffPaneAdd" class="ifs-pms-tab-pane <?php echo ( 'add' === $active_tab ) ? 'active' : ''; ?>">
         <div class="ifs-pms-form-box-centered">
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-user-plus ifs-pms-icon-primary"></i>
+                        <span class="dashicons dashicons-groups"></span>
                         <?php esc_html_e( 'Provision Operator & Compensation', 'swimming-pool-manager' ); ?>
                     </h3>
-                    <span class="ifs-pms-badge ifs-pms-badge-success"><?php esc_html_e( 'RBAC & Payroll', 'swimming-pool-manager' ); ?></span>
+                    <span class="ifs-pms-badge ifs-pms-badge-success">
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'RBAC & Payroll', 'swimming-pool-manager' ); ?>
+                    </span>
                 </div>
 
                 <form method="POST" action="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=staff' ) ); ?>">
@@ -97,7 +99,7 @@ foreach ( $salaries_raw as $sal ) {
                             <div class="ifs-pms-avatar-upload-group">
                                 <input type="text" name="user_avatar_url" id="ifsPmsCreateAvatarUrl" placeholder="https://... (Leave blank for Gravatar)" autocomplete="off">
                                 <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-media-action" onclick="ifsPmsOpenMediaUploaderForAdd()">
-                                    <i class="fa-solid fa-image"></i> <?php esc_html_e( 'Media Library', 'swimming-pool-manager' ); ?>
+                                    <span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Media Library', 'swimming-pool-manager' ); ?>
                                 </button>
                             </div>
                         </div>
@@ -132,7 +134,7 @@ foreach ( $salaries_raw as $sal ) {
 
                         <div class="ifs-pms-submit-wrap">
                             <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-lg ifs-pms-btn-submit-block">
-                                <i class="fa-solid fa-user-check"></i> <?php esc_html_e( 'Create Operator & Compensation', 'swimming-pool-manager' ); ?>
+                                <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Create Operator & Compensation', 'swimming-pool-manager' ); ?>
                             </button>
                         </div>
                     </div>
@@ -142,11 +144,11 @@ foreach ( $salaries_raw as $sal ) {
     </div>
 
     <!-- TAB 2: All Staff Directory -->
-    <div id="ifsPmsStaffPaneList" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>">
+    <div id="ifsPmsStaffPaneList" class="ifs-pms-tab-pane <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>">
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-head">
                 <h3 class="ifs-pms-panel-title">
-                    <i class="fa-solid fa-user-shield ifs-pms-icon-muted"></i>
+                    <span class="dashicons dashicons-shield"></span>
                     <?php esc_html_e( 'Active Operators Directory & Payroll Ledger', 'swimming-pool-manager' ); ?>
                 </h3>
                 <span class="ifs-pms-badge ifs-pms-badge-neutral">
@@ -156,7 +158,7 @@ foreach ( $salaries_raw as $sal ) {
 
             <div class="ifs-pms-search-bar">
                 <div class="ifs-pms-search-container">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <span class="dashicons dashicons-search"></span>
                     <input type="text" id="ifsPmsStaffSearchInput" placeholder="<?php esc_attr_e( 'Filter by name, username, or email...', 'swimming-pool-manager' ); ?>" oninput="ifsPmsFilterStaffDirectory()" autocomplete="off">
                 </div>
                 <div class="ifs-pms-directory-subtext">
@@ -192,7 +194,7 @@ foreach ( $salaries_raw as $sal ) {
                                         <div class="ifs-pms-flex-center">
                                             <div class="ifs-pms-staff-avatar-box">
                                                 <?php if ( ! empty( $avatar_url ) ) : ?>
-                                                    <img src="<?php echo esc_url( $avatar_url ); ?>" alt="Avatar">
+                                                    <img src="<?php echo esc_url( $avatar_url ); ?>" alt="<?php esc_attr_e( 'Avatar', 'swimming-pool-manager' ); ?>">
                                                 <?php else : ?>
                                                     <?php echo esc_html( $initial ); ?>
                                                 <?php endif; ?>
@@ -230,7 +232,7 @@ foreach ( $salaries_raw as $sal ) {
                                             'allow'  => $allow,
                                             'freq'   => $sal ? $sal->pay_frequency : 'Monthly',
                                         ) ); ?>)'>
-                                            <i class="fa-solid fa-eye"></i> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
+                                            <span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
                                         </button>
 
                                         <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-edit" onclick='ifsPmsOpenEditStaffModal(<?php echo wp_json_encode( array(
@@ -244,7 +246,7 @@ foreach ( $salaries_raw as $sal ) {
                                             'freq'     => $sal ? $sal->pay_frequency : 'Monthly',
                                             'eff_date' => $sal ? $sal->effective_date : current_time( 'Y-m-d' ),
                                         ) ); ?>)'>
-                                            <i class="fa-solid fa-pen-to-square"></i> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
+                                            <span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
                                         </button>
 
                                         <?php if ( $is_admin && $u->ID !== get_current_user_id() ) : ?>
@@ -253,7 +255,7 @@ foreach ( $salaries_raw as $sal ) {
                                                 <input type="hidden" name="ifs_pms_action" value="delete_staff">
                                                 <input type="hidden" name="user_id" value="<?php echo esc_attr( $u->ID ); ?>">
                                                 <button type="submit" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-delete" title="<?php esc_attr_e( 'Revoke Account', 'swimming-pool-manager' ); ?>">
-                                                    <i class="fa-solid fa-trash-can"></i> <?php esc_html_e( 'Delete', 'swimming-pool-manager' ); ?>
+                                                    <span class="dashicons dashicons-trash"></span>
                                                 </button>
                                             </form>
                                         <?php endif; ?>
@@ -273,7 +275,7 @@ foreach ( $salaries_raw as $sal ) {
     <div class="ifs-pms-modal-card">
         <div class="ifs-pms-modal-head-row">
             <h3 class="ifs-pms-modal-title">
-                <i class="fa-solid fa-user-shield ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-shield"></span>
                 <?php esc_html_e( 'Operator Profile & Compensation', 'swimming-pool-manager' ); ?>
             </h3>
             <button type="button" class="ifs-pms-modal-close-btn" onclick="ifsPmsCloseViewStaffModal()">&times;</button>
@@ -323,7 +325,7 @@ foreach ( $salaries_raw as $sal ) {
     <div class="ifs-pms-modal-card">
         <div class="ifs-pms-modal-head-row">
             <h3 class="ifs-pms-modal-title">
-                <i class="fa-solid fa-pen-to-square ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-edit"></span>
                 <?php esc_html_e( 'Edit Operator Profile & Compensation', 'swimming-pool-manager' ); ?>
             </h3>
             <button type="button" class="ifs-pms-modal-close-btn" onclick="ifsPmsCloseEditStaffModal()">&times;</button>
@@ -365,7 +367,7 @@ foreach ( $salaries_raw as $sal ) {
                     <div class="ifs-pms-avatar-upload-group">
                         <input type="text" name="user_avatar_url" id="ifsPmsEditAvatarUrl" placeholder="https://..." autocomplete="off">
                         <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-media-action" onclick="ifsPmsOpenMediaUploaderForEdit()">
-                            <i class="fa-solid fa-image"></i> <?php esc_html_e( 'Media Library', 'swimming-pool-manager' ); ?>
+                            <span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Media Library', 'swimming-pool-manager' ); ?>
                         </button>
                     </div>
                 </div>
@@ -399,108 +401,14 @@ foreach ( $salaries_raw as $sal ) {
                 </div>
 
                 <div class="ifs-pms-modal-actions">
-                    <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-flex-2"><?php esc_html_e( 'Save Changes', 'swimming-pool-manager' ); ?></button>
-                    <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-secondary ifs-pms-btn-flex-1" onclick="ifsPmsCloseEditStaffModal()"><?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?></button>
+                    <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-flex-2">
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Save Changes', 'swimming-pool-manager' ); ?>
+                    </button>
+                    <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-secondary ifs-pms-btn-flex-1" onclick="ifsPmsCloseEditStaffModal()">
+                        <?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?>
+                    </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
-
-<script>
-function ifsPmsSwitchStaffTab(tabKey, btn) {
-    document.querySelectorAll('.ifs-pms-subnav-btn').forEach(b => b.classList.remove('active'));
-    if(btn) btn.classList.add('active');
-
-    document.getElementById('ifsPmsStaffPaneAdd').classList.remove('active');
-    document.getElementById('ifsPmsStaffPaneList').classList.remove('active');
-
-    if (tabKey === 'add') document.getElementById('ifsPmsStaffPaneAdd').classList.add('active');
-    else if (tabKey === 'list') document.getElementById('ifsPmsStaffPaneList').classList.add('active');
-
-    if (window.history.replaceState) {
-        const url = new URL(window.location);
-        url.searchParams.set('tab', tabKey);
-        window.history.replaceState({}, '', url);
-    }
-}
-
-function ifsPmsOpenViewStaffModal(data) {
-    document.getElementById('ifsPmsViewStaffName').textContent = data.name;
-    document.getElementById('ifsPmsViewStaffLogin').textContent = data.login;
-    document.getElementById('ifsPmsViewStaffEmail').textContent = data.email;
-    document.getElementById('ifsPmsViewStaffRoleBadge').textContent = data.role;
-    document.getElementById('ifsPmsViewStaffBase').textContent = data.base.toFixed(2) + ' <?php echo esc_js( $currency ); ?>';
-    document.getElementById('ifsPmsViewStaffAllow').textContent = data.allow.toFixed(2) + ' <?php echo esc_js( $currency ); ?>';
-    document.getElementById('ifsPmsViewStaffFreq').textContent = data.freq;
-
-    const avatarBox = document.getElementById('ifsPmsViewAvatarBox');
-    if (avatarBox) {
-        if (data.avatar) {
-            avatarBox.innerHTML = '<img src="' + data.avatar + '" alt="Avatar">';
-        } else {
-            avatarBox.textContent = data.name.charAt(0).toUpperCase();
-        }
-    }
-
-    document.getElementById('ifsPmsViewStaffModal').style.display = 'flex';
-}
-function ifsPmsCloseViewStaffModal() {
-    document.getElementById('ifsPmsViewStaffModal').style.display = 'none';
-}
-
-function ifsPmsOpenEditStaffModal(data) {
-    document.getElementById('ifsPmsEditStaffId').value = data.id;
-    document.getElementById('ifsPmsEditStaffName').value = data.name;
-    document.getElementById('ifsPmsEditStaffEmail').value = data.email;
-    document.getElementById('ifsPmsEditStaffRole').value = data.role;
-    document.getElementById('ifsPmsEditAvatarUrl').value = data.avatar || '';
-    document.getElementById('ifsPmsEditStaffBase').value = data.base.toFixed(2);
-    document.getElementById('ifsPmsEditStaffAllow').value = data.allow.toFixed(2);
-    document.getElementById('ifsPmsEditStaffFreq').value = data.freq;
-    document.getElementById('ifsPmsEditStaffDate').value = data.eff_date;
-    document.getElementById('ifsPmsEditStaffModal').style.display = 'flex';
-}
-function ifsPmsCloseEditStaffModal() {
-    document.getElementById('ifsPmsEditStaffModal').style.display = 'none';
-}
-
-function ifsPmsOpenMediaUploaderForAdd() {
-    if (typeof window.wp === 'undefined' || !window.wp.media) {
-        alert('WordPress Media Uploader is unavailable.');
-        return;
-    }
-    const uploader = window.wp.media({ title: 'Select Avatar', button: { text: 'Use this image' }, multiple: false });
-    uploader.on('select', function() {
-        const attachment = uploader.state().get('selection').first().toJSON();
-        const field = document.getElementById('ifsPmsCreateAvatarUrl');
-        if (field && attachment && attachment.url) field.value = attachment.url;
-    });
-    uploader.open();
-}
-
-function ifsPmsOpenMediaUploaderForEdit() {
-    if (typeof window.wp === 'undefined' || !window.wp.media) {
-        alert('WordPress Media Uploader is unavailable.');
-        return;
-    }
-    const uploader = window.wp.media({ title: 'Select Avatar', button: { text: 'Use this image' }, multiple: false });
-    uploader.on('select', function() {
-        const attachment = uploader.state().get('selection').first().toJSON();
-        const field = document.getElementById('ifsPmsEditAvatarUrl');
-        if (field && attachment && attachment.url) field.value = attachment.url;
-    });
-    uploader.open();
-}
-
-function ifsPmsFilterStaffDirectory() {
-    const input = document.getElementById('ifsPmsStaffSearchInput');
-    const filter = input ? input.value.toLowerCase().trim() : '';
-    const rows = document.querySelectorAll('.ifs-pms-staff-record-row');
-
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        row.style.display = (!filter || text.includes(filter)) ? '' : 'none';
-    });
-}
-</script>

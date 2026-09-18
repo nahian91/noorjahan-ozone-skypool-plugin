@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Member Directory & Pass Enrollment Terminal (Enterprise Edition v2 - Zero Inline CSS)
+ * View: Member Directory & Pass Enrollment Terminal (Dashicons UI)
  *
  * @package Ozone_Skypool_OS
  */
@@ -19,7 +19,7 @@ $today_dt  = current_time( 'Y-m-d' );
 $is_admin  = current_user_can( 'manage_options' ) || current_user_can( 'ozone_manage_settings' );
 
 // Tab Router
-$active_tab = isset( $_GET['tab'] ) && $_GET['tab'] === 'list' ? 'list' : 'add';
+$active_tab = isset( $_GET['tab'] ) && 'list' === $_GET['tab'] ? 'list' : 'add';
 
 // Query Members
 $members = $wpdb->get_results(
@@ -30,26 +30,26 @@ $members = $wpdb->get_results(
 <div class="ifs-pms-membership-wrapper">
     <!-- Sub Navigation Tab Bar -->
     <div class="ifs-pms-subnav-bar" role="tablist">
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>" id="ifsPmsMemberTabBtnAdd" onclick="ifsPmsSwitchMemberTab('add', this)">
-            <i class="fa-solid fa-user-plus"></i> <?php esc_html_e( 'Add Member', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'add' === $active_tab ) ? 'active' : ''; ?>" id="ifsPmsMemberTabBtnAdd" onclick="ifsPmsSwitchMemberTab('add', this)">
+            <span class="dashicons dashicons-id-alt"></span> <?php esc_html_e( 'Add Member', 'swimming-pool-manager' ); ?>
         </button>
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>" id="ifsPmsMemberTabBtnList" onclick="ifsPmsSwitchMemberTab('list', this)">
-            <i class="fa-solid fa-users"></i> <?php esc_html_e( 'All Members', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>" id="ifsPmsMemberTabBtnList" onclick="ifsPmsSwitchMemberTab('list', this)">
+            <span class="dashicons dashicons-groups"></span> <?php esc_html_e( 'All Members', 'swimming-pool-manager' ); ?>
         </button>
     </div>
 
     <!-- TAB 1: Add Member Terminal -->
-    <div id="ifsPmsMemberPaneAdd" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>">
+    <div id="ifsPmsMemberPaneAdd" class="ifs-pms-tab-pane <?php echo ( 'add' === $active_tab ) ? 'active' : ''; ?>">
         <div class="ifs-pms-membership-layout">
             <!-- Enrollment Form -->
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-id-card-clip ifs-pms-icon-primary"></i>
+                        <span class="dashicons dashicons-id-alt"></span>
                         <?php esc_html_e( 'Enroll Aquatic Member', 'swimming-pool-manager' ); ?>
                     </h3>
                     <span class="ifs-pms-badge ifs-pms-badge-success">
-                        <i class="fa-solid fa-bolt"></i> <?php esc_html_e( 'Auto RFID Pass', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Auto RFID Pass', 'swimming-pool-manager' ); ?>
                     </span>
                 </div>
 
@@ -73,7 +73,7 @@ $members = $wpdb->get_results(
                             <div class="ifs-pms-avatar-upload-row">
                                 <input type="text" name="profile_image" id="ifsMemAvatarInput" placeholder="https://... image URL" class="ifs-pms-flex-1" oninput="ifsPmsSyncCardDisplay()">
                                 <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-media" onclick="ifsPmsOpenMemberMediaUploader()">
-                                    <i class="fa-solid fa-image"></i> <?php esc_html_e( 'Browse', 'swimming-pool-manager' ); ?>
+                                    <span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Browse', 'swimming-pool-manager' ); ?>
                                 </button>
                             </div>
                         </div>
@@ -100,7 +100,7 @@ $members = $wpdb->get_results(
                         </div>
 
                         <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-lg ifs-pms-btn-submit-block">
-                            <i class="fa-solid fa-id-card"></i> <?php esc_html_e( 'Enroll & Provision Member Pass', 'swimming-pool-manager' ); ?>
+                            <span class="dashicons dashicons-id-alt"></span> <?php esc_html_e( 'Enroll & Provision Member Pass', 'swimming-pool-manager' ); ?>
                         </button>
                     </div>
                 </form>
@@ -110,7 +110,7 @@ $members = $wpdb->get_results(
             <div>
                 <div class="ifs-pms-rfid-card-stage">
                     <div class="ifs-pms-virtual-rfid-card">
-                        <i class="fa-solid fa-water-ladder ifs-pms-card-watermark"></i>
+                        <span class="dashicons dashicons-building ifs-pms-virtual-card-watermark"></span>
                         
                         <div class="ifs-pms-card-head-row">
                             <div class="ifs-pms-card-chip"></div>
@@ -148,11 +148,11 @@ $members = $wpdb->get_results(
     </div>
 
     <!-- TAB 2: All Members Registry -->
-    <div id="ifsPmsMemberPaneList" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>">
+    <div id="ifsPmsMemberPaneList" class="ifs-pms-tab-pane <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>">
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-head">
                 <h3 class="ifs-pms-panel-title">
-                    <i class="fa-solid fa-users ifs-pms-icon-muted"></i>
+                    <span class="dashicons dashicons-groups"></span>
                     <?php esc_html_e( 'Subscriber Directory Ledger', 'swimming-pool-manager' ); ?>
                 </h3>
                 <span class="ifs-pms-badge ifs-pms-badge-neutral">
@@ -162,10 +162,10 @@ $members = $wpdb->get_results(
 
             <div class="ifs-pms-search-bar">
                 <div class="ifs-pms-search-container">
-                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <span class="dashicons dashicons-search"></span>
                     <input type="text" id="ifsPmsMemberFilterInput" placeholder="<?php esc_attr_e( 'Filter by subscriber name, mobile, or UID...', 'swimming-pool-manager' ); ?>" oninput="ifsPmsFilterDirectory()" autocomplete="off">
                     <button type="button" class="ifs-pms-search-clear" id="ifsPmsFilterClearBtn" onclick="ifsPmsClearFilter()">
-                        <i class="fa-solid fa-xmark"></i>
+                        <span class="dashicons dashicons-dismiss"></span>
                     </button>
                 </div>
                 <div class="ifs-pms-record-counter-text" id="ifsPmsRecordCounter">
@@ -187,7 +187,7 @@ $members = $wpdb->get_results(
                     </thead>
                     <tbody>
                         <?php if ( ! empty( $members ) ) : ?>
-                            <?php foreach ( $members as $m) :
+                            <?php foreach ( $members as $m ) :
                                 $expiry_stamp = strtotime( $m->expiry_date );
                                 $today_stamp  = strtotime( $today_dt );
                                 $is_expired   = ( $m->expiry_date < $today_dt );
@@ -211,7 +211,7 @@ $members = $wpdb->get_results(
                                     <td>
                                         <div class="ifs-pms-table-profile-row">
                                             <?php if ( ! empty( $m->profile_image ) ) : ?>
-                                                <img src="<?php echo esc_url( $m->profile_image ); ?>" alt="Avatar" class="ifs-pms-table-avatar-img">
+                                                <img src="<?php echo esc_url( $m->profile_image ); ?>" alt="<?php esc_attr_e( 'Avatar', 'swimming-pool-manager' ); ?>" class="ifs-pms-table-avatar-img">
                                             <?php else : ?>
                                                 <div class="ifs-pms-table-avatar-fallback">
                                                     <?php echo esc_html( mb_strtoupper( mb_substr( $m->name, 0, 1 ) ) ); ?>
@@ -249,7 +249,7 @@ $members = $wpdb->get_results(
                                             'status'        => $m->status,
                                             'profile_image' => $m->profile_image ?? '',
                                         ) ); ?>)'>
-                                            <i class="fa-solid fa-eye"></i> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
+                                            <span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
                                         </button>
 
                                         <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-edit" onclick='ifsPmsOpenEditMemberModal(<?php echo wp_json_encode( array(
@@ -263,7 +263,7 @@ $members = $wpdb->get_results(
                                             'status'        => $m->status,
                                             'profile_image' => $m->profile_image ?? '',
                                         ) ); ?>)'>
-                                            <i class="fa-solid fa-pen-to-square"></i> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
+                                            <span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
                                         </button>
 
                                         <?php if ( $is_admin ) : ?>
@@ -272,7 +272,7 @@ $members = $wpdb->get_results(
                                                 <input type="hidden" name="ifs_pms_action" value="delete_membership">
                                                 <input type="hidden" name="member_id" value="<?php echo esc_attr( $m->id ); ?>">
                                                 <button type="submit" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-delete" title="<?php esc_attr_e( 'Revoke Membership', 'swimming-pool-manager' ); ?>">
-                                                    <i class="fa-solid fa-trash-can"></i> <?php esc_html_e( 'Delete', 'swimming-pool-manager' ); ?>
+                                                    <span class="dashicons dashicons-trash"></span>
                                                 </button>
                                             </form>
                                         <?php endif; ?>
@@ -282,7 +282,9 @@ $members = $wpdb->get_results(
                         <?php else : ?>
                             <tr id="ifsPmsEmptyTableNotice">
                                 <td colspan="6" class="ifs-pms-empty-state">
-                                    <i class="fa-solid fa-address-card ifs-pms-empty-icon"></i>
+                                    <div class="ifs-pms-empty-state-icon">
+                                        <span class="dashicons dashicons-id-alt"></span>
+                                    </div>
                                     <?php esc_html_e( 'No active subscriptions recorded in system.', 'swimming-pool-manager' ); ?>
                                 </td>
                             </tr>
@@ -299,14 +301,14 @@ $members = $wpdb->get_results(
     <div class="ifs-pms-modal-card ifs-pms-text-align-center">
         <div class="ifs-pms-modal-head-row">
             <h3 class="ifs-pms-modal-title">
-                <i class="fa-solid fa-id-badge ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-id-alt"></span>
                 <?php esc_html_e( 'Aquatic Pass Identity', 'swimming-pool-manager' ); ?>
             </h3>
             <button type="button" class="ifs-pms-modal-close-btn" onclick="ifsPmsCloseViewMemberModal()">&times;</button>
         </div>
 
         <div class="ifs-pms-virtual-rfid-card ifs-pms-modal-rfid-preview">
-            <i class="fa-solid fa-water-ladder ifs-pms-card-watermark"></i>
+            <span class="dashicons dashicons-building ifs-pms-virtual-card-watermark"></span>
             
             <div class="ifs-pms-card-head-row">
                 <div class="ifs-pms-card-chip"></div>
@@ -336,7 +338,7 @@ $members = $wpdb->get_results(
 
         <div class="ifs-pms-modal-actions-split">
             <button type="button" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-modal-print-btn" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print Pass Card', 'swimming-pool-manager' ); ?>
+                <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Print Pass Card', 'swimming-pool-manager' ); ?>
             </button>
             <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-modal-close-action-btn" onclick="ifsPmsCloseViewMemberModal()">
                 <?php esc_html_e( 'Close', 'swimming-pool-manager' ); ?>
@@ -350,7 +352,7 @@ $members = $wpdb->get_results(
     <div class="ifs-pms-modal-card">
         <div class="ifs-pms-modal-head-row">
             <h3 class="ifs-pms-modal-title">
-                <i class="fa-solid fa-pen-to-square ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-edit"></span>
                 <?php esc_html_e( 'Edit Member Subscription', 'swimming-pool-manager' ); ?> (<span id="ifsPmsEditModalCode" class="ifs-pms-mono"></span>)
             </h3>
             <button type="button" class="ifs-pms-modal-close-btn" onclick="ifsPmsCloseEditMemberModal()">&times;</button>
@@ -377,7 +379,7 @@ $members = $wpdb->get_results(
                     <div class="ifs-pms-avatar-upload-row">
                         <input type="text" name="profile_image" id="ifsPmsEditModalAvatarInput" placeholder="https://... image URL" class="ifs-pms-flex-1">
                         <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-media" onclick="ifsPmsOpenEditMemberMediaUploader()">
-                            <i class="fa-solid fa-image"></i> <?php esc_html_e( 'Browse', 'swimming-pool-manager' ); ?>
+                            <span class="dashicons dashicons-admin-media"></span> <?php esc_html_e( 'Browse', 'swimming-pool-manager' ); ?>
                         </button>
                     </div>
                 </div>
@@ -412,7 +414,7 @@ $members = $wpdb->get_results(
 
                 <div class="ifs-pms-modal-actions">
                     <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-flex-2">
-                        <i class="fa-solid fa-floppy-disk"></i> <?php esc_html_e( 'Save Changes', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Save Changes', 'swimming-pool-manager' ); ?>
                     </button>
                     <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-flex-1 ifs-pms-btn-cancel" onclick="ifsPmsCloseEditMemberModal()">
                         <?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?>
@@ -422,205 +424,3 @@ $members = $wpdb->get_results(
         </form>
     </div>
 </div>
-
-<script>
-(function() {
-    // Tab Switching Router
-    window.ifsPmsSwitchMemberTab = function(tabKey, btn) {
-        document.querySelectorAll('.ifs-pms-subnav-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        document.getElementById('ifsPmsMemberPaneAdd').classList.remove('active');
-        document.getElementById('ifsPmsMemberPaneList').classList.remove('active');
-
-        if (tabKey === 'add') {
-            document.getElementById('ifsPmsMemberPaneAdd').classList.add('active');
-        } else {
-            document.getElementById('ifsPmsMemberPaneList').classList.add('active');
-        }
-
-        if (window.history.replaceState) {
-            const url = new URL(window.location);
-            url.searchParams.set('tab', tabKey);
-            window.history.replaceState({}, '', url);
-        }
-    };
-
-    // WordPress Media Uploader for Add Form
-    window.ifsPmsOpenMemberMediaUploader = function() {
-        const uploader = wp.media({
-            title: 'Select Patron Profile Photo',
-            button: { text: 'Use this photo' },
-            multiple: false
-        });
-        uploader.on('select', function() {
-            const attachment = uploader.state().get('selection').first().toJSON();
-            document.getElementById('ifsMemAvatarInput').value = attachment.url;
-            window.ifsPmsSyncCardDisplay();
-        });
-        uploader.open();
-    };
-
-    // WordPress Media Uploader for Edit Modal
-    window.ifsPmsOpenEditMemberMediaUploader = function() {
-        const uploader = wp.media({
-            title: 'Select Patron Profile Photo',
-            button: { text: 'Use this photo' },
-            multiple: false
-        });
-        uploader.on('select', function() {
-            const attachment = uploader.state().get('selection').first().toJSON();
-            document.getElementById('ifsPmsEditModalAvatarInput').value = attachment.url;
-        });
-        uploader.open();
-    };
-
-    // Modal Control: View Pass
-    window.ifsPmsOpenViewMemberModal = function(data) {
-        document.getElementById('ifsPmsViewModalTierPill').textContent = data.plan;
-        document.getElementById('ifsPmsViewModalHolder').textContent   = data.name;
-        document.getElementById('ifsPmsViewModalPhone').textContent    = data.phone;
-        document.getElementById('ifsPmsViewModalCode').textContent     = data.code;
-        document.getElementById('ifsPmsViewModalExpiry').textContent   = data.expiry;
-
-        const avatarBox = document.getElementById('ifsPmsViewModalAvatarBox');
-        if (data.profile_image) {
-            avatarBox.innerHTML = '<img src="' + data.profile_image + '" alt="Avatar" class="ifs-pms-modal-avatar-img">';
-        } else {
-            avatarBox.textContent = data.name ? data.name.charAt(0).toUpperCase() : 'M';
-        }
-
-        document.getElementById('ifsPmsViewMemberModal').style.display = 'flex';
-    };
-
-    window.ifsPmsCloseViewMemberModal = function() {
-        document.getElementById('ifsPmsViewMemberModal').style.display = 'none';
-    };
-
-    // Modal Control: Edit Member
-    window.ifsPmsOpenEditMemberModal = function(data) {
-        document.getElementById('ifsPmsEditModalId').value     = data.id;
-        document.getElementById('ifsPmsEditModalCode').textContent = data.code;
-        document.getElementById('ifsPmsEditModalName').value   = data.name;
-        document.getElementById('ifsPmsEditModalPhone').value  = data.phone;
-        document.getElementById('ifsPmsEditModalPlan').value   = data.plan;
-        document.getElementById('ifsPmsEditModalAmount').value = parseFloat(data.amount).toFixed(2);
-        document.getElementById('ifsPmsEditModalExpiry').value = data.expiry;
-        document.getElementById('ifsPmsEditModalStatus').value = data.status;
-        document.getElementById('ifsPmsEditModalAvatarInput').value = data.profile_image || '';
-
-        document.getElementById('ifsPmsEditMemberModal').style.display = 'flex';
-    };
-
-    window.ifsPmsCloseEditMemberModal = function() {
-        document.getElementById('ifsPmsEditMemberModal').style.display = 'none';
-    };
-
-    // Auto Plan Selection
-    window.ifsPmsHandlePlanSelect = function() {
-        const selectBox = document.getElementById('ifsMemPlan');
-        if (!selectBox) return;
-
-        const activeOpt = selectBox.options[selectBox.selectedIndex];
-        const months    = activeOpt.getAttribute('data-months');
-        const price     = activeOpt.getAttribute('data-price');
-
-        const durationInput = document.getElementById('ifsMemDuration');
-        const amountInput   = document.getElementById('ifsMemAmount');
-
-        if (durationInput) durationInput.value = months;
-        if (amountInput) amountInput.value = parseFloat(price).toFixed(2);
-
-        window.ifsPmsSyncCardDisplay();
-    };
-
-    // Sync Live Digital Card
-    window.ifsPmsSyncCardDisplay = function() {
-        const nameVal       = document.getElementById('ifsMemName').value.trim();
-        const avatarUrl     = document.getElementById('ifsMemAvatarInput').value.trim();
-        const selectBox     = document.getElementById('ifsMemPlan');
-        const planName      = selectBox ? selectBox.options[selectBox.selectedIndex].value : 'Monthly Sky Pass';
-        const durationInput = document.getElementById('ifsMemDuration');
-        const monthsCount   = durationInput ? (parseInt(durationInput.value, 10) || 1) : 1;
-
-        const holderEl  = document.getElementById('ifsPmsCardHolder');
-        const tierPill  = document.getElementById('ifsPmsCardTierPill');
-        const expiryEl  = document.getElementById('ifsPmsCardExpiryDate');
-        const avatarBox = document.getElementById('ifsPmsCardAvatarBox');
-
-        if (holderEl) holderEl.textContent = nameVal ? nameVal : <?php echo wp_json_encode( __( 'Farhan Chowdhury', 'swimming-pool-manager' ) ); ?>;
-        if (tierPill) tierPill.textContent = planName;
-
-        if (avatarBox) {
-            if (avatarUrl) {
-                avatarBox.innerHTML = '<img src="' + avatarUrl + '" alt="Avatar" class="ifs-pms-modal-avatar-img">';
-            } else {
-                avatarBox.textContent = nameVal ? nameVal.charAt(0).toUpperCase() : 'FC';
-            }
-        }
-
-        const calcDate = new Date();
-        calcDate.setMonth(calcDate.getMonth() + monthsCount);
-
-        const yyyy = calcDate.getFullYear();
-        const mm   = String(calcDate.getMonth() + 1).padStart(2, '0');
-        const dd   = String(calcDate.getDate()).padStart(2, '0');
-
-        if (expiryEl) expiryEl.textContent = yyyy + '-' + mm + '-' + dd;
-    };
-
-    // Filter Directory
-    window.ifsPmsFilterDirectory = function() {
-        const inputEl   = document.getElementById('ifsPmsMemberFilterInput');
-        const clearBtn  = document.getElementById('ifsPmsFilterClearBtn');
-        const filterStr = inputEl ? inputEl.value.toLowerCase().trim() : '';
-        const rows      = document.querySelectorAll('.ifs-pms-member-record-row');
-        let matched     = 0;
-
-        if (clearBtn) {
-            clearBtn.style.display = filterStr ? 'block' : 'none';
-        }
-
-        rows.forEach(row => {
-            const rowContent = row.textContent.toLowerCase();
-            if (rowContent.includes(filterStr)) {
-                row.style.display = '';
-                matched++;
-            } else {
-                row.style.display = 'none';
-            }
-        });
-
-        const counterEl = document.getElementById('ifsPmsRecordCounter');
-        if (counterEl) {
-            counterEl.textContent = filterStr 
-                ? <?php echo wp_json_encode( __( 'Matching records: ', 'swimming-pool-manager' ) ); ?> + matched
-                : <?php echo wp_json_encode( sprintf( __( 'Total: %d members', 'swimming-pool-manager' ), count( $members ) ) ); ?>;
-        }
-    };
-
-    window.ifsPmsClearFilter = function() {
-        const inputEl = document.getElementById('ifsPmsMemberFilterInput');
-        if (inputEl) {
-            inputEl.value = '';
-            window.ifsPmsFilterDirectory();
-            inputEl.focus();
-        }
-    };
-
-    function init() {
-        ['ifsMemName', 'ifsMemPhone'].forEach(id => {
-            const input = document.getElementById(id);
-            if (input) input.addEventListener('input', window.ifsPmsSyncCardDisplay);
-        });
-
-        window.ifsPmsSyncCardDisplay();
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-})();
-</script>

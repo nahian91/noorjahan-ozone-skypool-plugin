@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Operating Expenses & Outflow Registry (Zero Inline CSS - Enterprise Edition v5)
+ * View: Operating Expenses & Outflow Registry (Dashicons - Enterprise Edition v5)
  *
  * @package Ozone_Skypool_OS
  */
@@ -33,7 +33,7 @@ if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $end_date_input ) ) {
 }
 
 // Active Tab Router
-$active_tab = isset( $_GET['tab'] ) && $_GET['tab'] === 'list' ? 'list' : 'add';
+$active_tab = isset( $_GET['tab'] ) && 'list' === $_GET['tab'] ? 'list' : 'add';
 
 // 2. Financial Metrics (Indexed Range Queries)
 $exp_today = (float) $wpdb->get_var(
@@ -69,11 +69,11 @@ $top_cat = $top_cat ? $top_cat : __( 'None Recorded', 'swimming-pool-manager' );
 $query_sql  = "SELECT * FROM {$t_expense} WHERE expense_date >= %s AND expense_date <= %s";
 $query_args = array( $start_date_input, $end_date_input );
 
-if ( $sector_filter !== 'ALL' ) {
-    $query_sql  .= " AND category = %s";
+if ( 'ALL' !== $sector_filter ) {
+    $query_sql     .= ' AND category = %s';
     $query_args[] = $sector_filter;
 }
-$query_sql .= " ORDER BY expense_date DESC, id DESC LIMIT 500";
+$query_sql .= ' ORDER BY expense_date DESC, id DESC LIMIT 500';
 
 $expenses       = $wpdb->get_results( $wpdb->prepare( $query_sql, $query_args ) );
 $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
@@ -86,7 +86,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
             <div class="ifs-pms-kpi-top">
                 <span class="ifs-pms-kpi-label"><?php esc_html_e( 'Selected Range Cost', 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-kpi-icon ifs-pms-kpi-icon-red">
-                    <i class="fa-solid fa-calendar-days"></i>
+                    <span class="dashicons dashicons-clock"></span>
                 </div>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono ifs-pms-kpi-val-red">
@@ -97,9 +97,9 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
 
         <div class="ifs-pms-kpi-card">
             <div class="ifs-pms-kpi-top">
-                <span class="ifs-pms-kpi-label"><?php esc_html_e( 'Today\'s Outflow', 'swimming-pool-manager' ); ?></span>
+                <span class="ifs-pms-kpi-label"><?php esc_html_e( "Today's Outflow", 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-kpi-icon ifs-pms-kpi-icon-amber">
-                    <i class="fa-solid fa-calendar-day"></i>
+                    <span class="dashicons dashicons-dashboard"></span>
                 </div>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-mono ifs-pms-kpi-val-amber">
@@ -112,7 +112,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
             <div class="ifs-pms-kpi-top">
                 <span class="ifs-pms-kpi-label"><?php esc_html_e( 'Major Cost Sector', 'swimming-pool-manager' ); ?></span>
                 <div class="ifs-pms-kpi-icon ifs-pms-kpi-icon-purple">
-                    <i class="fa-solid fa-chart-pie"></i>
+                    <span class="dashicons dashicons-admin-settings"></span>
                 </div>
             </div>
             <div class="ifs-pms-kpi-val ifs-pms-kpi-val-dark">
@@ -124,21 +124,21 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
 
     <!-- Sub Navigation Tabs -->
     <div class="ifs-pms-subnav-bar" role="tablist">
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>" onclick="ifsPms.switchExpenseTab('add', this)">
-            <i class="fa-solid fa-circle-plus"></i> <?php esc_html_e( 'Add Expense', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'add' === $active_tab ) ? 'active' : ''; ?>" onclick="ifsPms.switchExpenseTab('add', this)">
+            <span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Expense', 'swimming-pool-manager' ); ?>
         </button>
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>" onclick="ifsPms.switchExpenseTab('list', this)">
-            <i class="fa-solid fa-receipt"></i> <?php esc_html_e( 'All Expenses & Audit', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>" onclick="ifsPms.switchExpenseTab('list', this)">
+            <span class="dashicons dashicons-media-text"></span> <?php esc_html_e( 'All Expenses & Audit', 'swimming-pool-manager' ); ?>
         </button>
     </div>
 
     <!-- TAB 1: Add Expense Form -->
-    <div id="ifsPmsExpensePaneAdd" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'add' ) ? 'active' : ''; ?>">
+    <div id="ifsPmsExpensePaneAdd" class="ifs-pms-tab-pane <?php echo ( 'add' === $active_tab ) ? 'active' : ''; ?>">
         <div class="ifs-pms-form-box-centered">
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-circle-plus ifs-pms-icon-primary"></i>
+                        <span class="dashicons dashicons-media-text"></span>
                         <?php esc_html_e( 'Record Facility Outflow', 'swimming-pool-manager' ); ?>
                     </h3>
                     <span class="ifs-pms-badge ifs-pms-badge-danger"><?php esc_html_e( 'Debit (-)', 'swimming-pool-manager' ); ?></span>
@@ -191,7 +191,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
 
                         <div class="ifs-pms-submit-wrap">
                             <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-lg ifs-pms-btn-submit-block">
-                                <i class="fa-solid fa-file-circle-check"></i> <?php esc_html_e( 'Post Expense Record', 'swimming-pool-manager' ); ?>
+                                <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Post Expense Record', 'swimming-pool-manager' ); ?>
                             </button>
                         </div>
                     </div>
@@ -201,11 +201,11 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
     </div>
 
     <!-- TAB 2: All Expenses & Audit Registry -->
-    <div id="ifsPmsExpensePaneList" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'list' ) ? 'active' : ''; ?>">
+    <div id="ifsPmsExpensePaneList" class="ifs-pms-tab-pane <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>">
         <div class="ifs-pms-panel-card">
             <div class="ifs-pms-panel-head">
                 <h3 class="ifs-pms-panel-title">
-                    <i class="fa-solid fa-receipt ifs-pms-icon-muted"></i>
+                    <span class="dashicons dashicons-media-text"></span>
                     <?php esc_html_e( 'Expense Audit & Date Range Registry', 'swimming-pool-manager' ); ?>
                 </h3>
                 <span class="ifs-pms-badge ifs-pms-badge-neutral">
@@ -244,10 +244,10 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
 
                     <div class="ifs-pms-flex-gap-8">
                         <button type="submit" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-primary ifs-pms-btn-filter-action">
-                            <i class="fa-solid fa-filter"></i> <?php esc_html_e( 'Filter Ledger', 'swimming-pool-manager' ); ?>
+                            <span class="dashicons dashicons-filter"></span> <?php esc_html_e( 'Filter Ledger', 'swimming-pool-manager' ); ?>
                         </button>
                         <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-secondary ifs-pms-btn-print-action" onclick="window.print()">
-                            <i class="fa-solid fa-print"></i> <?php esc_html_e( 'Print', 'swimming-pool-manager' ); ?>
+                            <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Print', 'swimming-pool-manager' ); ?>
                         </button>
                     </div>
                 </form>
@@ -295,7 +295,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
                                             'date'     => $e->expense_date,
                                             'by'       => ! empty( $e->added_by ) ? $e->added_by : __( 'System', 'swimming-pool-manager' ),
                                         ) ); ?>)'>
-                                            <i class="fa-solid fa-eye"></i> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
+                                            <span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
                                         </button>
 
                                         <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-edit" onclick='ifsPms.openEditExpenseModal(<?php echo wp_json_encode( array(
@@ -305,7 +305,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
                                             'amount'   => $e->amount,
                                             'date'     => $e->expense_date,
                                         ) ); ?>)'>
-                                            <i class="fa-solid fa-pen-to-square"></i> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
+                                            <span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
                                         </button>
 
                                         <?php if ( $is_admin ) : ?>
@@ -314,7 +314,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
                                                 <input type="hidden" name="ifs_pms_action" value="delete_expense">
                                                 <input type="hidden" name="expense_id" value="<?php echo esc_attr( $e->id ); ?>">
                                                 <button type="submit" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-delete" title="<?php esc_attr_e( 'Delete Permanently', 'swimming-pool-manager' ); ?>">
-                                                    <i class="fa-solid fa-trash-can"></i> <?php esc_html_e( 'Delete', 'swimming-pool-manager' ); ?>
+                                                    <span class="dashicons dashicons-trash"></span>
                                                 </button>
                                             </form>
                                         <?php endif; ?>
@@ -324,7 +324,9 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
                         <?php else : ?>
                             <tr id="ifsPmsExpenseEmptyRow">
                                 <td colspan="6" class="ifs-pms-empty-state">
-                                    <i class="fa-solid fa-receipt ifs-pms-empty-icon"></i>
+                                    <div class="ifs-pms-empty-state-icon">
+                                        <span class="dashicons dashicons-media-text"></span>
+                                    </div>
                                     <?php esc_html_e( 'No operational expenditures recorded for this date range.', 'swimming-pool-manager' ); ?>
                                 </td>
                             </tr>
@@ -349,7 +351,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
     <div class="ifs-pms-modal-card">
         <div class="ifs-pms-modal-head">
             <h3 class="ifs-pms-modal-title">
-                <i class="fa-solid fa-receipt ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-media-text"></span>
                 <?php esc_html_e( 'Expense Details', 'swimming-pool-manager' ); ?>
             </h3>
             <button type="button" class="ifs-pms-modal-close" onclick="ifsPms.closeViewExpenseModal()">&times;</button>
@@ -395,7 +397,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
     <div class="ifs-pms-modal-card">
         <div class="ifs-pms-modal-head">
             <h3 class="ifs-pms-modal-title">
-                <i class="fa-solid fa-pen-to-square ifs-pms-icon-primary"></i>
+                <span class="dashicons dashicons-edit"></span>
                 <?php esc_html_e( 'Edit Expense Entry', 'swimming-pool-manager' ); ?>
             </h3>
             <button type="button" class="ifs-pms-modal-close" onclick="ifsPms.closeEditExpenseModal()">&times;</button>
@@ -441,7 +443,7 @@ $filtered_total = array_sum( wp_list_pluck( $expenses, 'amount' ) );
 
                 <div class="ifs-pms-modal-actions">
                     <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-flex-2">
-                        <i class="fa-solid fa-floppy-disk"></i> <?php esc_html_e( 'Save Changes', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Save Changes', 'swimming-pool-manager' ); ?>
                     </button>
                     <button type="button" class="ifs-pms-btn ifs-pms-btn-sm ifs-pms-btn-secondary ifs-pms-btn-flex-1" onclick="ifsPms.closeEditExpenseModal()">
                         <?php esc_html_e( 'Cancel', 'swimming-pool-manager' ); ?>

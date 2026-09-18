@@ -1,6 +1,6 @@
 <?php
 /**
- * View: Terminal Configuration & Master Settings (100% Dynamic Database Driven - Unified ifs-pms- CSS Prefix)
+ * View: Terminal Configuration & Master Settings (100% Dynamic Database Driven - Dashicons Version)
  *
  * @package Ozone_Skypool_OS
  */
@@ -14,7 +14,7 @@ $b_name        = esc_html( (string) get_option( 'ifs_pms_business_name', '' ) );
 $phone         = esc_html( (string) get_option( 'ifs_pms_phone', '' ) );
 $address       = esc_html( (string) get_option( 'ifs_pms_address', '' ) );
 $capacity_raw  = get_option( 'ifs_pms_max_capacity', '' );
-$capacity      = ( $capacity_raw !== '' && is_numeric( $capacity_raw ) ) ? (int) $capacity_raw : '';
+$capacity      = ( '' !== $capacity_raw && is_numeric( $capacity_raw ) ) ? (int) $capacity_raw : '';
 $receipt_note  = esc_textarea( (string) get_option( 'ifs_pms_receipt_note', '' ) );
 $logo_url      = esc_attr( (string) get_option( 'ifs_pms_logo_url', '' ) );
 $base_url      = admin_url( 'admin.php?page=ifs-pms' );
@@ -57,11 +57,11 @@ if ( ! is_array( $weekly_schedule ) ) {
 <div class="ifs-pms-settings-wrapper">
     <!-- Navigation Tabs -->
     <div class="ifs-pms-subnav-bar" role="tablist">
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'pos' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSettingsTab('pos', this)">
-            <i class="fa-solid fa-cash-register"></i> <?php esc_html_e( 'Tickets POS & Operations', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'pos' === $active_tab ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSettingsTab('pos', this)">
+            <span class="dashicons dashicons-tickets-alt"></span> <?php esc_html_e( 'Tickets POS & Operations', 'swimming-pool-manager' ); ?>
         </button>
-        <button type="button" class="ifs-pms-subnav-btn <?php echo ( $active_tab === 'general' ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSettingsTab('general', this)">
-            <i class="fa-solid fa-building"></i> <?php esc_html_e( 'Venue & Receipt Header', 'swimming-pool-manager' ); ?>
+        <button type="button" class="ifs-pms-subnav-btn <?php echo ( 'general' === $active_tab ) ? 'active' : ''; ?>" onclick="ifsPmsSwitchSettingsTab('general', this)">
+            <span class="dashicons dashicons-building"></span> <?php esc_html_e( 'Venue & Receipt Header', 'swimming-pool-manager' ); ?>
         </button>
     </div>
 
@@ -71,16 +71,16 @@ if ( ! is_array( $weekly_schedule ) ) {
         <input type="hidden" name="ifs_pms_active_tab" id="ifsPmsActiveTabInput" value="<?php echo esc_attr( $active_tab ); ?>">
 
         <!-- TAB 1: POS & Operational Settings -->
-        <div id="ifsPmsSettingsPanePos" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'pos' ) ? 'active' : ''; ?>">
+        <div id="ifsPmsSettingsPanePos" class="ifs-pms-tab-pane <?php echo ( 'pos' === $active_tab ) ? 'active' : ''; ?>">
             <!-- 1. Admission Package Tiers -->
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-ticket ifs-pms-panel-icon"></i>
+                        <span class="dashicons dashicons-tag"></span>
                         <?php esc_html_e( 'Admission Packages (Tier Names, Categories & Rates)', 'swimming-pool-manager' ); ?>
                     </h3>
                     <button type="button" class="ifs-pms-btn ifs-pms-btn-secondary" onclick="ifsPmsAddPricingTierRow()">
-                        <i class="fa-solid fa-plus"></i> <?php esc_html_e( 'Add Package Tier', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Package Tier', 'swimming-pool-manager' ); ?>
                     </button>
                 </div>
 
@@ -102,7 +102,9 @@ if ( ! is_array( $weekly_schedule ) ) {
                                         <td><input type="text" name="ifs_pricing_tier_age[]" value="<?php echo esc_attr( $tier['age_group'] ?? '' ); ?>" required placeholder="<?php esc_attr_e( 'Enter age/category group', 'swimming-pool-manager' ); ?>"></td>
                                         <td><input type="number" step="0.01" name="ifs_pricing_tier_price[]" value="<?php echo esc_attr( $tier['price'] ?? '' ); ?>" required class="ifs-pms-mono" placeholder="0.00"></td>
                                         <td class="ifs-pms-td-action">
-                                            <button type="button" class="ifs-pms-btn ifs-pms-btn-danger ifs-pms-btn-sm" onclick="ifsPmsRemoveRow(this)"><i class="fa-solid fa-trash-can"></i></button>
+                                            <button type="button" class="ifs-pms-btn ifs-pms-btn-danger ifs-pms-btn-sm" onclick="ifsPmsRemoveRow(this)">
+                                                <span class="dashicons dashicons-trash"></span>
+                                            </button>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -122,7 +124,7 @@ if ( ! is_array( $weekly_schedule ) ) {
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-water-ladder ifs-pms-panel-icon"></i>
+                        <span class="dashicons dashicons-groups"></span>
                         <?php esc_html_e( 'Swimming Pool Operational Status', 'swimming-pool-manager' ); ?>
                     </h3>
                 </div>
@@ -130,9 +132,9 @@ if ( ! is_array( $weekly_schedule ) ) {
                     <div class="ifs-pms-field-group">
                         <label class="ifs-pms-field-label"><?php esc_html_e( 'Current Pool State', 'swimming-pool-manager' ); ?></label>
                         <select name="ifs_pms_pool_status" id="ifsPmsPoolStatusSelect" class="ifs-pms-select-heavy">
-                            <option value="open" <?php selected( $pool_status, 'open' ); ?>><?php esc_html_e( '🟢 Open (Accepting Visitors & Ticket Sales)', 'swimming-pool-manager' ); ?></option>
-                            <option value="closed" <?php selected( $pool_status, 'closed' ); ?>><?php esc_html_e( '🔴 Closed (Sales Blocked)', 'swimming-pool-manager' ); ?></option>
-                            <option value="maintenance" <?php selected( $pool_status, 'maintenance' ); ?>><?php esc_html_e( '🟡 Maintenance Mode (Servicing Deck)', 'swimming-pool-manager' ); ?></option>
+                            <option value="open" <?php selected( $pool_status, 'open' ); ?>><?php esc_html_e( 'Open (Accepting Visitors & Ticket Sales)', 'swimming-pool-manager' ); ?></option>
+                            <option value="closed" <?php selected( $pool_status, 'closed' ); ?>><?php esc_html_e( 'Closed (Sales Blocked)', 'swimming-pool-manager' ); ?></option>
+                            <option value="maintenance" <?php selected( $pool_status, 'maintenance' ); ?>><?php esc_html_e( 'Maintenance Mode (Servicing Deck)', 'swimming-pool-manager' ); ?></option>
                         </select>
                     </div>
                 </div>
@@ -142,14 +144,14 @@ if ( ! is_array( $weekly_schedule ) ) {
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-clock ifs-pms-panel-icon"></i>
+                        <span class="dashicons dashicons-clock"></span>
                         <?php esc_html_e( 'Weekly Operating Hours', 'swimming-pool-manager' ); ?>
                     </h3>
                 </div>
                 <div class="ifs-pms-form-stack">
                     <div class="ifs-pms-schedule-stack">
                         <?php foreach ( $days_map as $day_key => $day_label ) : 
-                            $day_data = $weekly_schedule[ $day_key ] ?? array();
+                            $day_data     = $weekly_schedule[ $day_key ] ?? array();
                             $saved_status = $day_data['status'] ?? '';
                             $saved_open   = $day_data['open'] ?? '';
                             $saved_close  = $day_data['close'] ?? '';
@@ -158,8 +160,8 @@ if ( ! is_array( $weekly_schedule ) ) {
                                 <strong class="ifs-pms-schedule-day-title"><?php echo esc_html( $day_label ); ?></strong>
                                 
                                 <select name="ifs_pms_schedule_<?php echo esc_attr( $day_key ); ?>_status" id="ifsPmsSchedStatus_<?php echo esc_attr( $day_key ); ?>" onchange="ifsPmsToggleDayHours('<?php echo esc_attr( $day_key ); ?>')">
-                                    <option value="open" <?php selected( $saved_status, 'open' ); ?>><?php esc_html_e( '🟢 Open', 'swimming-pool-manager' ); ?></option>
-                                    <option value="closed" <?php selected( $saved_status, 'closed' ); ?>><?php esc_html_e( '🔴 Closed', 'swimming-pool-manager' ); ?></option>
+                                    <option value="open" <?php selected( $saved_status, 'open' ); ?>><?php esc_html_e( 'Open', 'swimming-pool-manager' ); ?></option>
+                                    <option value="closed" <?php selected( $saved_status, 'closed' ); ?>><?php esc_html_e( 'Closed', 'swimming-pool-manager' ); ?></option>
                                 </select>
 
                                 <div class="ifs-pms-schedule-time-block">
@@ -181,7 +183,7 @@ if ( ! is_array( $weekly_schedule ) ) {
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-shirt ifs-pms-panel-icon"></i>
+                        <span class="dashicons dashicons-admin-settings"></span>
                         <?php esc_html_e( 'Gear Rentals & Amenity Add-Ons', 'swimming-pool-manager' ); ?>
                     </h3>
                 </div>
@@ -197,11 +199,11 @@ if ( ! is_array( $weekly_schedule ) ) {
                         </label>
                     </div>
 
-                    <div id="ifsPmsAmenitiesRepeaterBox" class="ifs-pms-amenities-repeater-wrapper <?php echo ( $enable_amenities === '1' ) ? 'is-visible' : ''; ?>">
+                    <div id="ifsPmsAmenitiesRepeaterBox" class="ifs-pms-amenities-repeater-wrapper <?php echo ( '1' === $enable_amenities ) ? 'is-visible' : ''; ?>">
                         <div class="ifs-pms-amenities-box-header">
                             <label class="ifs-pms-field-label ifs-pms-field-label-compact"><?php esc_html_e( 'Rentable Gear Inventory & Rates', 'swimming-pool-manager' ); ?></label>
                             <button type="button" class="ifs-pms-btn ifs-pms-btn-secondary" onclick="ifsPmsAddAddonRow()">
-                                <i class="fa-solid fa-plus"></i> <?php esc_html_e( 'Add Amenity Item', 'swimming-pool-manager' ); ?>
+                                <span class="dashicons dashicons-plus-alt2"></span> <?php esc_html_e( 'Add Amenity Item', 'swimming-pool-manager' ); ?>
                             </button>
                         </div>
 
@@ -220,7 +222,9 @@ if ( ! is_array( $weekly_schedule ) ) {
                                             <td><input type="text" name="ifs_addon_name[]" value="<?php echo esc_attr( $addon['name'] ?? '' ); ?>" required placeholder="<?php esc_attr_e( 'Item name', 'swimming-pool-manager' ); ?>"></td>
                                             <td><input type="number" step="0.01" name="ifs_addon_price[]" value="<?php echo esc_attr( $addon['price'] ?? '' ); ?>" required class="ifs-pms-mono" placeholder="0.00"></td>
                                             <td class="ifs-pms-td-action">
-                                                <button type="button" class="ifs-pms-btn ifs-pms-btn-danger ifs-pms-btn-sm" onclick="ifsPmsRemoveRow(this)"><i class="fa-solid fa-trash-can"></i></button>
+                                                <button type="button" class="ifs-pms-btn ifs-pms-btn-danger ifs-pms-btn-sm" onclick="ifsPmsRemoveRow(this)">
+                                                    <span class="dashicons dashicons-trash"></span>
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -241,7 +245,7 @@ if ( ! is_array( $weekly_schedule ) ) {
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-credit-card ifs-pms-panel-icon"></i>
+                        <span class="dashicons dashicons-money-alt"></span>
                         <?php esc_html_e( 'Payment Methods & Checkout Configuration', 'swimming-pool-manager' ); ?>
                     </h3>
                 </div>
@@ -324,18 +328,18 @@ if ( ! is_array( $weekly_schedule ) ) {
                     </div>
 
                     <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-lg ifs-pms-btn-submit-block">
-                        <i class="fa-solid fa-floppy-disk"></i> <?php esc_html_e( 'Save Operational Settings', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Save Operational Settings', 'swimming-pool-manager' ); ?>
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- TAB 2: Venue & Thermal Receipt Header -->
-        <div id="ifsPmsSettingsPaneGeneral" class="ifs-pms-tab-pane <?php echo ( $active_tab === 'general' ) ? 'active' : ''; ?>">
+        <div id="ifsPmsSettingsPaneGeneral" class="ifs-pms-tab-pane <?php echo ( 'general' === $active_tab ) ? 'active' : ''; ?>">
             <div class="ifs-pms-panel-card">
                 <div class="ifs-pms-panel-head">
                     <h3 class="ifs-pms-panel-title">
-                        <i class="fa-solid fa-building ifs-pms-panel-icon"></i>
+                        <span class="dashicons dashicons-admin-home"></span>
                         <?php esc_html_e( 'Venue Identity, Logo & Receipt Slip Header', 'swimming-pool-manager' ); ?>
                     </h3>
                 </div>
@@ -343,11 +347,11 @@ if ( ! is_array( $weekly_schedule ) ) {
                 <div class="ifs-pms-form-stack">
                     <div class="ifs-pms-grid-2">
                         <div class="ifs-pms-field-group">
-                            <label class="ifs-pms-field-label" for="ifsPmsBusinessName"><?php esc_html_e( 'Venue / Property Name', 'swimming-pool-manager' ); ?> *</label>
+                            <label class="ifs-pms-field-label" for="ifsPmsBusinessName"><?php esc_html_e( 'Venue / Property Name', 'swimming-pool-manager' ); ?> <span class="ifs-pms-required-mark">*</span></label>
                             <input type="text" name="ifs_pms_business_name" id="ifsPmsBusinessName" value="<?php echo esc_attr( $b_name ); ?>" required placeholder="<?php esc_attr_e( 'e.g. Ozone Restaurant & Skypool', 'swimming-pool-manager' ); ?>">
                         </div>
                         <div class="ifs-pms-field-group">
-                            <label class="ifs-pms-field-label" for="ifsPmsCurrency"><?php esc_html_e( 'Currency Symbol / Code', 'swimming-pool-manager' ); ?> *</label>
+                            <label class="ifs-pms-field-label" for="ifsPmsCurrency"><?php esc_html_e( 'Currency Symbol / Code', 'swimming-pool-manager' ); ?> <span class="ifs-pms-required-mark">*</span></label>
                             <input type="text" name="ifs_pms_currency" id="ifsPmsCurrency" value="<?php echo esc_attr( $currency ); ?>" required class="ifs-pms-mono" placeholder="<?php esc_attr_e( 'e.g. BDT or $', 'swimming-pool-manager' ); ?>">
                         </div>
                     </div>
@@ -355,12 +359,12 @@ if ( ! is_array( $weekly_schedule ) ) {
                     <div class="ifs-pms-field-group">
                         <label class="ifs-pms-field-label" for="ifsPmsLogoUrl"><?php esc_html_e( 'Venue Logo URL', 'swimming-pool-manager' ); ?></label>
                         <div class="ifs-pms-logo-upload-group">
-                            <input type="url" name="ifs_pms_logo_url" id="ifsPmsLogoUrl" value="<?php echo esc_attr( $logo_url ); ?>" placeholder="https://example.com/logo.png">
+                            <input type="url" name="ifs_pms_logo_url" id="ifsPmsLogoUrl" value="<?php echo esc_url( get_option( 'ifs_pms_logo_url', '' ) ); ?>" placeholder="https://example.com/logo.png">
                             <button type="button" class="ifs-pms-btn ifs-pms-btn-secondary" onclick="ifsPmsOpenMediaUploader()"><?php esc_html_e( 'Upload', 'swimming-pool-manager' ); ?></button>
                         </div>
                         <?php if ( ! empty( $logo_url ) ) : ?>
                             <div class="ifs-pms-logo-preview-box">
-                                <img src="<?php echo esc_url( $logo_url ); ?>" alt="<?php esc_attr_e( 'Logo Preview', 'swimming-pool-manager' ); ?>" class="ifs-pms-logo-img">
+                                <img src="<?php echo esc_url( get_option( 'ifs_pms_logo_url', '' ) ); ?>" alt="<?php esc_attr_e( 'Logo Preview', 'swimming-pool-manager' ); ?>" class="ifs-pms-logo-img">
                             </div>
                         <?php endif; ?>
                     </div>
@@ -383,11 +387,11 @@ if ( ! is_array( $weekly_schedule ) ) {
 
                     <div class="ifs-pms-field-group">
                         <label class="ifs-pms-field-label" for="ifsPmsReceiptNote"><?php esc_html_e( 'Thermal Receipt Footer Terms & Safety Policy', 'swimming-pool-manager' ); ?></label>
-                        <textarea name="ifs_pms_receipt_note" id="ifsPmsReceiptNote" rows="3" placeholder="<?php esc_attr_e( 'Add thermal slip policy statements...', 'swimming-pool-manager' ); ?>"><?php echo $receipt_note; ?></textarea>
+                        <textarea name="ifs_pms_receipt_note" id="ifsPmsReceiptNote" rows="3" placeholder="<?php esc_attr_e( 'Add thermal slip policy statements...', 'swimming-pool-manager' ); ?>"><?php echo esc_textarea( get_option( 'ifs_pms_receipt_note', '' ) ); ?></textarea>
                     </div>
 
                     <button type="submit" class="ifs-pms-btn ifs-pms-btn-primary ifs-pms-btn-lg ifs-pms-btn-submit-block">
-                        <i class="fa-solid fa-floppy-disk"></i> <?php esc_html_e( 'Save Venue Configuration', 'swimming-pool-manager' ); ?>
+                        <span class="dashicons dashicons-yes-alt"></span> <?php esc_html_e( 'Save Venue Configuration', 'swimming-pool-manager' ); ?>
                     </button>
                 </div>
             </div>
