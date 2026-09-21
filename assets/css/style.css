@@ -6300,3 +6300,25 @@ html, body {
     padding: 4px;
     background: #ffffff;
 }
+
+.ifs-pms-aside {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.ifs-pms-aside::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ifs-pms-aside::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ifs-pms-aside::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.ifs-pms-aside::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}

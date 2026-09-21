@@ -573,9 +573,9 @@
         const selectBox = document.getElementById('ifsMemPlan');
         const durationInput = document.getElementById('ifsMemDuration');
 
-        const nameVal       = nameInput ? nameInput.value.trim() : '';
-        const avatarUrl     = avatarInput ? avatarInput.value.trim() : '';
-        const planName      = selectBox ? selectBox.options[selectBox.selectedIndex].value : 'Monthly Sky Pass';
+        const nameVal     = nameInput ? nameInput.value.trim() : '';
+        const avatarUrl   = avatarInput ? avatarInput.value.trim() : '';
+        const planName    = selectBox ? selectBox.options[selectBox.selectedIndex].value : 'Monthly Sky Pass';
         const monthsCount = durationInput ? (parseInt(durationInput.value, 10) || 1) : 1;
 
         const holderEl  = document.getElementById('ifsPmsCardHolder');
@@ -711,7 +711,7 @@
     }
 
     /**
-     * 11. Point of Sale (POS) Ticket Engine
+     * 11. Point of Sale (POS) Ticket Engine (Fixed & Direct Display Sync)
      */
     let currentGuestType = 'customer';
     let selectedAddonsList = [];
@@ -727,33 +727,67 @@
         const roomInput  = document.getElementById('ozHotelRoomNo');
         const cashWrap   = document.getElementById('ozCashWrap');
         const cashInput  = document.getElementById('ozCashReceived');
+        const radioCust  = document.getElementById('ozGuestTypeCustomer');
+        const radioRoom  = document.getElementById('ozGuestTypeRoom');
+
+        if (radioCust && radioRoom) {
+            radioCust.checked = (currentGuestType === 'customer');
+            radioRoom.checked = (currentGuestType === 'room_guest');
+        }
 
         if (currentGuestType === 'room_guest') {
             if (pillWalkin) pillWalkin.classList.remove('active');
             if (pillRoom) pillRoom.classList.add('active');
 
-            if (roomWrap) roomWrap.classList.add('is-visible');
-            if (roomInput) roomInput.setAttribute('required', 'required');
+            // Override inline style directly with !important priority
+            if (roomWrap) {
+                roomWrap.style.setProperty('display', 'block', 'important');
+            }
+            if (roomInput) {
+                roomInput.setAttribute('required', 'required');
+                setTimeout(() => roomInput.focus(), 50);
+            }
 
             selectTenderByName('Complementary');
-            if (cashWrap) cashWrap.classList.remove('is-visible');
+            if (cashWrap) cashWrap.style.setProperty('display', 'none', 'important');
             if (cashInput) cashInput.removeAttribute('required');
         } else {
             if (pillRoom) pillRoom.classList.remove('active');
             if (pillWalkin) pillWalkin.classList.add('active');
 
-            if (roomWrap) roomWrap.classList.remove('is-visible');
+            if (roomWrap) {
+                roomWrap.style.setProperty('display', 'none', 'important');
+            }
             if (roomInput) {
                 roomInput.removeAttribute('required');
                 roomInput.value = '';
             }
 
             selectTenderByName('Cash');
-            if (cashWrap) cashWrap.classList.add('is-visible');
+            if (cashWrap) cashWrap.style.setProperty('display', 'grid', 'important');
             if (cashInput) cashInput.setAttribute('required', 'required');
         }
 
+        syncRoomDisplay(roomInput ? roomInput.value : '');
         recalculatePos();
+    }
+
+    function syncRoomDisplay(val) {
+        const row = document.getElementById('ozPrevRoomRow');
+        const cell = document.getElementById('ozPrevRoom');
+        const roomWrap = document.getElementById('ozRoomNumberWrap');
+        const isRoomActive = roomWrap && roomWrap.style.display !== 'none';
+
+        if (row && cell) {
+            const trimmed = String(val || '').trim();
+            if (isRoomActive && trimmed.length > 0) {
+                cell.textContent = trimmed;
+                row.style.setProperty('display', 'table-row', 'important');
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+                cell.textContent = '-';
+            }
+        }
     }
 
     function selectTenderByName(name) {
@@ -783,11 +817,11 @@
         const cashInput = document.getElementById('ozCashReceived');
 
         if (method === 'Complementary') {
-            if (cashWrap) cashWrap.classList.remove('is-visible');
+            if (cashWrap) cashWrap.style.setProperty('display', 'none', 'important');
             if (cashInput) cashInput.removeAttribute('required');
         } else {
-            if (cashWrap) cashWrap.classList.toggle('is-visible', method === 'Cash');
-            if (roomWrap) roomWrap.classList.toggle('is-visible', currentGuestType === 'room_guest');
+            if (cashWrap) cashWrap.style.setProperty('display', (method === 'Cash') ? 'grid' : 'none', 'important');
+            if (roomWrap) roomWrap.style.setProperty('display', (currentGuestType === 'room_guest') ? 'block' : 'none', 'important');
             if (cashInput) {
                 if (method === 'Cash' && currentGuestType === 'customer') {
                     cashInput.setAttribute('required', 'required');
@@ -1014,13 +1048,7 @@
         const prevTotal = document.getElementById('ozPrevTotal');
         if (prevTotal) prevTotal.textContent = config.currency + ' ' + finalPayable.toFixed(2);
 
-        const roomRow = document.getElementById('ozPrevRoomRow');
-        const roomTxt = document.getElementById('ozPrevRoom');
-        if (roomRow && roomTxt) {
-            const hasRoom = (currentGuestType === 'room_guest' && roomVal.trim());
-            roomRow.classList.toggle('is-visible', Boolean(hasRoom));
-            if (hasRoom) roomTxt.textContent = roomVal.trim();
-        }
+        syncRoomDisplay(roomVal);
 
         const cashInput = document.getElementById('ozCashReceived');
         if (cashInput) {
@@ -1078,6 +1106,19 @@
     function validateFormSubmission(e) {
         const tenderMethod = (document.getElementById('ozSelectedPayment') || {}).value || 'Cash';
         const cashInput    = document.getElementById('ozCashReceived');
+        const roomInput    = document.getElementById('ozHotelRoomNo');
+
+        if (currentGuestType === 'room_guest') {
+            if (!roomInput || !roomInput.value.trim()) {
+                if (e) e.preventDefault();
+                if (roomInput) {
+                    roomInput.focus();
+                    roomInput.classList.add('oz-input-invalid');
+                }
+                alert('Please enter the Hotel Guest Room Number.');
+                return false;
+            }
+        }
 
         if (tenderMethod === 'Cash' && currentGuestType === 'customer' && finalPayable > 0 && cashInput) {
             const received = parseFloat(cashInput.value) || 0;
@@ -1140,6 +1181,9 @@
         const cashInput = document.getElementById('ozCashReceived');
         if (cashInput) cashInput.classList.remove('oz-input-invalid');
 
+        const roomInput = document.getElementById('ozHotelRoomNo');
+        if (roomInput) roomInput.classList.remove('oz-input-invalid');
+
         setGuestType('walkin');
         recalculatePos();
 
@@ -1161,12 +1205,13 @@
     }
 
     function openEditTicketModal(data) {
-        document.getElementById('ozModalTicketId').value = data.id;
-        document.getElementById('ozModalTicketCode').textContent = data.code;
-        document.getElementById('ozModalName').value = data.name;
-        document.getElementById('ozModalPhone').value = data.phone;
-        document.getElementById('ozModalAmount').value = parseFloat(data.amount).toFixed(2);
-        document.getElementById('ozModalStatus').value = data.status;
+        document.getElementById('ozModalTicketId').value = data.id || '';
+        document.getElementById('ozModalTicketCode').textContent = data.code || '';
+        document.getElementById('ozModalName').value = data.name || '';
+        document.getElementById('ozModalPhone').value = data.phone || '';
+        document.getElementById('ozModalRoomNo').value = data.room_no || '';
+        document.getElementById('ozModalAmount').value = parseFloat(data.amount || 0).toFixed(2);
+        document.getElementById('ozModalStatus').value = data.status || 'Valid';
 
         const modal = document.getElementById('ozEditTicketModal');
         if (modal) modal.classList.add('is-visible');
@@ -1198,18 +1243,15 @@
     }
 
     function constructFullToken(rawVal) {
-        let clean = rawVal.trim().toUpperCase();
-        if (!clean) return '';
-        if (clean.startsWith('OZONE-') || clean.startsWith('OZ-')) return clean;
-        if (/^\d+$/.test(clean)) clean = clean.padStart(4, '0');
-        const prefixSpan = document.getElementById('ozDailyPrefixSpan');
-        const prefix = prefixSpan ? prefixSpan.textContent.trim() : (config.current_mon_prefix || 'OZ-');
-        return prefix + clean;
-    }
+    let clean = rawVal.trim().toUpperCase();
+    if (!clean) return '';
+    if (clean.startsWith('OZONE-') || clean.startsWith('OZ-')) return clean;
+    if (/^\d+$/.test(clean)) clean = clean.padStart(4, '0');
+    const prefixSpan = document.getElementById('ozDailyPrefixSpan');
+    const prefix = prefixSpan ? prefixSpan.textContent.trim() : (config.current_mon_prefix || 'OZ-');
+    return prefix + clean;
+}
 
-    /**
-     * Barrier Relay Handler: Turns green with "VERIFIED" permanently upon valid pass.
-     */
     function triggerBarrierRelay(open) {
         const pill = document.getElementById('ozTurnstileStatePill');
         const txt  = document.getElementById('ozTurnstileStateTxt');
@@ -1276,7 +1318,6 @@
             avatar.textContent = customerName ? customerName.charAt(0).toUpperCase() : 'G';
         }
 
-        // Dynamic Customer Type Assignment (Room Guest vs. Outdoor Guest)
         const isRoomGuest = (data.guest_type === 'room_guest' || Boolean(data.room_no));
         if (guestTypeTxt) {
             if (isRoomGuest) {
@@ -1288,7 +1329,6 @@
             }
         }
 
-        // Hotel Room Number Display Toggle
         if (roomWrap && roomEl) {
             if (isRoomGuest && data.room_no) {
                 roomWrap.style.display = 'block';
@@ -1298,7 +1338,6 @@
             }
         }
 
-        // Render Enrolled Package Inclusions & Amenities cleanly as a list
         if (packageContainer) {
             const rawPackages = (data.package || data.package_details || '').trim();
 
@@ -1394,9 +1433,6 @@
         }
     }
 
-    /**
-     * Verification Execution with Emerald & Ruby Alerts
-     */
     function executeVerification(customCode = null) {
         if (isProcessing) return;
 
@@ -1742,18 +1778,15 @@
             },
             success: function (res) {
                 if (res && res.success) {
-                    // Fade out the row
                     $('#ozRow-' + ticketId).fadeOut(300, function () {
                         $(this).remove();
                     });
 
-                    // Create and show an instant success notice banner at the top of the container
                     const successMsg = (res.data && res.data.message) ? res.data.message : 'Patron checked out from pool deck successfully.';
                     const noticeHtml = '<div class="notice notice-success is-dismissible oz-notice-spacing" style="margin: 0 0 15px 0; padding: 10px 14px; background: #ecfdf5; border-left: 4px solid #10b981; color: #065f46; font-weight: 700; border-radius: 4px;">' + escapeHtml(successMsg) + '</div>';
-                    
+
                     $('.oz-live-status-stack').prepend(noticeHtml);
 
-                    // Short delay to let the user see the confirmation before refreshing the page
                     setTimeout(() => {
                         window.location.reload();
                     }, 800);
@@ -1895,6 +1928,7 @@
         closeEditStaffModal: closeEditStaffModal,
         filterStaffDirectory: filterStaffDirectory,
         setGuestType: setGuestType,
+        syncRoomDisplay: syncRoomDisplay,
         selectTender: selectTender,
         selectTenderByName: selectTenderByName,
         toggleTierSwitch: toggleTierSwitch,
@@ -1918,7 +1952,7 @@
         escapeHtml: escapeHtml
     };
 
-    // Backward-Compatibility Aliases
+    // Global Backward-Compatibility Aliases
     window.ifs_pms_audio = ifsPmsAudio;
     window.ifs_pms_show_receipt = showReceipt;
     window.ifs_pms_close_receipt = closeReceipt;
@@ -1952,13 +1986,9 @@
     window.ifsPmsOpenEditStaffModal = openEditStaffModal;
     window.ifsPmsCloseEditStaffModal = closeEditStaffModal;
     window.ifsPmsFilterStaffDirectory = filterStaffDirectory;
-    window.ifsPmsOpenMediaUploader = () => openMediaUploader('ifsPmsLogoUrl');
-    window.ifsPmsOpenMemberMediaUploader = () => openMediaUploader('ifsMemAvatarInput', syncCardDisplay);
-    window.ifsPmsOpenEditMemberMediaUploader = () => openMediaUploader('ifsPmsEditModalAvatarInput');
-    window.ifsPmsOpenMediaUploaderForAdd = () => openMediaUploader('ifsPmsCreateAvatarUrl');
-    window.ifsPmsOpenMediaUploaderForEdit = () => openMediaUploader('ifsPmsEditAvatarUrl');
     window.ozSwitchTicketTab = switchTicketTab;
     window.ozSetGuestType = setGuestType;
+    window.ozSyncRoomDisplay = syncRoomDisplay;
     window.ozSelectTenderByName = selectTenderByName;
     window.ozSelectTender = selectTender;
     window.ozToggleTierSwitch = toggleTierSwitch;

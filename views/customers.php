@@ -96,9 +96,6 @@ if ( 'edit' === $action_mode && $target_id > 0 ) {
                 <?php printf( esc_html__( 'Executive Patron Profile: %s', 'swimming-pool-manager' ), esc_html( $single_customer->name ) ); ?>
             </h3>
             <div class="ifs-pms-flex-gap-10">
-                <button type="button" class="ifs-pms-btn-sm ifs-pms-btn-edit ifs-pms-btn-action-print" onclick="window.print()">
-                    <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Print Dossier', 'swimming-pool-manager' ); ?>
-                </button>
                 <a href="<?php echo esc_url( $base_url ); ?>" class="ifs-pms-btn-sm ifs-pms-btn-edit ifs-pms-btn-action-back">
                     <span class="dashicons dashicons-dashboard"></span> <?php esc_html_e( 'Back to Directory', 'swimming-pool-manager' ); ?>
                 </a>

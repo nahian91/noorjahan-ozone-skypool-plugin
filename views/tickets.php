@@ -70,7 +70,7 @@ if ( 'ticket_detail' === $current_view ) :
         return;
     endif;
 
-    $is_valid          = ( 'Valid' === $ticket->status );
+    $is_valid           = ( 'Valid' === $ticket->status );
     $status_badge_class = $is_valid
         ? 'background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3);'
         : ( 'Used' === $ticket->status
@@ -84,7 +84,7 @@ if ( 'ticket_detail' === $current_view ) :
                 <span class="dashicons dashicons-dashboard"></span> <?php esc_html_e( 'Back to All Tickets Ledger', 'swimming-pool-manager' ); ?>
             </a>
             <div style="display: flex; gap: 12px;">
-                <button type="button" onclick="window.print();" class="oz-btn" style="height: 42px; padding: 0 20px; border-radius: 12px; background: #ffffff; border: 1.5px solid #cbd5e1; font-weight: 700; color: #475569; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                <button type="button" onclick="ozPrintTicketDetailSlip();" class="oz-btn" style="height: 42px; padding: 0 20px; border-radius: 12px; background: #0284c7; border: 1.5px solid #0284c7; font-weight: 700; color: #ffffff; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
                     <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Print Ticket Slip', 'swimming-pool-manager' ); ?>
                 </button>
             </div>
@@ -143,7 +143,7 @@ if ( 'ticket_detail' === $current_view ) :
                 <?php if ( ! empty( $ticket->room_no ) ) : ?>
                     <div class="oz-info-group">
                         <span class="oz-info-label"><span class="dashicons dashicons-building"></span> <?php esc_html_e( 'Hotel Room Number', 'swimming-pool-manager' ); ?></span>
-                        <span class="oz-info-value ifs-pms-mono"><?php echo esc_html( $ticket->room_no ); ?></span>
+                        <span class="oz-info-value ifs-pms-mono" style="color: #0284c7; font-weight: 800;"><?php echo esc_html( $ticket->room_no ); ?></span>
                     </div>
                 <?php endif; ?>
 
@@ -173,6 +173,185 @@ if ( 'ticket_detail' === $current_view ) :
             </div>
         </div>
     </div>
+
+    <!-- Hidden Thermal Slip Container for 80mm POS Printing -->
+    <div id="ozDetailThermalSlip" style="display: none; background: #ffffff; color: #000000; font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 11px; width: 72mm; margin: 0 auto; padding: 8px;">
+        <div style="text-align: center;">
+            <?php if ( ! empty( $logo_url ) ) : ?>
+                <div style="display: flex; justify-content: center; margin-bottom: 6px;">
+                    <img src="<?php echo esc_url( $logo_url ); ?>" alt="Logo" style="max-height: 40px; width: auto;">
+                </div>
+            <?php endif; ?>
+            <strong style="font-size: 15px; letter-spacing: 0.5px; text-transform: uppercase; color: #000;"><?php echo $b_name; ?></strong>
+            <div style="font-size: 10.5px; color: #333; margin-top: 2px; line-height: 1.4;">
+                <?php echo $address; ?><br>
+                <?php echo esc_html__( 'Tel:', 'swimming-pool-manager' ) . ' ' . $phone; ?>
+            </div>
+        </div>
+
+        <div style="border-bottom: 1.5px dashed #000; margin: 8px 0;"></div>
+
+        <div style="text-align: center; margin: 8px 0;">
+            <div id="ozDetailSlipQrWrap" style="display: flex; justify-content: center; margin-bottom: 8px;"></div>
+            <div style="font-size: 9px; font-weight: 800; letter-spacing: 1.2px; color: #555; text-transform: uppercase;">
+                <?php esc_html_e( 'Serial No / Token', 'swimming-pool-manager' ); ?>
+            </div>
+            <div class="ifs-pms-mono" style="font-weight: 800; font-size: 16px; letter-spacing: 1px; color: #000; margin-top: 2px;">
+                <?php echo esc_html( $ticket->ticket_code ); ?>
+            </div>
+        </div>
+
+        <div style="border-bottom: 1.5px dashed #000; margin: 8px 0;"></div>
+
+        <div style="font-size: 9.5px; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">
+            <?php esc_html_e( 'Guest Identification', 'swimming-pool-manager' ); ?>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+                <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Guest Type', 'swimming-pool-manager' ); ?>:</td>
+                <td style="text-align: right; font-weight: 700; color: #000;">
+                    <?php echo esc_html( ! empty( $ticket->room_no ) ? __( 'Hotel Room Guest', 'swimming-pool-manager' ) : __( 'General Customer', 'swimming-pool-manager' ) ); ?>
+                </td>
+            </tr>
+            <tr>
+                <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Guest Name', 'swimming-pool-manager' ); ?>:</td>
+                <td style="text-align: right; font-weight: 700; color: #000;">
+                    <?php echo esc_html( ! empty( $ticket->customer_name ) ? $ticket->customer_name : __( 'Walk-in Guest', 'swimming-pool-manager' ) ); ?>
+                </td>
+            </tr>
+            <tr>
+                <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Contact #', 'swimming-pool-manager' ); ?>:</td>
+                <td style="text-align: right; font-weight: 700; color: #000;">
+                    <?php echo esc_html( $ticket->customer_phone ?: '-' ); ?>
+                </td>
+            </tr>
+            <?php if ( ! empty( $ticket->room_no ) ) : ?>
+                <tr>
+                    <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Hotel Room #', 'swimming-pool-manager' ); ?>:</td>
+                    <td style="text-align: right; font-weight: 800; color: #000;">
+                        <?php echo esc_html( $ticket->room_no ); ?>
+                    </td>
+                </tr>
+            <?php endif; ?>
+        </table>
+
+        <div style="border-bottom: 1.5px dashed #000; margin: 8px 0;"></div>
+
+        <div style="font-size: 9.5px; font-weight: 800; color: #555; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 4px;">
+            <?php esc_html_e( 'Admission Breakdown', 'swimming-pool-manager' ); ?>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr style="border-bottom: 1px dashed #666;">
+                <th style="text-align: left; padding: 2px 0;"><?php esc_html_e( 'Package Item', 'swimming-pool-manager' ); ?></th>
+                <th style="text-align: right; padding: 2px 0;"><?php esc_html_e( 'Qty', 'swimming-pool-manager' ); ?></th>
+                <th style="text-align: right; padding: 2px 0;"><?php esc_html_e( 'Subtotal', 'swimming-pool-manager' ); ?></th>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; padding: 4px 0;"><?php echo esc_html( $ticket->package_details ?: 'Standard Pass' ); ?> (<?php echo esc_html( (string) $ticket->duration_hours ); ?>h)</td>
+                <td style="text-align: right; padding: 4px 0;">1</td>
+                <td style="text-align: right; font-weight: 700; padding: 4px 0;"><?php echo esc_html( $currency . ' ' . number_format( (float) $ticket->amount, 2 ) ); ?></td>
+            </tr>
+        </table>
+
+        <div style="border-bottom: 1.5px dashed #000; margin: 8px 0;"></div>
+
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+            <tr>
+                <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Payment Method', 'swimming-pool-manager' ); ?>:</td>
+                <td style="text-align: right; font-weight: 700; color: #000;"><?php echo esc_html( $ticket->payment_method ?: 'Cash' ); ?></td>
+            </tr>
+            <tr>
+                <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Issue Timestamp', 'swimming-pool-manager' ); ?>:</td>
+                <td style="text-align: right; color: #333;"><?php echo esc_html( $ticket->sold_at ); ?></td>
+            </tr>
+            <tr>
+                <td style="color: #444; padding: 2px 0;"><?php esc_html_e( 'Desk Cashier', 'swimming-pool-manager' ); ?>:</td>
+                <td style="text-align: right; color: #333;"><?php echo esc_html( $ticket->sold_by ); ?></td>
+            </tr>
+        </table>
+
+        <div style="border-bottom: 1.5px dashed #000; margin: 8px 0;"></div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 4px 0;">
+            <span style="font-weight: 800; font-size: 13px; color: #000;"><?php esc_html_e( 'NET PAYABLE:', 'swimming-pool-manager' ); ?></span>
+            <span style="font-size: 18px; font-weight: 800; color: #000;">
+                <?php echo $currency . ' ' . number_format( (float) $ticket->amount, 2 ); ?>
+            </span>
+        </div>
+
+        <div style="margin-top: 8px; padding: 6px; border: 1px dashed #666; border-radius: 6px; font-size: 8.5px; line-height: 1.35; color: #333;">
+            <div style="font-weight: 800; text-align: center; margin-bottom: 4px;"><?php esc_html_e( 'TURNSTILE PASS & POOL SAFETY RULES', 'swimming-pool-manager' ); ?></div>
+            <ul style="margin: 0; padding-left: 12px;">
+                <li><?php esc_html_e( 'Valid for single turnstile gate entry on date of issue only.', 'swimming-pool-manager' ); ?></li>
+                <li><?php esc_html_e( 'Proper synthetic swimwear compulsory.', 'swimming-pool-manager' ); ?></li>
+                <li><?php esc_html_e( 'Mandatory shower required before entering pool.', 'swimming-pool-manager' ); ?></li>
+                <li><?php esc_html_e( 'Non-refundable.', 'swimming-pool-manager' ); ?></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+    function ozPrintTicketDetailSlip() {
+        var slipElem = document.getElementById('ozDetailThermalSlip');
+        if (!slipElem) {
+            window.print();
+            return;
+        }
+
+        var qrContainer = document.getElementById('ozDetailSlipQrWrap');
+        if (qrContainer && typeof QRCode !== 'undefined' && qrContainer.children.length === 0) {
+            new QRCode(qrContainer, {
+                text: <?php echo wp_json_encode( $ticket->ticket_code ); ?>,
+                width: 90,
+                height: 90,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+
+        var iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write('<!DOCTYPE html><html><head><title>Ticket Slip</title>');
+        doc.write('<style>');
+        doc.write('@page { size: 80mm auto; margin: 0; }');
+        doc.write('body { margin: 0; padding: 8px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #000; width: 72mm; }');
+        doc.write('.ifs-pms-mono { font-family: monospace; }');
+        doc.write('table { width: 100%; border-collapse: collapse; }');
+        doc.write('img { max-height: 40px; }');
+        doc.write('</style></head><body>');
+        doc.write(slipElem.innerHTML);
+        doc.write('</body></html>');
+        doc.close();
+
+        setTimeout(function() {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            setTimeout(function() {
+                document.body.removeChild(iframe);
+            }, 1000);
+        }, 250);
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var qrWrap = document.getElementById('ozDetailSlipQrWrap');
+        if (qrWrap && typeof QRCode !== 'undefined') {
+            new QRCode(qrWrap, {
+                text: <?php echo wp_json_encode( $ticket->ticket_code ); ?>,
+                width: 90,
+                height: 90,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        }
+    });
+    </script>
     <?php
     return;
 endif;
@@ -240,7 +419,7 @@ $all_tickets = $wpdb->get_results(
     )
 );
 
-// Dynamic Token Code Sequence Generator (OZONE-Mon-Day-Serial)
+// Dynamic Token Code Sequence Generator (OZ-Month-Day-0001)
 $today_start = current_time( 'Y-m-d 00:00:00' );
 $today_end   = current_time( 'Y-m-d 23:59:59' );
 $today_count = (int) $wpdb->get_var(
@@ -305,6 +484,7 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                     <input type="hidden" name="duration_hours" id="ozDurationHoursInput" value="1">
                     <input type="hidden" name="amount" id="ozSubmittedAmount" value="500.00">
                     <input type="hidden" name="payment_method" id="ozSelectedPayment" value="Cash">
+                    <input type="hidden" name="guest_type" id="ozGuestTypeInput" value="customer">
 
                     <div class="oz-pos-form-wrap">
                         <!-- Guest Classification -->
@@ -313,23 +493,21 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                                 <span class="dashicons dashicons-groups"></span> <?php esc_html_e( 'Guest Classification', 'swimming-pool-manager' ); ?> *
                             </label>
                             <div class="oz-guest-type-selector">
-                                <label class="oz-type-pill active" id="ozTypePillWalkin" onclick="ozSetGuestType('walkin')">
-                                    <input type="radio" name="guest_type" value="customer" checked style="display: none;">
+                                <button type="button" class="oz-type-pill active" id="ozTypePillWalkin" onclick="ozSetGuestType('walkin');">
                                     <span class="dashicons dashicons-groups"></span>
                                     <div>
                                         <strong><?php esc_html_e( 'General Customer', 'swimming-pool-manager' ); ?></strong>
                                         <small><?php esc_html_e( 'Standard Ticket Rates Apply', 'swimming-pool-manager' ); ?></small>
                                     </div>
-                                </label>
+                                </button>
 
-                                <label class="oz-type-pill" id="ozTypePillRoom" onclick="ozSetGuestType('room')">
-                                    <input type="radio" name="guest_type" value="room_guest" style="display: none;">
+                                <button type="button" class="oz-type-pill" id="ozTypePillRoom" onclick="ozSetGuestType('room');">
                                     <span class="dashicons dashicons-building"></span>
                                     <div>
                                         <strong><?php esc_html_e( 'Hotel Room Guest', 'swimming-pool-manager' ); ?></strong>
                                         <small><?php esc_html_e( 'Complimentary Pass', 'swimming-pool-manager' ); ?></small>
                                     </div>
-                                </label>
+                                </button>
                             </div>
                         </div>
 
@@ -346,11 +524,11 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                         </div>
 
                         <!-- Hotel Room Number Input -->
-                        <div class="oz-field-group" style="display: none;" id="ozRoomNumberWrap">
+                        <div class="oz-field-group" id="ozRoomNumberWrap" style="display: none; margin-top: 14px;">
                             <label class="oz-field-label" for="ozHotelRoomNo">
-                                <span class="dashicons dashicons-building"></span> <?php esc_html_e( 'Hotel Guest Room Number', 'swimming-pool-manager' ); ?> *
+                                <span class="dashicons dashicons-building"></span> <?php esc_html_e( 'Hotel Guest Room Number', 'swimming-pool-manager' ); ?> <span style="color: #ef4444;">*</span>
                             </label>
-                            <input type="text" name="room_no" id="ozHotelRoomNo" class="ifs-pms-mono" placeholder="e.g. Room 402">
+                            <input type="text" name="room_no" id="ozHotelRoomNo" class="ifs-pms-mono" placeholder="e.g. Room 402" autocomplete="off" oninput="ozSyncRoomDisplay(this.value);">
                         </div>
 
                         <!-- Modular Multi-Package Switch Deck -->
@@ -630,7 +808,7 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                         </div>
                     </div>
 
-                    <!-- Thermal Slip Print Trigger: Hidden until ticket is saved -->
+                    <!-- Thermal Slip Print Trigger -->
                     <div class="oz-receipt-print-action" id="ozReceiptPrintActionWrap" style="<?php echo $last_issued_ticket ? 'display: block;' : 'display: none;'; ?> margin-top: 18px; padding-top: 12px; border-top: 1.5px dashed #cbd5e1;">
                         <button type="button" class="oz-btn oz-btn-primary" style="width: 100%; height: 44px; border-radius: 10px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;" onclick="ozPrintPreviewReceipt()">
                             <span class="dashicons dashicons-printer"></span> <?php esc_html_e( 'Print Thermal Slip Only', 'swimming-pool-manager' ); ?>
@@ -673,22 +851,29 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                     <thead>
                         <tr>
                             <th><?php esc_html_e( 'Serial No / Code', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Guest Name', 'swimming-pool-manager' ); ?></th>
+                            <th><?php esc_html_e( 'Phone', 'swimming-pool-manager' ); ?></th>
                             <th><?php esc_html_e( 'Duration', 'swimming-pool-manager' ); ?></th>
                             <th><?php esc_html_e( 'Amount', 'swimming-pool-manager' ); ?></th>
                             <th><?php esc_html_e( 'Status', 'swimming-pool-manager' ); ?></th>
-                            <th><?php esc_html_e( 'Sold Date', 'swimming-pool-manager' ); ?></th>
                             <th style="text-align: right;"><?php esc_html_e( 'Actions', 'swimming-pool-manager' ); ?></th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if ( ! empty( $all_tickets ) ) : ?>
                             <?php foreach ( $all_tickets as $tkt ) :
-                                $is_valid    = ( 'Valid' === $tkt->status );
+                                $is_valid     = ( 'Valid' === $tkt->status );
                                 $status_class = $is_valid ? 'ifs-pms-badge-success' : ( 'Used' === $tkt->status ? 'ifs-pms-badge-warning' : 'ifs-pms-badge-danger' );
                             ?>
                                 <tr class="oz-ticket-row" data-status="<?php echo esc_attr( $tkt->status ); ?>">
                                     <td class="ifs-pms-mono" style="font-weight: 800; color: #0284c7;">
                                         <?php echo esc_html( $tkt->ticket_code ); ?>
+                                    </td>
+                                    <td style="font-weight: 700;">
+                                        <?php echo esc_html( ! empty( $tkt->customer_name ) ? $tkt->customer_name : __( 'Walk-in Guest', 'swimming-pool-manager' ) ); ?>
+                                    </td>
+                                    <td class="ifs-pms-mono" style="color: #475569;">
+                                        <?php echo esc_html( $tkt->customer_phone ?: '-' ); ?>
                                     </td>
                                     <td class="ifs-pms-mono">
                                         <span class="ifs-pms-badge" style="background: rgba(2, 132, 199, 0.08); color: #0284c7; font-weight: 800;">
@@ -703,21 +888,19 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                                             <?php echo esc_html( $tkt->status ); ?>
                                         </span>
                                     </td>
-                                    <td class="ifs-pms-mono" style="font-size: 12px; color: #475569;">
-                                        <?php echo esc_html( $tkt->sold_at ); ?>
-                                    </td>
                                     <td style="text-align: right; white-space: nowrap;">
                                         <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=ticket_detail&ticket_id=' . $tkt->id ) ); ?>" class="oz-btn oz-btn-sm oz-btn-view">
                                             <span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
                                         </a>
 
                                         <button type="button" class="oz-btn oz-btn-sm oz-btn-edit" onclick='ozOpenEditModal(<?php echo wp_json_encode( array(
-                                            'id'     => $tkt->id,
-                                            'code'   => $tkt->ticket_code,
-                                            'name'   => ! empty( $tkt->customer_name ) ? $tkt->customer_name : '',
-                                            'phone'  => $tkt->customer_phone,
-                                            'amount' => $tkt->amount,
-                                            'status' => $tkt->status,
+                                            'id'         => $tkt->id,
+                                            'code'       => $tkt->ticket_code,
+                                            'name'       => ! empty( $tkt->customer_name ) ? $tkt->customer_name : '',
+                                            'phone'      => $tkt->customer_phone,
+                                            'room_no'    => $tkt->room_no ?? '',
+                                            'amount'     => $tkt->amount,
+                                            'status'     => $tkt->status,
                                         ) ); ?>)'>
                                             <span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
                                         </button>
@@ -737,7 +920,7 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 48px; color: #94a3b8;">
+                                <td colspan="7" style="text-align: center; padding: 48px; color: #94a3b8;">
                                     <span class="dashicons dashicons-tickets-alt" style="font-size: 36px; width: 36px; height: 36px;"></span>
                                     <div style="margin-top: 10px;"><?php esc_html_e( 'No tickets found in database.', 'swimming-pool-manager' ); ?></div>
                                 </td>
@@ -793,6 +976,10 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
                     <label class="oz-field-label"><?php esc_html_e( 'Contact Phone', 'swimming-pool-manager' ); ?> *</label>
                     <input type="tel" name="phone" id="ozModalPhone" required>
                 </div>
+                <div class="oz-field-group">
+                    <label class="oz-field-label"><?php esc_html_e( 'Hotel Room Number', 'swimming-pool-manager' ); ?></label>
+                    <input type="text" name="room_no" id="ozModalRoomNo" class="ifs-pms-mono" placeholder="e.g. Room 402">
+                </div>
                 <div class="oz-grid-2">
                     <div class="oz-field-group">
                         <label class="oz-field-label"><?php printf( esc_html__( 'Amount (%s)', 'swimming-pool-manager' ), esc_html( $currency ) ); ?> *</label>
@@ -820,3 +1007,172 @@ $preview_code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 
         </form>
     </div>
 </div>
+
+<script>
+/**
+ * Direct POS Controller, Registry Filtering & Real-Time Sync Engine
+ */
+(function() {
+    window.ozSetGuestType = function(type) {
+        var isRoom = (type === 'room');
+
+        var pillWalkin = document.getElementById('ozTypePillWalkin');
+        var pillRoom   = document.getElementById('ozTypePillRoom');
+        var roomWrap   = document.getElementById('ozRoomNumberWrap');
+        var roomInput  = document.getElementById('ozHotelRoomNo');
+        var cashWrap   = document.getElementById('ozCashWrap');
+        var cashInput  = document.getElementById('ozCashReceived');
+        var hiddenType = document.getElementById('ozGuestTypeInput');
+
+        if (hiddenType) {
+            hiddenType.value = isRoom ? 'room_guest' : 'customer';
+        }
+
+        if (pillWalkin && pillRoom) {
+            if (isRoom) {
+                pillWalkin.classList.remove('active');
+                pillRoom.classList.add('active');
+            } else {
+                pillRoom.classList.remove('active');
+                pillWalkin.classList.add('active');
+            }
+        }
+
+        if (roomWrap) {
+            roomWrap.style.setProperty('display', isRoom ? 'block' : 'none', 'important');
+        }
+
+        if (roomInput) {
+            if (isRoom) {
+                roomInput.setAttribute('required', 'required');
+                setTimeout(function() { roomInput.focus(); }, 50);
+            } else {
+                roomInput.removeAttribute('required');
+                roomInput.value = '';
+            }
+        }
+
+        if (typeof window.ozSelectTenderByName === 'function') {
+            window.ozSelectTenderByName(isRoom ? 'Complementary' : 'Cash');
+        }
+
+        if (cashWrap) {
+            cashWrap.style.setProperty('display', isRoom ? 'none' : 'grid', 'important');
+        }
+
+        if (cashInput) {
+            if (isRoom) {
+                cashInput.removeAttribute('required');
+            } else {
+                cashInput.setAttribute('required', 'required');
+            }
+        }
+
+        ozSyncRoomDisplay(roomInput ? roomInput.value : '');
+
+        if (typeof window.ozRecalculate === 'function') {
+            window.ozRecalculate();
+        }
+    };
+
+    window.ozSyncRoomDisplay = function(val) {
+        var row = document.getElementById('ozPrevRoomRow');
+        var cell = document.getElementById('ozPrevRoom');
+        var roomWrap = document.getElementById('ozRoomNumberWrap');
+        var isRoomGuest = roomWrap && roomWrap.style.display !== 'none';
+
+        if (row && cell) {
+            var trimmed = String(val || '').trim();
+            if (isRoomGuest && trimmed.length > 0) {
+                cell.textContent = trimmed;
+                row.style.setProperty('display', 'table-row', 'important');
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+                cell.textContent = '-';
+            }
+        }
+    };
+
+    // Instant Client-Side Filter Engine for Visible Page Records
+    window.ozFilterTicketTable = function() {
+        var searchInput = document.getElementById('ozTicketSearchInput');
+        var statusFilter = document.getElementById('ozTicketStatusFilter');
+        var query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+        var status = statusFilter ? statusFilter.value : 'ALL';
+        var rows = document.querySelectorAll('#ozTicketsMasterTable tbody .oz-ticket-row');
+
+        rows.forEach(function(r) {
+            var rowStatus = r.getAttribute('data-status') || '';
+            var rowText = r.textContent.toLowerCase();
+            var matchesQuery = (!query || rowText.indexOf(query) !== -1);
+            var matchesStatus = (status === 'ALL' || rowStatus === status);
+
+            if (matchesQuery && matchesStatus) {
+                r.style.display = '';
+            } else {
+                r.style.display = 'none';
+            }
+        });
+    };
+
+    window.ozOpenEditModal = function(data) {
+        document.getElementById('ozModalTicketId').value = data.id || '';
+        document.getElementById('ozModalTicketCode').textContent = data.code || '';
+        document.getElementById('ozModalName').value = data.name || '';
+        document.getElementById('ozModalPhone').value = data.phone || '';
+        document.getElementById('ozModalRoomNo').value = data.room_no || '';
+        document.getElementById('ozModalAmount').value = parseFloat(data.amount || 0).toFixed(2);
+        document.getElementById('ozModalStatus').value = data.status || 'Valid';
+
+        var modal = document.getElementById('ozEditTicketModal');
+        if (modal) modal.classList.add('is-visible');
+    };
+
+    window.ozCloseEditModal = function() {
+        var modal = document.getElementById('ozEditTicketModal');
+        if (modal) modal.classList.remove('is-visible');
+    };
+
+    window.ozHandleFormSubmit = function(e) {
+        var roomWrap = document.getElementById('ozRoomNumberWrap');
+        var isRoom = roomWrap && roomWrap.style.display !== 'none';
+        var roomInput = document.getElementById('ozHotelRoomNo');
+
+        if (isRoom && roomInput && !roomInput.value.trim()) {
+            e.preventDefault();
+            alert('Please specify the Hotel Guest Room Number.');
+            roomInput.focus();
+            return false;
+        }
+
+        if (typeof window.ozValidateFormSubmission === 'function') {
+            var isValid = window.ozValidateFormSubmission(e);
+            if (!isValid) return false;
+        }
+
+        var previewCard = document.getElementById('ozReceiptPreviewContainer');
+        if (previewCard) {
+            sessionStorage.setItem('oz_saved_receipt_html', previewCard.innerHTML);
+            sessionStorage.setItem('oz_saved_active', '1');
+        }
+        return true;
+    };
+
+    window.addEventListener('DOMContentLoaded', function() {
+        var tokenElem = document.getElementById('ozPrevToken');
+        var qrWrap = document.getElementById('ozReceiptQrWrap');
+        if (tokenElem && qrWrap && typeof QRCode !== 'undefined') {
+            var tokenCode = tokenElem.innerText.trim();
+            if (tokenCode) {
+                qrWrap.innerHTML = '';
+                new QRCode(qrWrap, {
+                    text: tokenCode,
+                    width: 100,
+                    height: 100,
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            }
+        }
+    });
+})();
+</script>
