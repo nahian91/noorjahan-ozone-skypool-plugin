@@ -6322,3 +6322,644 @@ html, body {
 .ifs-pms-aside::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
+
+/* ==========================================================================
+   PURE CSS HAMBURGER BUTTON & MOBILE DRAWER (Ozone Skypool OS)
+   ========================================================================== */
+
+/* 1. Desktop: Hide hamburger button completely */
+@media screen and (min-width: 993px) {
+    .ifs-pms-mobile-trigger {
+        display: none !important;
+    }
+}
+
+/* 2. Mobile (<= 992px): Force hamburger button to display */
+@media screen and (max-width: 992px) {
+    /* Hide the SVG inside the button so we can draw pure CSS bars */
+    .ifs-pms-mobile-trigger svg {
+        display: none !important;
+    }
+
+    /* Outer Button */
+    #wpcontent .ifs-pms-header .ifs-pms-mobile-trigger,
+    .ifs-pms-header .ifs-pms-mobile-trigger {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        position: relative !important;
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        cursor: pointer !important;
+        margin: 0 12px 0 0 !important;
+        padding: 0 !important;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08) !important;
+        flex-shrink: 0 !important;
+        z-index: 100 !important;
+    }
+
+    /* Middle Bar */
+    .ifs-pms-header .ifs-pms-mobile-trigger::after {
+        content: "" !important;
+        display: block !important;
+        width: 20px !important;
+        height: 2px !important;
+        background-color: #0f172a !important;
+        border-radius: 2px !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        /* Top and Bottom Bars rendered via box-shadow */
+        box-shadow: 
+            0 -6px 0 0 #0f172a,
+            0 6px 0 0 #0f172a !important;
+        transition: all 0.2s ease-in-out !important;
+    }
+
+    /* Dark Mode Styling */
+    [data-theme="dark"] .ifs-pms-header .ifs-pms-mobile-trigger {
+        background: #121829 !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+
+    [data-theme="dark"] .ifs-pms-header .ifs-pms-mobile-trigger::after {
+        background-color: #f8fafc !important;
+        box-shadow: 
+            0 -6px 0 0 #f8fafc,
+            0 6px 0 0 #f8fafc !important;
+    }
+
+    /* 3. Off-Canvas Sliding Navigation Menu */
+    .ifs-pms-aside {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: var(--ifs-sidebar, #ffffff) !important;
+        border-right: 1px solid var(--ifs-border-subtle, #e2e8f0) !important;
+        transform: translateX(-105%) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        z-index: 99999 !important;
+        box-shadow: none !important;
+    }
+
+    .ifs-pms-aside.mobile-open {
+        transform: translateX(0) !important;
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    /* Dark Screen Dimmer / Backdrop */
+    .ifs-pms-sidebar-backdrop {
+        display: none;
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        z-index: 99998 !important;
+        opacity: 0;
+        transition: opacity 0.25s ease !important;
+    }
+
+    .ifs-pms-sidebar-backdrop.active {
+        display: block !important;
+        opacity: 1 !important;
+    }
+}
+
+/* ==========================================================================
+   FIX MOBILE SIDEBAR BLUR & LAYERING (DRAWER ABOVE BACKDROP)
+   ========================================================================== */
+
+@media screen and (max-width: 992px) {
+    /* 1. Backdrop sits below the drawer */
+    .ifs-pms-sidebar-backdrop {
+        position: fixed !important;
+        inset: 0 !important;
+        background: rgba(15, 23, 42, 0.6) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        z-index: 99990 !important; /* Lower than drawer */
+    }
+
+    /* 2. Drawer sits above the backdrop with a solid opaque background */
+    .ifs-pms-aside {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #ffffff !important; /* Solid opaque color */
+        border-right: 1px solid #e2e8f0 !important;
+        box-shadow: 10px 0 35px rgba(0, 0, 0, 0.35) !important;
+        z-index: 99999 !important; /* Higher than backdrop */
+        transform: translateX(-105%) !important;
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        overflow-y: auto !important;
+    }
+
+    .ifs-pms-aside.mobile-open {
+        transform: translateX(0) !important;
+    }
+
+    /* Dark Mode support */
+    [data-theme="dark"] .ifs-pms-aside {
+        background: #0d121f !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+}
+
+/* ==========================================================================
+   Ozone Skypool OS - Operations Dashboard Stylesheet
+   File: assets/css/dashboard.css
+   ========================================================================== */
+
+/* Main Stack Layout */
+.ifs-pms-dash-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 1. Live Telemetry & Station Header */
+.ifs-pms-telemetry-header {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 20px;
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    flex-wrap: wrap;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.ifs-pms-clock-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ifs-pms-clock-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: rgba(2, 132, 199, 0.08);
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.ifs-pms-clock-digits {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    font-family: var(--ifs-font-mono, monospace);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.ifs-pms-clock-date {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+.ifs-pms-closing-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.08);
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-top: 4px;
+}
+
+.ifs-pms-operator-meta {
+    text-align: right;
+}
+
+.ifs-pms-operator-name {
+    font-size: 14px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.ifs-pms-operator-role {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+/* 2. Rooftop Skypool Occupancy Gauge */
+.ifs-pms-gauge-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 20px;
+    padding: 24px 28px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    display: grid;
+    grid-template-columns: 1.2fr 1.5fr auto;
+    gap: 28px;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.ifs-pms-gauge-icon-box {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: rgba(2, 132, 199, 0.08);
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+.ifs-pms-gauge-title {
+    font-size: 11.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+
+.ifs-pms-gauge-numbers {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+}
+
+.ifs-pms-gauge-subtitle {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.ifs-pms-gauge-progress-wrap {
+    width: 100%;
+}
+
+.ifs-pms-gauge-progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ifs-pms-gauge-progress-label {
+    color: #64748b;
+}
+
+.ifs-pms-gauge-progress-val {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+.ifs-pms-gauge-progress-track {
+    width: 100%;
+    height: 10px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ifs-pms-gauge-progress-bar {
+    height: 100%;
+    border-radius: 6px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 3. Operational Quick Action Tiles */
+.ifs-pms-action-deck {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.ifs-pms-action-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    padding: 18px 20px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.02);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.ifs-pms-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    border-color: #cbd5e1;
+}
+
+.ifs-pms-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.ifs-pms-action-icon-blue { background: rgba(2, 132, 199, 0.1); color: #0284c7; }
+.ifs-pms-action-icon-green { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.ifs-pms-action-icon-purple { background: rgba(192, 132, 252, 0.1); color: #c084fc; }
+.ifs-pms-action-icon-red { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.ifs-pms-action-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.ifs-pms-action-sub {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 3px;
+}
+
+/* 4. Executive KPI Summary Quad */
+.ifs-pms-kpi-quad {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+}
+
+.ifs-pms-kpi-brick {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 18px;
+    padding: 20px 22px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.ifs-pms-kpi-brick::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+}
+
+.ifs-pms-kpi-brick-inflow::before { background: #10b981; }
+.ifs-pms-kpi-brick-admit::before { background: #0284c7; }
+.ifs-pms-kpi-brick-turnover::before { background: #c084fc; }
+.ifs-pms-kpi-brick-outflow::before { background: #ef4444; }
+
+.ifs-pms-kpi-meta-tag {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b;
+}
+
+.ifs-pms-kpi-val {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.ifs-pms-kpi-foot {
+    font-size: 11.5px;
+    color: #64748b;
+    border-top: 1px dashed #e2e8f0;
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
+/* 5. Live Activity Stream & Shift Ledger Split */
+.ifs-pms-activity-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 22px;
+}
+
+.ifs-pms-panel-card {
+    background: #ffffff;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.ifs-pms-panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.ifs-pms-panel-header-title {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ifs-pms-feed-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    transition: background 0.15s ease;
+}
+
+.ifs-pms-feed-item:hover {
+    background: #f1f5f9;
+}
+
+.ifs-pms-feed-guest {
+    font-size: 13px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.ifs-pms-feed-meta {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.ifs-pms-finance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    font-size: 13.5px;
+    font-weight: 700;
+}
+
+.ifs-pms-finance-total {
+    border-bottom: none;
+    border-top: 2px solid #cbd5e1;
+    margin-top: 8px;
+    padding-top: 18px;
+}
+
+/* 6. Semantic Status Badges & Utilities */
+.ifs-pms-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ifs-pms-status-green {
+    background: rgba(16, 185, 129, 0.12);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.ifs-pms-status-amber {
+    background: rgba(245, 158, 11, 0.12);
+    color: #d97706;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.ifs-pms-status-red {
+    background: rgba(239, 68, 68, 0.12);
+    color: #dc2626;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.ifs-pms-pulse-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    display: inline-block;
+}
+
+.ifs-pms-mono {
+    font-family: var(--ifs-font-mono, monospace) !important;
+}
+
+/* 7. Responsive Optimization */
+@media screen and (max-width: 1100px) {
+    .ifs-pms-action-deck,
+    .ifs-pms-kpi-quad {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .ifs-pms-gauge-card {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .ifs-pms-activity-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ifs-pms-telemetry-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .ifs-pms-telemetry-header > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .ifs-pms-operator-meta {
+        text-align: left;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .ifs-pms-action-deck,
+    .ifs-pms-kpi-quad {
+        grid-template-columns: 1fr;
+    }
+
+    .ifs-pms-panel-card,
+    .ifs-pms-gauge-card,
+    .ifs-pms-telemetry-header {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    .ifs-pms-clock-digits {
+        font-size: 20px;
+    }
+    
+.oz-barrier-relay-bar {
+  flex-direction: column;
+  gap: 20px;
+}
+div {
+}
+.oz-split-token-group {
+  flex-direction: column;
+  gap: 35px;
+  padding: 20px;
+}
+}
+
+

@@ -25,6 +25,17 @@ define( 'IFS_PMS_PATH', plugin_dir_path( __FILE__ ) );
 define( 'IFS_PMS_URL', plugin_dir_url( __FILE__ ) ); 
 
 /** 
+ * Ensure proper viewport rendering across mobile browsers in WP Admin.
+ */
+add_action( 'admin_head', 'ifs_pms_ensure_admin_viewport_meta' );
+function ifs_pms_ensure_admin_viewport_meta() {
+    $hook = $_GET['page'] ?? '';
+    if ( false !== strpos( $hook, 'ifs-pms' ) ) {
+        echo '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">';
+    }
+}
+
+/** 
  * Load plugin text domain. 
  */ 
 add_action( 'plugins_loaded', 'ifs_pms_load_textdomain' ); 
@@ -323,7 +334,7 @@ add_action( 'admin_enqueue_scripts', 'ifs_pms_enqueue_assets' );
 
 function ifs_pms_enqueue_assets( $hook ) { 
     if ( 'toplevel_page_ifs-pms' !== $hook && 'ozone-skypool_page_ifs-pms-live-status' !== $hook && 'ozone-skypool_page_ifs-pms-customers' !== $hook && false === strpos( $hook, 'ifs-pms' ) ) { 
-        return;
+        return; 
     } 
 
     wp_enqueue_media(); 
@@ -533,125 +544,125 @@ function ifs_pms_handle_form_submissions() {
         } 
     } 
 
-    // --- ISSUE TICKET ---
-    if ( 'issue_ticket' === $action ) {
-        if ( ! current_user_can( 'ozone_sell_tickets' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'Forbidden: Insufficient permissions to issue tickets.', 'swimming-pool-manager' ), 403 );
-        }
+    // --- ISSUE TICKET --- 
+    if ( 'issue_ticket' === $action ) { 
+        if ( ! current_user_can( 'ozone_sell_tickets' ) && ! current_user_can( 'manage_options' ) ) { 
+            wp_die( esc_html__( 'Forbidden: Insufficient permissions to issue tickets.', 'swimming-pool-manager' ), 403 ); 
+        } 
 
-        $name           = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
-        $phone          = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
-        $guest_type     = isset( $_POST['guest_type'] ) ? sanitize_key( wp_unslash( $_POST['guest_type'] ) ) : 'customer';
-        $package_name   = isset( $_POST['package_name'] ) ? sanitize_text_field( wp_unslash( $_POST['package_name'] ) ) : '';
-        $duration_hours = isset( $_POST['duration_hours'] ) ? max( 1, absint( wp_unslash( $_POST['duration_hours'] ) ) ) : 1;
-        $payment_method = isset( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : 'Cash';
-        $room_no        = isset( $_POST['room_no'] ) ? sanitize_text_field( wp_unslash( $_POST['room_no'] ) ) : '';
+        $name           = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : ''; 
+        $phone          = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : ''; 
+        $guest_type     = isset( $_POST['guest_type'] ) ? sanitize_key( wp_unslash( $_POST['guest_type'] ) ) : 'customer'; 
+        $package_name   = isset( $_POST['package_name'] ) ? sanitize_text_field( wp_unslash( $_POST['package_name'] ) ) : ''; 
+        $duration_hours = isset( $_POST['duration_hours'] ) ? max( 1, absint( wp_unslash( $_POST['duration_hours'] ) ) ) : 1; 
+        $payment_method = isset( $_POST['payment_method'] ) ? sanitize_text_field( wp_unslash( $_POST['payment_method'] ) ) : 'Cash'; 
+        $room_no        = isset( $_POST['room_no'] ) ? sanitize_text_field( wp_unslash( $_POST['room_no'] ) ) : ''; 
 
-        $is_free = ( 'room_guest' === $guest_type || 'Room Guest' === $payment_method || 'Complementary' === $payment_method );
-        $amount  = $is_free ? 0.00 : ( isset( $_POST['amount'] ) ? max( 0.00, floatval( wp_unslash( $_POST['amount'] ) ) ) : 0.00 );
-        $staff   = wp_get_current_user()->display_name;
+        $is_free = ( 'room_guest' === $guest_type || 'Room Guest' === $payment_method || 'Complementary' === $payment_method ); 
+        $amount  = $is_free ? 0.00 : ( isset( $_POST['amount'] ) ? max( 0.00, floatval( wp_unslash( $_POST['amount'] ) ) ) : 0.00 ); 
+        $staff   = wp_get_current_user()->display_name; 
 
-        if ( ! empty( $name ) && ! empty( $phone ) ) {
-            $customer = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$t_cust} WHERE phone = %s", $phone ) );
-            if ( ! $customer ) {
-                $wpdb->insert( $t_cust, array( 'name' => $name, 'phone' => $phone ), array( '%s', '%s' ) );
-                $cust_id = $wpdb->insert_id;
-            } else {
-                $cust_id = $customer->id;
-                $wpdb->update( $t_cust, array( 'name' => $name ), array( 'id' => $cust_id ), array( '%s' ), array( '%d' ) );
-            }
+        if ( ! empty( $name ) && ! empty( $phone ) ) { 
+            $customer = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM {$t_cust} WHERE phone = %s", $phone ) ); 
+            if ( ! $customer ) { 
+                $wpdb->insert( $t_cust, array( 'name' => $name, 'phone' => $phone ), array( '%s', '%s' ) ); 
+                $cust_id = $wpdb->insert_id; 
+            } else { 
+                $cust_id = $customer->id; 
+                $wpdb->update( $t_cust, array( 'name' => $name ), array( 'id' => $cust_id ), array( '%s' ), array( '%d' ) ); 
+            } 
 
-            $today_start = current_time( 'Y-m-d 00:00:00' );
-            $today_end   = current_time( 'Y-m-d 23:59:59' );
-            $today_count = (int) $wpdb->get_var(
-                $wpdb->prepare(
-                    "SELECT COUNT(id) FROM {$t_tick} WHERE sold_at >= %s AND sold_at <= %s",
-                    $today_start,
-                    $today_end
-                )
-            );
+            $today_start = current_time( 'Y-m-d 00:00:00' ); 
+            $today_end   = current_time( 'Y-m-d 23:59:59' ); 
+            $today_count = (int) $wpdb->get_var( 
+                $wpdb->prepare( 
+                    "SELECT COUNT(id) FROM {$t_tick} WHERE sold_at >= %s AND sold_at <= %s", 
+                    $today_start, 
+                    $today_end 
+                ) 
+            ); 
 
-            $code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 'd' ) . '-' . str_pad( (string) ( $today_count + 1 ), 4, '0', STR_PAD_LEFT );
+            $code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 'd' ) . '-' . str_pad( (string) ( $today_count + 1 ), 4, '0', STR_PAD_LEFT ); 
 
-            $inserted = $wpdb->insert(
-                $t_tick,
-                array(
-                    'ticket_code'     => $code,
-                    'customer_id'     => $cust_id,
-                    'guest_type'      => $guest_type,
-                    'package_details' => $package_name,
-                    'duration_hours'  => $duration_hours,
-                    'payment_method'  => $payment_method,
-                    'room_no'         => $room_no,
-                    'amount'          => $amount,
-                    'sold_by'         => $staff,
-                    'status'          => 'Valid',
-                    'sold_at'         => current_time( 'mysql' ),
-                ),
-                array( '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%f', '%s', '%s', '%s' )
-            );
+            $inserted = $wpdb->insert( 
+                $t_tick, 
+                array( 
+                    'ticket_code'     => $code, 
+                    'customer_id'     => $cust_id, 
+                    'guest_type'      => $guest_type, 
+                    'package_details' => $package_name, 
+                    'duration_hours'  => $duration_hours, 
+                    'payment_method'  => $payment_method, 
+                    'room_no'         => $room_no, 
+                    'amount'          => $amount, 
+                    'sold_by'         => $staff, 
+                    'status'          => 'Valid', 
+                    'sold_at'         => current_time( 'mysql' ), 
+                ), 
+                array( '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%f', '%s', '%s', '%s' ) 
+            ); 
 
-            if ( $inserted ) {
-                set_transient(
-                    'ifs_pms_last_ticket_' . get_current_user_id(),
-                    array(
-                        'code'           => $code,
-                        'name'           => $name,
-                        'phone'          => $phone,
-                        'guest_type'     => $guest_type,
-                        'package'        => $package_name,
-                        'duration_hours' => $duration_hours,
-                        'payment_method' => $payment_method,
-                        'room'           => $room_no,
-                        'amount'         => number_format( $amount, 2 ),
-                        'staff'          => $staff,
-                        'date'           => current_time( 'mysql' ),
-                    ),
-                    120
-                );
+            if ( $inserted ) { 
+                set_transient( 
+                    'ifs_pms_last_ticket_' . get_current_user_id(), 
+                    array( 
+                        'code'           => $code, 
+                        'name'           => $name, 
+                        'phone'          => $phone, 
+                        'guest_type'     => $guest_type, 
+                        'package'        => $package_name, 
+                        'duration_hours' => $duration_hours, 
+                        'payment_method' => $payment_method, 
+                        'room'           => $room_no, 
+                        'amount'         => number_format( $amount, 2 ), 
+                        'staff'          => $staff, 
+                        'date'           => current_time( 'mysql' ), 
+                    ), 
+                    120 
+                ); 
 
-                wp_safe_redirect( add_query_arg( array( 'view' => 'tickets', 'msg' => 'ticket_created', 'tab' => 'add' ), $base ) );
-                exit;
-            }
-        }
-    }
+                wp_safe_redirect( add_query_arg( array( 'view' => 'tickets', 'msg' => 'ticket_created', 'tab' => 'add' ), $base ) ); 
+                exit; 
+            } 
+        } 
+    } 
 
-    // --- EDIT TICKET ---
-    if ( 'edit_ticket' === $action ) {
-        if ( ! current_user_can( 'ozone_sell_tickets' ) && ! current_user_can( 'manage_options' ) ) {
-            wp_die( esc_html__( 'Forbidden: Insufficient privileges.', 'swimming-pool-manager' ), 403 );
-        }
+    // --- EDIT TICKET --- 
+    if ( 'edit_ticket' === $action ) { 
+        if ( ! current_user_can( 'ozone_sell_tickets' ) && ! current_user_can( 'manage_options' ) ) { 
+            wp_die( esc_html__( 'Forbidden: Insufficient privileges.', 'swimming-pool-manager' ), 403 ); 
+        } 
 
-        $ticket_id = isset( $_POST['ticket_id'] ) ? absint( wp_unslash( $_POST['ticket_id'] ) ) : 0;
-        $name      = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
-        $phone     = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : '';
-        $room_no   = isset( $_POST['room_no'] ) ? sanitize_text_field( wp_unslash( $_POST['room_no'] ) ) : '';
-        $amount    = isset( $_POST['amount'] ) ? max( 0.00, floatval( wp_unslash( $_POST['amount'] ) ) ) : 0.00;
+        $ticket_id = isset( $_POST['ticket_id'] ) ? absint( wp_unslash( $_POST['ticket_id'] ) ) : 0; 
+        $name      = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : ''; 
+        $phone     = isset( $_POST['phone'] ) ? sanitize_text_field( wp_unslash( $_POST['phone'] ) ) : ''; 
+        $room_no   = isset( $_POST['room_no'] ) ? sanitize_text_field( wp_unslash( $_POST['room_no'] ) ) : ''; 
+        $amount    = isset( $_POST['amount'] ) ? max( 0.00, floatval( wp_unslash( $_POST['amount'] ) ) ) : 0.00; 
 
-        $requested_status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : 'Valid';
-        $allowed_statuses = array( 'Valid', 'Used', 'Cancelled' );
-        $status           = in_array( $requested_status, $allowed_statuses, true ) ? $requested_status : 'Valid';
+        $requested_status = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : 'Valid'; 
+        $allowed_statuses = array( 'Valid', 'Used', 'Cancelled' ); 
+        $status           = in_array( $requested_status, $allowed_statuses, true ) ? $requested_status : 'Valid'; 
 
-        if ( $ticket_id > 0 && ! empty( $name ) && ! empty( $phone ) ) {
-            $ticket = $wpdb->get_row( $wpdb->prepare( "SELECT customer_id FROM {$t_tick} WHERE id = %d", $ticket_id ) );
-            if ( $ticket ) {
-                $wpdb->update( $t_cust, array( 'name' => $name, 'phone' => $phone ), array( 'id' => $ticket->customer_id ), array( '%s', '%s' ), array( '%d' ) );
-                $wpdb->update(
-                    $t_tick,
-                    array(
-                        'room_no' => $room_no,
-                        'amount'  => $amount,
-                        'status'  => $status,
-                    ),
-                    array( 'id' => $ticket_id ),
-                    array( '%s', '%f', '%s' ),
-                    array( '%d' )
-                );
-            }
-            wp_safe_redirect( add_query_arg( array( 'view' => 'tickets', 'msg' => 'ticket_updated', 'tab' => 'list' ), $base ) );
-            exit;
-        }
-    }
+        if ( $ticket_id > 0 && ! empty( $name ) && ! empty( $phone ) ) { 
+            $ticket = $wpdb->get_row( $wpdb->prepare( "SELECT customer_id FROM {$t_tick} WHERE id = %d", $ticket_id ) ); 
+            if ( $ticket ) { 
+                $wpdb->update( $t_cust, array( 'name' => $name, 'phone' => $phone ), array( 'id' => $ticket->customer_id ), array( '%s', '%s' ), array( '%d' ) ); 
+                $wpdb->update( 
+                    $t_tick, 
+                    array( 
+                        'room_no' => $room_no, 
+                        'amount'  => $amount, 
+                        'status'  => $status, 
+                    ), 
+                    array( 'id' => $ticket_id ), 
+                    array( '%s', '%f', '%s' ), 
+                    array( '%d' ) 
+                ); 
+            } 
+            wp_safe_redirect( add_query_arg( array( 'view' => 'tickets', 'msg' => 'ticket_updated', 'tab' => 'list' ), $base ) ); 
+            exit; 
+        } 
+    } 
 
     if ( 'delete_ticket' === $action ) { 
         if ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'ozone_manage_settings' ) ) { 
@@ -966,7 +977,7 @@ function ifs_pms_handle_form_submissions() {
  */ 
 add_action( 'template_redirect', 'ifs_pms_home_redirect_to_admin' ); 
 function ifs_pms_home_redirect_to_admin() { 
-    if ( is_front_page() || is_home() ) { 
+    if ( is_front_page() || is_home() ) {
         wp_safe_redirect( admin_url( 'admin.php?page=ifs-pms' ) ); 
         exit; 
     } 
@@ -1023,47 +1034,207 @@ function ifs_pms_render_application() {
     ?> 
 
     <div class="ifs-pms-shell" id="ifsPmsAppShell"> 
-        <!-- Scoped Ultra-Thin Scrollbar Styles for the Navigation Sidebar -->
+        <!-- Embedded Mobile Header & Drawer Style Rules -->
         <style>
             .ifs-pms-nav-scroll-wrap {
                 scrollbar-width: thin;
                 scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+                -webkit-overflow-scrolling: touch;
             }
-            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar {
-                width: 4px;
+            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar { width: 4px; }
+            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-track { background: transparent; }
+            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.35); border-radius: 4px; }
+            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.6); }
+            [data-theme="dark"] .ifs-pms-nav-scroll-wrap { scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+            [data-theme="dark"] .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); }
+
+            /* Pure CSS 3-Line Hamburger Trigger Button */
+            .ifs-pms-mobile-trigger {
+                display: none;
+                align-items: center;
+                justify-content: center;
+                width: 42px;
+                height: 42px;
+                min-width: 42px;
+                min-height: 42px;
+                border-radius: 12px;
+                background: #ffffff !important;
+                border: 1.5px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+                flex-shrink: 0;
+                position: relative;
+                padding: 0;
+                margin-right: 12px;
+                z-index: 99;
             }
-            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-track {
-                background: transparent;
+            .ifs-pms-mobile-trigger span,
+            .ifs-pms-mobile-trigger span::before,
+            .ifs-pms-mobile-trigger span::after {
+                content: '';
+                display: block;
+                width: 20px;
+                height: 2.5px;
+                background-color: #0f172a;
+                border-radius: 2px;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                transition: all 0.2s ease;
             }
-            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb {
-                background: rgba(148, 163, 184, 0.35);
-                border-radius: 4px;
+            .ifs-pms-mobile-trigger span {
+                top: 50%;
+                transform: translate(-50%, -50%);
             }
-            .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb:hover {
-                background: rgba(148, 163, 184, 0.6);
+            .ifs-pms-mobile-trigger span::before {
+                top: -6.5px;
             }
-            [data-theme="dark"] .ifs-pms-nav-scroll-wrap {
-                scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+            .ifs-pms-mobile-trigger span::after {
+                top: 6.5px;
             }
-            [data-theme="dark"] .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb {
-                background: rgba(255, 255, 255, 0.18);
+            .ifs-pms-mobile-trigger:active {
+                transform: scale(0.95);
             }
-            [data-theme="dark"] .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb:hover {
-                background: rgba(255, 255, 255, 0.35);
+
+            /* Responsive Mobile Viewport Layering Reset */
+            @media screen and (max-width: 992px) {
+                .ifs-pms-shell {
+                    position: relative !important;
+                    flex-direction: column !important;
+                    height: 100vh !important;
+                    height: 100dvh !important;
+                    overflow: visible !important;
+                    transform: none !important;
+                    filter: none !important;
+                }
+
+                .ifs-pms-mobile-trigger {
+                    display: inline-flex !important;
+                }
+
+                /* Drawer Sits on the Highest Layer with Crisp Background */
+                .ifs-pms-aside {
+                    position: fixed !important;
+                    top: 0 !important;
+                    bottom: 0 !important;
+                    left: 0 !important;
+                    width: 285px !important;
+                    max-width: 84vw !important;
+                    height: 100vh !important;
+                    height: 100dvh !important;
+                    background-color: #ffffff !important;
+                    opacity: 1 !important;
+                    filter: none !important;
+                    -webkit-filter: none !important;
+                    backdrop-filter: none !important;
+                    -webkit-backdrop-filter: none !important;
+                    transform: translateX(-105%) !important;
+                    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                    box-shadow: none !important;
+                    z-index: 100000 !important;
+                }
+
+                .ifs-pms-aside.mobile-open {
+                    transform: translateX(0) !important;
+                    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.45) !important;
+                }
+
+                .ifs-pms-aside * {
+                    opacity: 1 !important;
+                    filter: none !important;
+                    -webkit-filter: none !important;
+                }
+
+                /* Backdrop Stays Behind Drawer */
+                .ifs-pms-sidebar-backdrop {
+                    display: none;
+                    position: fixed !important;
+                    top: 0 !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    bottom: 0 !important;
+                    width: 100vw !important;
+                    height: 100vh !important;
+                    background: rgba(15, 23, 42, 0.65) !important;
+                    backdrop-filter: blur(4px) !important;
+                    -webkit-backdrop-filter: blur(4px) !important;
+                    z-index: 99990 !important;
+                }
+
+                .ifs-pms-sidebar-backdrop.active {
+                    display: block !important;
+                }
+
+                .ifs-pms-canvas {
+                    padding: 16px 14px !important;
+                    height: 100% !important;
+                    flex: 1 1 auto !important;
+                    -webkit-overflow-scrolling: touch;
+                }
+
+                .ifs-pms-header {
+                    padding-bottom: 14px !important;
+                    margin-bottom: 16px !important;
+                }
+
+                .ifs-pms-header h1 {
+                    font-size: 18px !important;
+                }
+
+                .ifs-pms-subnav-bar,
+                .oz-subnav-bar,
+                .ifs-pms-sub-tabs {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    overflow-x: auto !important;
+                    white-space: nowrap !important;
+                    -webkit-overflow-scrolling: touch;
+                    scrollbar-width: none;
+                }
+
+                .ifs-pms-subnav-bar::-webkit-scrollbar,
+                .oz-subnav-bar::-webkit-scrollbar,
+                .ifs-pms-sub-tabs::-webkit-scrollbar {
+                    display: none;
+                }
+            }
+
+            /* Dark Mode Overrides */
+            [data-theme="dark"] .ifs-pms-mobile-trigger {
+                background: #121829 !important;
+                border-color: rgba(255, 255, 255, 0.15) !important;
+            }
+            [data-theme="dark"] .ifs-pms-mobile-trigger span,
+            [data-theme="dark"] .ifs-pms-mobile-trigger span::before,
+            [data-theme="dark"] .ifs-pms-mobile-trigger span::after {
+                background-color: #f8fafc !important;
+            }
+            [data-theme="dark"] .ifs-pms-aside {
+                background-color: #0d121f !important;
+                border-color: rgba(255, 255, 255, 0.1) !important;
             }
         </style>
 
-        <aside class="ifs-pms-aside" style="width: 260px; min-width: 260px; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; box-sizing: border-box; padding: 22px 14px; background: var(--ifs-sidebar); border-right: 1px solid var(--ifs-border-subtle); z-index: 20;"> 
+        <!-- 1. Off-Canvas Sidebar Drawer -->
+        <aside class="ifs-pms-aside" id="ifsPmsSidebarDrawer" style="width: 260px; min-width: 260px; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; box-sizing: border-box; padding: 22px 14px; background: var(--ifs-sidebar); border-right: 1px solid var(--ifs-border-subtle);"> 
             <!-- Scrollable Navigation Region with Thin Scrollbar -->
             <div class="ifs-pms-nav-scroll-wrap" style="flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 4px; margin-bottom: 12px;"> 
                 
-                <div class="ifs-pms-brand" style="display: flex; align-items: center; gap: 12px; padding: 4px 8px 18px 8px; border-bottom: 1px solid var(--ifs-border-subtle); margin-bottom: 16px;"> 
-                    <div> 
-                        <div style="font-size: 15px; font-weight: 800; color: var(--ifs-text-primary);"><?php echo $b_name ? esc_html( $b_name ) : esc_html__( 'Ozone Skypool', 'swimming-pool-manager' ); ?></div> 
+                <div class="ifs-pms-brand" style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 18px 8px; border-bottom: 1px solid var(--ifs-border-subtle); margin-bottom: 16px;"> 
+                    <div style="overflow: hidden;"> 
+                        <div style="font-size: 15px; font-weight: 800; color: var(--ifs-text-primary); white-space: nowrap; text-overflow: ellipsis; overflow: hidden;"><?php echo $b_name ? esc_html( $b_name ) : esc_html__( 'Ozone Skypool', 'swimming-pool-manager' ); ?></div> 
                         <div style="font-size: 10px; color: var(--ifs-accent); font-weight: 700; letter-spacing: 0.8px;"> 
                             <?php echo $is_admin ? esc_html__( 'MANAGER TERMINAL', 'swimming-pool-manager' ) : esc_html__( 'CASHIER DESK', 'swimming-pool-manager' ); ?> 
                         </div> 
                     </div> 
+                    <!-- Handheld Drawer Close Trigger -->
+                    <button type="button" onclick="ifsPmsToggleMobileMenu(false);" aria-label="<?php esc_attr_e( 'Close Navigation', 'swimming-pool-manager' ); ?>" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--ifs-surface-hover); color: var(--ifs-text-secondary); cursor: pointer;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div> 
 
                 <div class="ifs-pms-nav-group-title"><?php esc_html_e( 'Front Desk', 'swimming-pool-manager' ); ?></div> 
@@ -1187,11 +1358,17 @@ function ifs_pms_render_application() {
             </div> 
         </aside>
 
+        <!-- 2. Main Admin Canvas Body -->
         <main class="ifs-pms-canvas"> 
             <header class="ifs-pms-header"> 
-                <div style="display: flex; align-items: center; gap: 16px;"> 
+                <div style="display: flex; align-items: center; width: 100%;"> 
+                    <!-- Mobile Hamburger Button Trigger -->
+                    <button type="button" class="ifs-pms-mobile-trigger" onclick="ifsPmsToggleMobileMenu(true);" aria-label="<?php esc_attr_e( 'Open Navigation Menu', 'swimming-pool-manager' ); ?>">
+                        <span></span>
+                    </button>
+
                     <?php if ( ! empty( $logo_url ) ) : ?> 
-                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Logo" style="max-height: 44px; width: auto; border-radius: 10px; border: 1px solid var(--ifs-border-subtle);"> 
+                        <img src="<?php echo esc_url( $logo_url ); ?>" alt="Logo" style="max-height: 44px; width: auto; border-radius: 10px; border: 1px solid var(--ifs-border-subtle); margin-right: 12px;"> 
                     <?php endif; ?> 
                     <div> 
                         <h1><?php echo $b_name ? esc_html( $b_name ) : esc_html__( 'Ozone Skypool', 'swimming-pool-manager' ); ?></h1> 
@@ -1217,7 +1394,26 @@ function ifs_pms_render_application() {
             } 
             ?> 
         </main> 
+
+        <!-- 3. Screen Dimmer Backdrop (Placed outside canvas to ensure it sits behind drawer) -->
+        <div class="ifs-pms-sidebar-backdrop" id="ifsPmsSidebarBackdrop" onclick="ifsPmsToggleMobileMenu(false);"></div>
     </div> 
+
+    <!-- Mobile Navigation Drawer Controller -->
+    <script>
+        function ifsPmsToggleMobileMenu(open) {
+            var drawer = document.getElementById('ifsPmsSidebarDrawer');
+            var backdrop = document.getElementById('ifsPmsSidebarBackdrop');
+            if (!drawer || !backdrop) return;
+            if (open) {
+                drawer.classList.add('mobile-open');
+                backdrop.classList.add('active');
+            } else {
+                drawer.classList.remove('mobile-open');
+                backdrop.classList.remove('active');
+            }
+        }
+    </script>
 
     <!-- Global Thermal Receipt Modal --> 
     <div id="ifs-pms-thermal-modal"> 
@@ -1273,24 +1469,24 @@ function ifs_pms_verify_pass_callback() {
         wp_send_json_error( array( 'message' => __( 'Missing pass identification parameter.', 'swimming-pool-manager' ) ) ); 
     } 
 
-    $now   = current_time( 'mysql' );
+    $now   = current_time( 'mysql' ); 
     $staff = wp_get_current_user()->display_name; 
 
-    $affected = $wpdb->query(
+    $affected = $wpdb->query( 
         $wpdb->prepare( 
             "UPDATE {$t_tick} 
             SET status = %s, scanned_at = %s, scanned_by = %s 
             WHERE ticket_code = %s AND status = %s", 
             'Used', 
             $now, 
-            $staff,
+            $staff, 
             $code, 
             'Valid' 
         ) 
     ); 
 
-    if ( 0 === $affected ) {
-        $ticket_state = $wpdb->get_row(
+    if ( 0 === $affected ) { 
+        $ticket_state = $wpdb->get_row( 
             $wpdb->prepare( 
                 "SELECT status, scanned_at, scanned_by, sold_at FROM {$t_tick} WHERE ticket_code = %s", 
                 $code 
@@ -1302,14 +1498,14 @@ function ifs_pms_verify_pass_callback() {
         } 
 
         if ( 'Used' === $ticket_state->status ) { 
-            $ticket = $wpdb->get_row(
+            $ticket = $wpdb->get_row( 
                 $wpdb->prepare( 
                     "SELECT t.*, c.name as customer_name, c.phone as customer_phone 
                     FROM {$t_tick} t 
                     LEFT JOIN {$t_cust} c ON t.customer_id = c.id 
                     WHERE t.ticket_code = %s", 
                     $code 
-                )
+                ) 
             ); 
 
             $duration    = ! empty( $ticket->duration_hours ) ? (int) $ticket->duration_hours : 1; 
@@ -1331,7 +1527,7 @@ function ifs_pms_verify_pass_callback() {
                         'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'swimming-pool-manager' ), 
                         'duration_hours' => $duration, 
                         'valid_until'    => $valid_until, 
-                        'amount'         => number_format( (float) $ticket->amount, 2 ),
+                        'amount'         => number_format( (float) $ticket->amount, 2 ), 
                         'payment_method' => $ticket->payment_method ?? 'Cash', 
                         'sold_by'        => ! empty( $ticket->sold_by ) ? esc_html( $ticket->sold_by ) : '-', 
                         'sold_at'        => ! empty( $ticket->sold_at ) ? esc_html( $ticket->sold_at ) : '-', 
@@ -1353,7 +1549,7 @@ function ifs_pms_verify_pass_callback() {
                     'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'swimming-pool-manager' ), 
                     'duration_hours' => $duration, 
                     'valid_until'    => $valid_until, 
-                    'amount'         => number_format( (float) $ticket->amount, 2 ),
+                    'amount'         => number_format( (float) $ticket->amount, 2 ), 
                     'payment_method' => $ticket->payment_method ?? 'Cash', 
                     'sold_by'        => ! empty( $ticket->sold_by ) ? esc_html( $ticket->sold_by ) : '-', 
                     'sold_at'        => ! empty( $ticket->sold_at ) ? esc_html( $ticket->sold_at ) : '-', 
@@ -1370,7 +1566,7 @@ function ifs_pms_verify_pass_callback() {
         wp_send_json_error( array( 'message' => __( 'Pass verification failed.', 'swimming-pool-manager' ) ) ); 
     } 
 
-    $ticket = $wpdb->get_row(
+    $ticket = $wpdb->get_row( 
         $wpdb->prepare( 
             "SELECT t.*, c.name as customer_name, c.phone as customer_phone 
             FROM {$t_tick} t 
@@ -1394,7 +1590,7 @@ function ifs_pms_verify_pass_callback() {
             'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'swimming-pool-manager' ), 
             'duration_hours' => $duration, 
             'valid_until'    => $valid_until, 
-            'amount'         => number_format( (float) $ticket->amount, 2 ),
+            'amount'         => number_format( (float) $ticket->amount, 2 ), 
             'payment_method' => $ticket->payment_method ?? 'Cash', 
             'sold_by'        => ! empty( $ticket->sold_by ) ? esc_html( $ticket->sold_by ) : '-', 
             'sold_at'        => ! empty( $ticket->sold_at ) ? esc_html( $ticket->sold_at ) : '-', 
@@ -1420,14 +1616,14 @@ function ifs_pms_checkout_swimmer_callback() {
     } 
 
     global $wpdb; 
-    $t_tick    = $wpdb->prefix . 'ifs_pms_tickets';
+    $t_tick    = $wpdb->prefix . 'ifs_pms_tickets'; 
     $ticket_id = isset( $_POST['ticket_id'] ) ? absint( $_POST['ticket_id'] ) : 0; 
 
     if ( $ticket_id <= 0 ) { 
         wp_send_json_error( array( 'message' => __( 'Invalid pass identification parameter.', 'swimming-pool-manager' ) ) ); 
     } 
 
-    $updated = $wpdb->update(
+    $updated = $wpdb->update( 
         $t_tick, 
         array( 'status' => 'Completed' ), 
         array( 'id' => $ticket_id ), 
@@ -1458,7 +1654,7 @@ function ifs_pms_export_csv_action_callback() {
     $t_tick = '`' . esc_sql( $wpdb->prefix . 'ifs_pms_tickets' ) . '`'; 
     $t_cust = '`' . esc_sql( $wpdb->prefix . 'ifs_pms_customers' ) . '`'; 
 
-    $tickets =$wpdb->get_results( 
+    $tickets = $wpdb->get_results( 
         "SELECT t.ticket_code, c.name as customer_name, c.phone as customer_phone, t.guest_type, t.package_details, t.duration_hours, t.payment_method, t.room_no, t.amount, t.sold_by, t.status, t.sold_at, t.scanned_at, t.scanned_by 
         FROM {$t_tick} t 
         LEFT JOIN {$t_cust} c ON t.customer_id = c.id 
@@ -1475,17 +1671,17 @@ function ifs_pms_export_csv_action_callback() {
         fputcsv( $output, array( 'Ticket Code', 'Patron Name', 'Phone', 'Guest Type', 'Packages Enrolled', 'Hours', 'Payment Method', 'Room Number', 'Amount', 'Sold By', 'Status', 'Sold At', 'Scanned At', 'Scanned By' ) ); 
 
         if ( ! empty( $tickets ) ) { 
-            foreach ( $tickets as$row ) { 
+            foreach ( $tickets as $row ) { 
                 fputcsv( 
                     $output, 
                     array( 
-                        $row['ticket_code'],$row['customer_name'], 
-                        $row['customer_phone'],$row['guest_type'], 
-                        $row['package_details'],$row['duration_hours'], 
-                        $row['payment_method'],$row['room_no'], 
-                        $row['amount'],$row['sold_by'], 
-                        $row['status'],$row['sold_at'], 
-                        $row['scanned_at'],$row['scanned_by'], 
+                        $row['ticket_code'], $row['customer_name'], 
+                        $row['customer_phone'], $row['guest_type'], 
+                        $row['package_details'], $row['duration_hours'], 
+                        $row['payment_method'], $row['room_no'], 
+                        $row['amount'], $row['sold_by'], 
+                        $row['status'], $row['sold_at'], 
+                        $row['scanned_at'], $row['scanned_by'], 
                     ) 
                 ); 
             } 
@@ -1511,7 +1707,7 @@ function ifs_pms_add_number_captcha() {
         <label for="pms_captcha_answer" style="display: block; font-weight: 700; margin-bottom: 6px; color: #334155;"> 
             <?php 
             /* translators: 1: first integer in security sum, 2: second integer in security sum */ 
-            printf( esc_html__( 'Security Check: What is %1$d + %2$d ?', 'swimming-pool-manager' ), absint( $num1 ), absint($num2 ) ); 
+            printf( esc_html__( 'Security Check: What is %1$d + \%2$d ?', 'swimming-pool-manager' ), absint( $num1 ), absint($num2 ) ); 
             ?> 
             <span style="color: #ef4444;">*</span> 
         </label> 
@@ -1561,6 +1757,7 @@ add_action( 'login_enqueue_scripts', 'ifs_pms_custom_login_style' );
 function ifs_pms_custom_login_style() { 
     $logo_url = get_option( 'ifs_pms_logo_url', '' ); 
     ?> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style> 
         body.login { 
             background: linear-gradient(135deg, #090d16 0%, #0c1c2e 50%, #0284c7 100%) !important; 
@@ -1568,34 +1765,42 @@ function ifs_pms_custom_login_style() {
             display: flex; 
             align-items: center; 
             justify-content: center; 
-            height: 100vh; 
+            min-height: 100vh; 
+            min-height: 100dvh;
+            padding: 16px 10px;
             position: relative; 
-            overflow: hidden; 
+            overflow-x: hidden; 
+            box-sizing: border-box;
         } 
         body.login::before { 
             content: ''; 
             position: absolute; 
-            width: 600px; 
-            height: 600px; 
+            width: 500px; 
+            height: 500px; 
             background: radial-gradient(circle, rgba(2,132,199,0.2) 0%, rgba(0,0,0,0) 70%); 
             top: -150px; 
             left: -150px; 
             border-radius: 50%; 
             z-index: 0; 
+            pointer-events: none;
         } 
         #login { 
-            width: 420px !important; 
-            padding: 20px !important; 
+            width: 100% !important; 
+            max-width: 420px !important; 
+            padding: 12px !important; 
             z-index: 10; 
             position: relative; 
+            box-sizing: border-box;
         } 
         .login form { 
             background: rgba(255, 255, 255, 0.95) !important; 
             backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.3) !important; 
-            border-radius: 28px !important; 
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset !important; 
-            padding: 40px !important; 
+            border-radius: 24px !important; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) inset !important; 
+            padding: 30px 24px !important; 
+            box-sizing: border-box;
         } 
         .login h1 a { 
             <?php if ( ! empty( $logo_url ) ) : ?> 
@@ -1604,17 +1809,17 @@ function ifs_pms_custom_login_style() {
                 background-repeat: no-repeat !important; 
                 background-position: center !important; 
                 width: 100% !important; 
-                height: 80px !important; 
-                margin-bottom: 20px !important; 
+                height: 70px !important; 
+                margin-bottom: 16px !important; 
             <?php else : ?> 
                 background-image: none !important; 
                 text-indent: 0 !important; 
                 color: #0f172a !important; 
-                font-size: 26px !important; 
+                font-size: 24px !important; 
                 font-weight: 800 !important; 
                 width: 100% !important; 
                 height: auto !important; 
-                margin-bottom: 25px !important; 
+                margin-bottom: 20px !important; 
                 text-align: center; 
                 letter-spacing: -0.5px; 
             <?php endif; ?> 
@@ -1635,14 +1840,15 @@ function ifs_pms_custom_login_style() {
             display: block; 
         } 
         .login input.input { 
-            border-radius: 14px !important; 
+            border-radius: 12px !important; 
             border: 1.5px solid #cbd5e1 !important; 
-            padding: 12px 18px !important; 
-            height: 52px !important; 
-            font-size: 15px !important; 
+            padding: 10px 14px !important; 
+            height: 48px !important; 
+            font-size: 14.5px !important; 
             background: #f8fafc !important; 
             color: #0f172a !important; 
             transition: all 0.25s ease; 
+            box-sizing: border-box !important; 
         } 
         .login input.input:focus { 
             border-color: #0284c7 !important; 
@@ -1652,10 +1858,10 @@ function ifs_pms_custom_login_style() {
         .login .button.wp-submit { 
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; 
             border: none !important; 
-            height: 52px !important; 
-            border-radius: 16px !important; 
+            height: 48px !important; 
+            border-radius: 14px !important; 
             font-weight: 800 !important; 
-            font-size: 15.5px !important; 
+            font-size: 15px !important; 
             width: 100% !important; 
             box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4) !important; 
             cursor: pointer; 
@@ -1669,12 +1875,12 @@ function ifs_pms_custom_login_style() {
         } 
         #nav, #backtoblog { 
             text-align: center; 
-            margin-top: 20px !important; 
+            margin-top: 16px !important; 
         } 
         #nav a, #backtoblog a { 
             color: rgba(255, 255, 255, 0.85) !important; 
             font-weight: 600 !important; 
-            font-size: 13.5px; 
+            font-size: 13px; 
             text-decoration: none; 
             transition: color 0.2s ease; 
         } 
