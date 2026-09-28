@@ -3,7 +3,7 @@
  * Plugin Name:       Ozone Skypool Management System (Ozone Skypool OS) 
  * Plugin URI:        https://ozoneskypool.com/management-system 
  * Description:       Enterprise Aquatic POS, QR Gate Turnstile Control, RFID/Pass Ledger & Financial Operating System with Role-Based Access Control and Native SVG UI. 
- * Version:           7.3.2 
+ * Version:           7.3.3 
  * Author:            Ozone Tech 
  * Author URI:        https://ozoneskypool.com 
  * License:           GPL-2.0-or-later 
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit; 
 } 
 
-define( 'IFS_PMS_VERSION', '7.3.2' ); 
+define( 'IFS_PMS_VERSION', '7.3.3' ); 
 define( 'IFS_PMS_PATH', plugin_dir_path( __FILE__ ) ); 
 define( 'IFS_PMS_URL', plugin_dir_url( __FILE__ ) ); 
 
@@ -211,7 +211,7 @@ function ifs_pms_install() {
 } 
 
 /** 
- * Migration Runner: Runs exclusively when the database version changes. 
+ * Migration Runner 
  */ 
 add_action( 'admin_init', 'ifs_pms_maybe_upgrade_db' ); 
 
@@ -361,33 +361,12 @@ function ifs_pms_enqueue_assets( $hook ) {
             'current_mon_prefix'  => 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 'd' ) . '-', 
             'current_operator'    => wp_get_current_user()->display_name, 
             'last_ticket'         => $last_ticket ? $last_ticket : null, 
-            'i18n'                => array( 
-                'packageTitle'        => __( 'Package title', 'swimming-pool-manager' ), 
-                'ageCategory'         => __( 'Age/category', 'swimming-pool-manager' ), 
-                'itemName'            => __( 'Item name', 'swimming-pool-manager' ), 
-                'mediaTitle'          => __( 'Select Venue Logo', 'swimming-pool-manager' ), 
-                'mediaBtn'            => __( 'Use this logo', 'swimming-pool-manager' ), 
-                'mediaAlert'          => __( 'WordPress Media Uploader is loading or unavailable. Please refresh the page.', 'swimming-pool-manager' ), 
-                'accessGranted'       => __( 'ACCESS GRANTED • TURNSTILE UNLOCKED', 'swimming-pool-manager' ), 
-                'accessDenied'        => __( 'Invalid or Expired Pass ID', 'swimming-pool-manager' ), 
-                'accessRejected'      => __( 'Access Rejected', 'swimming-pool-manager' ), 
-                'verificationFailed'  => __( 'Verification Failed or Voided', 'swimming-pool-manager' ), 
-                'passAuthorized'      => __( 'Pass Authorized', 'swimming-pool-manager' ), 
-                'admitted'            => __( 'Admitted', 'swimming-pool-manager' ), 
-                'denied'              => __( 'Denied', 'swimming-pool-manager' ), 
-                'barrierLocked'       => __( 'BARRIER LOCKED', 'swimming-pool-manager' ), 
-                'passOk'              => __( 'PASS OK (%ds)', 'swimming-pool-manager' ), 
-                'contactingGate'      => __( 'Contacting Turnstile Controller...', 'swimming-pool-manager' ), 
-                'gateTimeout'         => __( 'Gate Controller Timeout', 'swimming-pool-manager' ), 
-                'scannerStandby'      => __( 'Terminal Standby • Present pass to scanner', 'swimming-pool-manager' ), 
-                'barrierRelockNotice' => __( '4000ms actuation pulse • Auto-relock armed', 'swimming-pool-manager' ), 
-            ), 
         ) 
     ); 
 } 
 
 /** 
- * 5. PRG Form Post Handlers with Capability Guards (Full CRUD) 
+ * 5. PRG Form Post Handlers (Full CRUD with Corrected Closing Braces) 
  */ 
 add_action( 'admin_init', 'ifs_pms_handle_form_submissions' ); 
 
@@ -569,7 +548,7 @@ function ifs_pms_handle_form_submissions() {
                 $cust_id = $wpdb->insert_id; 
             } else { 
                 $cust_id = $customer->id; 
-                $wpdb->update( $t_cust, array( 'name' => $name ), array( 'id' => $cust_id ), array( '%s' ), array( '%d' ) ); 
+                $wpdb->update( $t_cust, array( 'name' => $name ), array( 'id' => $cust_id ), array( '%s', '%d' ) ); 
             } 
 
             $today_start = current_time( 'Y-m-d 00:00:00' ); 
@@ -583,6 +562,7 @@ function ifs_pms_handle_form_submissions() {
             ); 
 
             $code = 'OZ-' . strtoupper( current_time( 'M' ) ) . '-' . current_time( 'd' ) . '-' . str_pad( (string) ( $today_count + 1 ), 4, '0', STR_PAD_LEFT ); 
+            $now_mysql = current_time( 'mysql' );
 
             $inserted = $wpdb->insert( 
                 $t_tick, 
@@ -597,12 +577,14 @@ function ifs_pms_handle_form_submissions() {
                     'amount'          => $amount, 
                     'sold_by'         => $staff, 
                     'status'          => 'Valid', 
-                    'sold_at'         => current_time( 'mysql' ), 
+                    'sold_at'         => $now_mysql, 
                 ), 
                 array( '%s', '%d', '%s', '%s', '%d', '%s', '%s', '%f', '%s', '%s', '%s' ) 
             ); 
 
             if ( $inserted ) { 
+                $check_out_time = gmdate( 'Y-m-d H:i:s', strtotime( "+{$duration_hours} hours", strtotime( $now_mysql ) ) );
+
                 set_transient( 
                     'ifs_pms_last_ticket_' . get_current_user_id(), 
                     array( 
@@ -616,7 +598,8 @@ function ifs_pms_handle_form_submissions() {
                         'room'           => $room_no, 
                         'amount'         => number_format( $amount, 2 ), 
                         'staff'          => $staff, 
-                        'date'           => current_time( 'mysql' ), 
+                        'check_in'       => $now_mysql,
+                        'check_out'      => $check_out_time,
                     ), 
                     120 
                 ); 
@@ -977,7 +960,7 @@ function ifs_pms_handle_form_submissions() {
  */ 
 add_action( 'template_redirect', 'ifs_pms_home_redirect_to_admin' ); 
 function ifs_pms_home_redirect_to_admin() { 
-    if ( is_front_page() || is_home() ) {
+    if ( is_front_page() || is_home() ) { 
         wp_safe_redirect( admin_url( 'admin.php?page=ifs-pms' ) ); 
         exit; 
     } 
@@ -1048,7 +1031,6 @@ function ifs_pms_render_application() {
             [data-theme="dark"] .ifs-pms-nav-scroll-wrap { scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
             [data-theme="dark"] .ifs-pms-nav-scroll-wrap::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); }
 
-            /* Pure CSS 3-Line Hamburger Trigger Button */
             .ifs-pms-mobile-trigger {
                 display: none;
                 align-items: center;
@@ -1097,7 +1079,6 @@ function ifs_pms_render_application() {
                 transform: scale(0.95);
             }
 
-            /* Responsive Mobile Viewport Layering Reset */
             @media screen and (max-width: 992px) {
                 .ifs-pms-shell {
                     position: relative !important;
@@ -1113,7 +1094,6 @@ function ifs_pms_render_application() {
                     display: inline-flex !important;
                 }
 
-                /* Drawer Sits on the Highest Layer with Crisp Background */
                 .ifs-pms-aside {
                     position: fixed !important;
                     top: 0 !important;
@@ -1146,7 +1126,6 @@ function ifs_pms_render_application() {
                     -webkit-filter: none !important;
                 }
 
-                /* Backdrop Stays Behind Drawer */
                 .ifs-pms-sidebar-backdrop {
                     display: none;
                     position: fixed !important;
@@ -1200,7 +1179,6 @@ function ifs_pms_render_application() {
                 }
             }
 
-            /* Dark Mode Overrides */
             [data-theme="dark"] .ifs-pms-mobile-trigger {
                 background: #121829 !important;
                 border-color: rgba(255, 255, 255, 0.15) !important;
@@ -1218,7 +1196,6 @@ function ifs_pms_render_application() {
 
         <!-- 1. Off-Canvas Sidebar Drawer -->
         <aside class="ifs-pms-aside" id="ifsPmsSidebarDrawer" style="width: 260px; min-width: 260px; height: 100vh; max-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; box-sizing: border-box; padding: 22px 14px; background: var(--ifs-sidebar); border-right: 1px solid var(--ifs-border-subtle);"> 
-            <!-- Scrollable Navigation Region with Thin Scrollbar -->
             <div class="ifs-pms-nav-scroll-wrap" style="flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 4px; margin-bottom: 12px;"> 
                 
                 <div class="ifs-pms-brand" style="display: flex; align-items: center; justify-content: space-between; padding: 4px 8px 18px 8px; border-bottom: 1px solid var(--ifs-border-subtle); margin-bottom: 16px;"> 
@@ -1228,7 +1205,6 @@ function ifs_pms_render_application() {
                             <?php echo $is_admin ? esc_html__( 'MANAGER TERMINAL', 'swimming-pool-manager' ) : esc_html__( 'CASHIER DESK', 'swimming-pool-manager' ); ?> 
                         </div> 
                     </div> 
-                    <!-- Handheld Drawer Close Trigger -->
                     <button type="button" onclick="ifsPmsToggleMobileMenu(false);" aria-label="<?php esc_attr_e( 'Close Navigation', 'swimming-pool-manager' ); ?>" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--ifs-surface-hover); color: var(--ifs-text-secondary); cursor: pointer;">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1301,7 +1277,6 @@ function ifs_pms_render_application() {
                     </ul> 
                 <?php endif; ?> 
 
-                <!-- Logout Link Visible to All Authenticated Users -->
                 <div class="ifs-pms-nav-group-title"><?php esc_html_e( 'Session', 'swimming-pool-manager' ); ?></div> 
                 <ul class="ifs-pms-nav"> 
                     <li class="ifs-pms-nav-item"> 
@@ -1317,7 +1292,6 @@ function ifs_pms_render_application() {
                 <div class="ifs-pms-theme-toggle-wrap" style="display: flex; align-items: center; justify-content: space-between; background: var(--ifs-surface-hover); border: 1px solid var(--ifs-border-subtle); border-radius: 10px; padding: 8px 12px; margin-bottom: 12px;"> 
                     <span style="font-size: 11px; font-weight: 700; color: var(--ifs-text-tertiary);"><?php esc_html_e( 'Mode', 'swimming-pool-manager' ); ?></span> 
                     <div style="display: flex; gap: 4px;"> 
-                        <!-- Light Mode Trigger -->
                         <button type="button" class="ifs-pms-theme-btn" id="ifsThemeLightBtn" onclick="if(window.ifsPms && window.ifsPms.applyTheme){ window.ifsPms.applyTheme('light'); }"> 
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;">
                                 <circle cx="12" cy="12" r="4"></circle>
@@ -1333,7 +1307,6 @@ function ifs_pms_render_application() {
                             <span><?php esc_html_e( 'Light', 'swimming-pool-manager' ); ?></span>
                         </button> 
 
-                        <!-- Dark Mode Trigger -->
                         <button type="button" class="ifs-pms-theme-btn" id="ifsThemeDarkBtn" onclick="if(window.ifsPms && window.ifsPms.applyTheme){ window.ifsPms.applyTheme('dark'); }"> 
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: middle; flex-shrink: 0;">
                                 <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
@@ -1343,7 +1316,6 @@ function ifs_pms_render_application() {
                     </div>
                 </div> 
 
-                <!-- Authenticated Operator Status Card -->
                 <div class="ifs-pms-operator-card" style="background: var(--ifs-surface-hover); border: 1px solid var(--ifs-border-subtle); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;"> 
                     <div class="ifs-pms-operator-avatar" style="width: 32px; height: 32px; background: var(--ifs-surface); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: var(--ifs-accent); border: 1px solid var(--ifs-border-strong);"><?php echo esc_html( strtoupper( substr( wp_get_current_user()->display_name, 0, 1 ) ) ); ?></div> 
                     <div style="overflow: hidden;"> 
@@ -1362,7 +1334,6 @@ function ifs_pms_render_application() {
         <main class="ifs-pms-canvas"> 
             <header class="ifs-pms-header"> 
                 <div style="display: flex; align-items: center; width: 100%;"> 
-                    <!-- Mobile Hamburger Button Trigger -->
                     <button type="button" class="ifs-pms-mobile-trigger" onclick="ifsPmsToggleMobileMenu(true);" aria-label="<?php esc_attr_e( 'Open Navigation Menu', 'swimming-pool-manager' ); ?>">
                         <span></span>
                     </button>
@@ -1395,11 +1366,10 @@ function ifs_pms_render_application() {
             ?> 
         </main> 
 
-        <!-- 3. Screen Dimmer Backdrop (Placed outside canvas to ensure it sits behind drawer) -->
+        <!-- 3. Screen Dimmer Backdrop -->
         <div class="ifs-pms-sidebar-backdrop" id="ifsPmsSidebarBackdrop" onclick="ifsPmsToggleMobileMenu(false);"></div>
     </div> 
 
-    <!-- Mobile Navigation Drawer Controller -->
     <script>
         function ifsPmsToggleMobileMenu(open) {
             var drawer = document.getElementById('ifsPmsSidebarDrawer');
@@ -1449,7 +1419,7 @@ function ifs_pms_render_application() {
 } 
 
 /** 
- * 7. Secure Pass Verification Endpoint 
+ * 7. Secure Pass Verification Endpoint With Overstay Detection 
  */ 
 add_action( 'wp_ajax_ifs_pms_verify_pass_action', 'ifs_pms_verify_pass_callback' ); 
 
@@ -1472,100 +1442,6 @@ function ifs_pms_verify_pass_callback() {
     $now   = current_time( 'mysql' ); 
     $staff = wp_get_current_user()->display_name; 
 
-    $affected = $wpdb->query( 
-        $wpdb->prepare( 
-            "UPDATE {$t_tick} 
-            SET status = %s, scanned_at = %s, scanned_by = %s 
-            WHERE ticket_code = %s AND status = %s", 
-            'Used', 
-            $now, 
-            $staff, 
-            $code, 
-            'Valid' 
-        ) 
-    ); 
-
-    if ( 0 === $affected ) { 
-        $ticket_state = $wpdb->get_row( 
-            $wpdb->prepare( 
-                "SELECT status, scanned_at, scanned_by, sold_at FROM {$t_tick} WHERE ticket_code = %s", 
-                $code 
-            ) 
-        ); 
-
-        if ( ! $ticket_state ) { 
-            wp_send_json_error( array( 'message' => __( 'Unrecognized / Forged Pass ID.', 'swimming-pool-manager' ) ) ); 
-        } 
-
-        if ( 'Used' === $ticket_state->status ) { 
-            $ticket = $wpdb->get_row( 
-                $wpdb->prepare( 
-                    "SELECT t.*, c.name as customer_name, c.phone as customer_phone 
-                    FROM {$t_tick} t 
-                    LEFT JOIN {$t_cust} c ON t.customer_id = c.id 
-                    WHERE t.ticket_code = %s", 
-                    $code 
-                ) 
-            ); 
-
-            $duration    = ! empty( $ticket->duration_hours ) ? (int) $ticket->duration_hours : 1; 
-            $valid_until = gmdate( 'h:i A', strtotime( "+{$duration} hours", strtotime( $ticket->sold_at ) ) ); 
-
-            $sold_time   = strtotime( $ticket_state->sold_at ); 
-            $scan_time   = strtotime( $ticket_state->scanned_at ); 
-            $current_sec = strtotime( $now ); 
-
-            if ( ( $current_sec - $sold_time ) <= 15 && ( $current_sec - $scan_time ) <= 5 ) { 
-                wp_send_json_success( 
-                    array( 
-                        'message'        => __( 'Access Granted (Re-verified Session)', 'swimming-pool-manager' ), 
-                        'ticket_code'    => $code, 
-                        'customer_name'  => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'swimming-pool-manager' ), 
-                        'customer_phone' => ! empty( $ticket->customer_phone ) ? esc_html( $ticket->customer_phone ) : '-', 
-                        'guest_type'     => ! empty( $ticket->guest_type ) ? $ticket->guest_type : 'customer', 
-                        'room_no'        => ! empty( $ticket->room_no ) ? $ticket->room_no : '', 
-                        'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'swimming-pool-manager' ), 
-                        'duration_hours' => $duration, 
-                        'valid_until'    => $valid_until, 
-                        'amount'         => number_format( (float) $ticket->amount, 2 ), 
-                        'payment_method' => $ticket->payment_method ?? 'Cash', 
-                        'sold_by'        => ! empty( $ticket->sold_by ) ? esc_html( $ticket->sold_by ) : '-', 
-                        'sold_at'        => ! empty( $ticket->sold_at ) ? esc_html( $ticket->sold_at ) : '-', 
-                        'scanned_by'     => esc_html( $ticket_state->scanned_by ), 
-                        'scanned_at'     => gmdate( 'h:i:s A', strtotime( $ticket_state->scanned_at ) ), 
-                    ) 
-                ); 
-                return; 
-            } 
-
-            wp_send_json_error( 
-                array( 
-                    'message'        => sprintf( __( 'Pass already redeemed at %1$s by %2$s', 'swimming-pool-manager' ), esc_html( $ticket_state->scanned_at ), esc_html( $ticket_state->scanned_by ) ), 
-                    'ticket_code'    => $code, 
-                    'customer_name'  => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'swimming-pool-manager' ), 
-                    'customer_phone' => ! empty( $ticket->customer_phone ) ? esc_html( $ticket->customer_phone ) : '-', 
-                    'guest_type'     => ! empty( $ticket->guest_type ) ? $ticket->guest_type : 'customer', 
-                    'room_no'        => ! empty( $ticket->room_no ) ? $ticket->room_no : '', 
-                    'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'swimming-pool-manager' ), 
-                    'duration_hours' => $duration, 
-                    'valid_until'    => $valid_until, 
-                    'amount'         => number_format( (float) $ticket->amount, 2 ), 
-                    'payment_method' => $ticket->payment_method ?? 'Cash', 
-                    'sold_by'        => ! empty( $ticket->sold_by ) ? esc_html( $ticket->sold_by ) : '-', 
-                    'sold_at'        => ! empty( $ticket->sold_at ) ? esc_html( $ticket->sold_at ) : '-', 
-                    'scanned_by'     => esc_html( $ticket_state->scanned_by ), 
-                    'scanned_at'     => gmdate( 'h:i:s A', strtotime( $ticket_state->scanned_at ) ), 
-                ) 
-            ); 
-        } 
-
-        if ( 'Cancelled' === $ticket_state->status ) { 
-            wp_send_json_error( array( 'message' => __( 'Pass has been voided or refunded.', 'swimming-pool-manager' ) ) ); 
-        } 
-
-        wp_send_json_error( array( 'message' => __( 'Pass verification failed.', 'swimming-pool-manager' ) ) ); 
-    } 
-
     $ticket = $wpdb->get_row( 
         $wpdb->prepare( 
             "SELECT t.*, c.name as customer_name, c.phone as customer_phone 
@@ -1576,28 +1452,61 @@ function ifs_pms_verify_pass_callback() {
         ) 
     ); 
 
-    $duration    = ! empty( $ticket->duration_hours ) ? (int) $ticket->duration_hours : 1; 
-    $valid_until = gmdate( 'h:i A', strtotime( "+{$duration} hours", strtotime( $now ) ) ); 
+    if ( ! $ticket ) { 
+        wp_send_json_error( array( 'message' => __( 'Unrecognized / Forged Pass ID.', 'swimming-pool-manager' ) ) ); 
+    } 
 
-    wp_send_json_success( 
-        array( 
-            'message'        => __( 'Access Granted: Gate Relay Actuated', 'swimming-pool-manager' ), 
-            'ticket_code'    => $code, 
-            'customer_name'  => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'swimming-pool-manager' ), 
-            'customer_phone' => ! empty( $ticket->customer_phone ) ? esc_html( $ticket->customer_phone ) : '-', 
-            'guest_type'     => ! empty( $ticket->guest_type ) ? $ticket->guest_type : 'customer', 
-            'room_no'        => ! empty( $ticket->room_no ) ? $ticket->room_no : '', 
-            'package'        => ! empty( $ticket->package_details ) ? $ticket->package_details : __( 'Standard Swim Pass', 'swimming-pool-manager' ), 
-            'duration_hours' => $duration, 
-            'valid_until'    => $valid_until, 
-            'amount'         => number_format( (float) $ticket->amount, 2 ), 
-            'payment_method' => $ticket->payment_method ?? 'Cash', 
-            'sold_by'        => ! empty( $ticket->sold_by ) ? esc_html( $ticket->sold_by ) : '-', 
-            'sold_at'        => ! empty( $ticket->sold_at ) ? esc_html( $ticket->sold_at ) : '-', 
-            'scanned_by'     => esc_html( $staff ), 
-            'scanned_at'     => gmdate( 'h:i:s A', strtotime( $now ) ), 
-        ) 
-    ); 
+    $duration_hours = max( 1, (int) $ticket->duration_hours ); 
+    $sold_epoch     = strtotime( $ticket->sold_at ); 
+    $checkout_epoch = $sold_epoch + ( $duration_hours * 3600 ); 
+    $now_epoch      = current_time( 'timestamp' ); 
+    $is_overstay    = ( $now_epoch > $checkout_epoch ); 
+
+    if ( 'Valid' === $ticket->status ) { 
+        $wpdb->update( 
+            $wpdb->prefix . 'ifs_pms_tickets', 
+            array( 
+                'status'     => 'Used', 
+                'scanned_at' => $now, 
+                'scanned_by' => $staff, 
+            ), 
+            array( 'id' => $ticket->id ) 
+        ); 
+
+        wp_send_json_success( 
+            array( 
+                'message'        => __( 'ACCESS GRANTED • TURNSTILE UNLOCKED', 'swimming-pool-manager' ), 
+                'ticket_code'    => $ticket->ticket_code, 
+                'customer_name'  => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'swimming-pool-manager' ), 
+                'customer_phone' => ! empty( $ticket->customer_phone ) ? esc_html( $ticket->customer_phone ) : '-', 
+                'guest_type'     => ! empty( $ticket->guest_type ) ? $ticket->guest_type : 'customer', 
+                'room_no'        => ! empty( $ticket->room_no ) ? $ticket->room_no : '', 
+                'duration_hours' => $duration_hours, 
+                'check_in'       => gmdate( 'h:i A', $sold_epoch ), 
+                'check_out'      => gmdate( 'h:i A', $checkout_epoch ), 
+                'overstay'       => false, 
+            ) 
+        ); 
+    } elseif ( 'Used' === $ticket->status ) { 
+        wp_send_json_error( 
+            array( 
+                'message'        => $is_overstay 
+                    ? sprintf( __( 'OVERSTAY DETECTED: Pass session expired at %s', 'swimming-pool-manager' ), gmdate( 'h:i A', $checkout_epoch ) ) 
+                    : sprintf( __( 'Pass already redeemed at %s', 'swimming-pool-manager' ), gmdate( 'h:i A', strtotime( $ticket->scanned_at ) ) ), 
+                'ticket_code'    => $ticket->ticket_code, 
+                'customer_name'  => ! empty( $ticket->customer_name ) ? esc_html( $ticket->customer_name ) : __( 'Walk-in Guest', 'swimming-pool-manager' ), 
+                'customer_phone' => ! empty( $ticket->customer_phone ) ? esc_html( $ticket->customer_phone ) : '-', 
+                'guest_type'     => ! empty( $ticket->guest_type ) ? $ticket->guest_type : 'customer', 
+                'room_no'        => ! empty( $ticket->room_no ) ? $ticket->room_no : '', 
+                'duration_hours' => $duration_hours, 
+                'check_in'       => gmdate( 'h:i A', $sold_epoch ), 
+                'check_out'      => gmdate( 'h:i A', $checkout_epoch ), 
+                'overstay'       => $is_overstay, 
+            ) 
+        ); 
+    } else { 
+        wp_send_json_error( array( 'message' => __( 'Pass has been voided or refunded.', 'swimming-pool-manager' ) ) ); 
+    } 
 } 
 
 /** 
@@ -1616,15 +1525,13 @@ function ifs_pms_checkout_swimmer_callback() {
     } 
 
     global $wpdb; 
-    $t_tick    = $wpdb->prefix . 'ifs_pms_tickets'; 
-    $ticket_id = isset( $_POST['ticket_id'] ) ? absint( $_POST['ticket_id'] ) : 0; 
+    $t_tick    = $wpdb->prefix . 'ifs_pms_tickets';$ticket_id = isset( $_POST['ticket_id'] ) ? absint( $_POST['ticket_id'] ) : 0; 
 
     if ( $ticket_id <= 0 ) { 
         wp_send_json_error( array( 'message' => __( 'Invalid pass identification parameter.', 'swimming-pool-manager' ) ) ); 
     } 
 
-    $updated = $wpdb->update( 
-        $t_tick, 
+    $updated = $wpdb->update($t_tick, 
         array( 'status' => 'Completed' ), 
         array( 'id' => $ticket_id ), 
         array( '%s' ), 
@@ -1654,7 +1561,7 @@ function ifs_pms_export_csv_action_callback() {
     $t_tick = '`' . esc_sql( $wpdb->prefix . 'ifs_pms_tickets' ) . '`'; 
     $t_cust = '`' . esc_sql( $wpdb->prefix . 'ifs_pms_customers' ) . '`'; 
 
-    $tickets = $wpdb->get_results( 
+    $tickets =$wpdb->get_results( 
         "SELECT t.ticket_code, c.name as customer_name, c.phone as customer_phone, t.guest_type, t.package_details, t.duration_hours, t.payment_method, t.room_no, t.amount, t.sold_by, t.status, t.sold_at, t.scanned_at, t.scanned_by 
         FROM {$t_tick} t 
         LEFT JOIN {$t_cust} c ON t.customer_id = c.id 
@@ -1671,17 +1578,17 @@ function ifs_pms_export_csv_action_callback() {
         fputcsv( $output, array( 'Ticket Code', 'Patron Name', 'Phone', 'Guest Type', 'Packages Enrolled', 'Hours', 'Payment Method', 'Room Number', 'Amount', 'Sold By', 'Status', 'Sold At', 'Scanned At', 'Scanned By' ) ); 
 
         if ( ! empty( $tickets ) ) { 
-            foreach ( $tickets as $row ) { 
+            foreach ( $tickets as$row ) { 
                 fputcsv( 
                     $output, 
                     array( 
-                        $row['ticket_code'], $row['customer_name'], 
-                        $row['customer_phone'], $row['guest_type'], 
-                        $row['package_details'], $row['duration_hours'], 
-                        $row['payment_method'], $row['room_no'], 
-                        $row['amount'], $row['sold_by'], 
-                        $row['status'], $row['sold_at'], 
-                        $row['scanned_at'], $row['scanned_by'], 
+                        $row['ticket_code'],$row['customer_name'], 
+                        $row['customer_phone'],$row['guest_type'], 
+                        $row['package_details'],$row['duration_hours'], 
+                        $row['payment_method'],$row['room_no'], 
+                        $row['amount'],$row['sold_by'], 
+                        $row['status'],$row['sold_at'], 
+                        $row['scanned_at'],$row['scanned_by'], 
                     ) 
                 ); 
             } 
@@ -1692,55 +1599,8 @@ function ifs_pms_export_csv_action_callback() {
 } 
 
 /** 
- * 10. Custom Login Customization: Number Captcha & Auto-Redirect 
+ * 10. Clean Login Flow (Zero CAPTCHA Logic)
  */ 
-add_action( 'login_form', 'ifs_pms_add_number_captcha' ); 
-
-function ifs_pms_add_number_captcha() { 
-    $num1 = wp_rand( 1, 9 ); 
-    $num2 = wp_rand( 1, 9 );$sum  = $num1 +$num2; 
-
-    $captcha_token = wp_generate_password( 16, false, false ); 
-    set_transient( 'ifs_captcha_' . $captcha_token,$sum, 300 ); 
-    ?> 
-    <p class="pms-captcha-wrap" style="margin-bottom: 20px;"> 
-        <label for="pms_captcha_answer" style="display: block; font-weight: 700; margin-bottom: 6px; color: #334155;"> 
-            <?php 
-            /* translators: 1: first integer in security sum, 2: second integer in security sum */ 
-            printf( esc_html__( 'Security Check: What is %1$d + \%2$d ?', 'swimming-pool-manager' ), absint( $num1 ), absint($num2 ) ); 
-            ?> 
-            <span style="color: #ef4444;">*</span> 
-        </label> 
-        <input type="number" name="pms_captcha_answer" id="pms_captcha_answer" class="input" value="" size="20" required autocomplete="off" style="border-radius: 8px !important; border: 1.5px solid #cbd5e1 !important; height: 42px !important;"> 
-        <input type="hidden" name="pms_captcha_token" value="<?php echo esc_attr( $captcha_token ); ?>"> 
-    </p> 
-    <?php 
-} 
-
-add_filter( 'authenticate', 'ifs_pms_verify_number_captcha', 30, 3 ); 
-
-function ifs_pms_verify_number_captcha( $user, $username,$password ) { 
-    if ( empty( $username ) || empty( $password ) || is_wp_error($user ) ) { 
-        return $user; 
-    } 
-
-    if ( isset( $_POST['pms_captcha_answer'],$_POST['pms_captcha_token'] ) ) { 
-        $token  = sanitize_text_field( wp_unslash($_POST['pms_captcha_token'] ) ); 
-        $answer = intval( wp_unslash($_POST['pms_captcha_answer'] ) ); 
-
-        $correct_sum = get_transient( 'ifs_captcha_' .$token ); 
-        delete_transient( 'ifs_captcha_' . $token ); 
-
-        if ( false === $correct_sum || $answer !== intval($correct_sum ) ) { 
-            return new WP_Error( 'invalid_captcha', __( '<strong>ERROR</strong>: Incorrect security captcha calculation. Please try again.', 'swimming-pool-manager' ) ); 
-        } 
-    } else { 
-        return new WP_Error( 'invalid_captcha', __( '<strong>ERROR</strong>: Captcha answer missing.', 'swimming-pool-manager' ) ); 
-    } 
-
-    return $user; 
-} 
-
 add_filter( 'login_redirect', 'ifs_pms_login_redirect_dashboard', 10, 3 ); 
 
 function ifs_pms_login_redirect_dashboard( $redirect_to, $requested_redirect_to,$user ) { 
@@ -1887,9 +1747,6 @@ function ifs_pms_custom_login_style() {
         #nav a:hover, #backtoblog a:hover { 
             color: #ffffff !important; 
             text-decoration: underline; 
-        } 
-        .pms-captcha-wrap input { 
-            width: 100% !important; 
         } 
     </style> 
     <?php 
