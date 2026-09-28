@@ -9,13 +9,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Enqueue separated POS & Tickets stylesheet
+// Enqueue separated POS & Tickets stylesheet with dynamic cache buster
 if ( defined( 'IFS_PMS_URL' ) && defined( 'IFS_PMS_VERSION' ) ) {
     wp_enqueue_style(
         'oz-pos-tickets-css',
         IFS_PMS_URL . 'assets/css/pos-tickets.css',
         array( 'dashicons' ),
-        IFS_PMS_VERSION
+        time()
     );
 }
 
@@ -83,7 +83,9 @@ if ( 'ticket_detail' === $current_view ) :
         ? 'background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3);'
         : ( 'Used' === $ticket->status
             ? 'background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3);'
-            : 'background: rgba(244, 63, 94, 0.12); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3);' );
+            : ( 'Completed' === $ticket->status
+                ? 'background: rgba(2, 132, 199, 0.12); color: #0284c7; border: 1px solid rgba(2, 132, 199, 0.3);'
+                : 'background: rgba(244, 63, 94, 0.12); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3);' ) );
     ?>
 
     <div class="oz-detail-wrap">
@@ -131,7 +133,7 @@ if ( 'ticket_detail' === $current_view ) :
                 </div>
                 <div>
                     <label style="color:#64748b; font-size:12px; display:block;"><?php esc_html_e( 'Admissions & Inclusions', 'swimming-pool-manager' ); ?></label>
-                    <strong class="ifs-pms-mono" style="color:#a855f7; font-size:14.5px;"><?php echo esc_html( $ticket->package_details ?: 'Adult x 1' ); ?></strong>
+                    <strong class="ifs-pms-mono" style="color:#a855f7; font-size:14.5px;"><?php echo esc_html( $ticket->package_details ?: '1 Adult' ); ?></strong>
                 </div>
                 <div>
                     <label style="color:#64748b; font-size:12px; display:block;"><?php esc_html_e( 'Duration Booked', 'swimming-pool-manager' ); ?></label>
@@ -444,7 +446,7 @@ switch ( $date_filter ) {
         break;
 }
 
-if ( in_array( $status_flt, array( 'Valid', 'Used', 'Cancelled' ), true ) ) {
+if ( in_array( $status_flt, array( 'Valid', 'Used', 'Cancelled', 'Completed' ), true ) ) {
     $where_clauses[] = 't.status = %s';
     $where_values[]  = $status_flt;
 }
@@ -457,7 +459,7 @@ $paged    = isset( $_GET['paged'] ) ? max( 1, intval( $_GET['paged'] ) ) : 1;
 $offset   = ( $paged - 1 ) * $per_page;
 
 if ( ! empty( $where_values ) ) {
-    $total_tickets = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(t.id) FROM {$t_tick} t WHERE {$where_sql}", $where_values ) );
+    $total_tickets = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(id) FROM {$t_tick} t WHERE {$where_sql}", $where_values ) );
     $all_tickets   = $wpdb->get_results(
         $wpdb->prepare(
             "SELECT t.*, c.name AS customer_name, c.phone AS customer_phone
@@ -470,7 +472,7 @@ if ( ! empty( $where_values ) ) {
         )
     );
 } else {
-    $total_tickets = (int) $wpdb->get_var( "SELECT COUNT(t.id) FROM {$t_tick} t WHERE {$where_sql}" );
+    $total_tickets = (int) $wpdb->get_var( "SELECT COUNT(id) FROM {$t_tick} t WHERE {$where_sql}" );
     $all_tickets   = $wpdb->get_results(
         $wpdb->prepare(
             "SELECT t.*, c.name AS customer_name, c.phone AS customer_phone
@@ -479,7 +481,8 @@ if ( ! empty( $where_values ) ) {
              WHERE {$where_sql}
              ORDER BY t.id DESC
              LIMIT %d OFFSET %d",
-            $per_page, $offset
+            $per_page,
+            $offset
         )
     );
 }
@@ -535,7 +538,6 @@ $total_pages = ceil( $total_tickets / $per_page );
                     <?php wp_nonce_field( 'ifs_pms_secure_action', 'ifs_pms_action_nonce' ); ?>
                     <input type="hidden" name="ifs_pms_action" value="issue_ticket">
                     <input type="hidden" name="package_name" id="ozPackageNameInput" value="Adult x 1">
-                    <!-- DURATION FIELD LINKED DIRECTLY TO TIER HOURS -->
                     <input type="hidden" name="duration_hours" id="ozDurationHoursInput" value="1">
                     <input type="hidden" name="amount" id="ozSubmittedAmount" value="500.00">
                     <input type="hidden" name="payment_method" id="ozSelectedPayment" value="Cash">
@@ -632,7 +634,7 @@ $total_pages = ceil( $total_tickets / $per_page );
                                                     <span class="oz-metric-label"><?php esc_html_e( 'Headcount', 'swimming-pool-manager' ); ?></span>
                                                     <div class="oz-mini-qty">
                                                         <button type="button" class="oz-mini-btn" onclick="ozDeltaModularQty(<?php echo esc_attr( $index ); ?>, -1)">-</button>
-                                                        <input type="number" id="ozTierPersons_<?php echo esc_attr( $index ); ?>" class="oz-mini-input ifs-pms-mono oz-live-trigger" value="<?php echo $is_default_on ? 1 : 0; ?>" min="0" max="50">
+                                                        <input type="number" id="ozTierPersons_<?php echo esc_attr( $index ); ?>" class="oz-mini-input ifs-pms-mono oz-live-trigger" value="<?php echo $is_default_on ? 1 : 0; ?>" min="0" max="50" oninput="ozSyncReceiptDetails();" onchange="ozSyncReceiptDetails();">
                                                         <button type="button" class="oz-mini-btn" onclick="ozDeltaModularQty(<?php echo esc_attr( $index ); ?>, 1)">+</button>
                                                     </div>
                                                 </div>
@@ -641,7 +643,7 @@ $total_pages = ceil( $total_tickets / $per_page );
                                                     <span class="oz-metric-label"><?php esc_html_e( 'Duration (Hrs)', 'swimming-pool-manager' ); ?></span>
                                                     <div class="oz-mini-qty">
                                                         <button type="button" class="oz-mini-btn" onclick="ozDeltaModularHours(<?php echo esc_attr( $index ); ?>, -1)">-</button>
-                                                        <input type="number" id="ozTierHours_<?php echo esc_attr( $index ); ?>" class="oz-mini-input ifs-pms-mono oz-live-trigger" value="1" min="1" max="12">
+                                                        <input type="number" id="ozTierHours_<?php echo esc_attr( $index ); ?>" class="oz-mini-input ifs-pms-mono oz-live-trigger" value="1" min="1" max="12" oninput="ozSyncReceiptDetails();" onchange="ozSyncReceiptDetails();">
                                                         <button type="button" class="oz-mini-btn" onclick="ozDeltaModularHours(<?php echo esc_attr( $index ); ?>, 1)">+</button>
                                                     </div>
                                                 </div>
@@ -706,7 +708,7 @@ $total_pages = ceil( $total_tickets / $per_page );
                 </form>
             </div>
 
-            <!-- Right Terminal Live Slip Preview (With Separate Adult & Child Inclusions) -->
+            <!-- Right Terminal Live Slip Preview -->
             <div>
                 <div class="oz-receipt-preview-card" id="ozReceiptPreviewContainer">
                     <div style="text-align: center;">
@@ -741,7 +743,7 @@ $total_pages = ceil( $total_tickets / $per_page );
                     <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">
                         <?php esc_html_e( 'Guest Identification', 'swimming-pool-manager' ); ?>
                     </div>
-                    <table class="oz-receipt-table">
+                    <table class="oz-receipt-table" style="width: 100%; border-collapse: collapse;">
                         <tr>
                             <td style="color: #64748b;"><?php esc_html_e( 'Guest Type', 'swimming-pool-manager' ); ?>:</td>
                             <td style="text-align: right; font-weight: 700; color: #0284c7;" id="ozPrevClassification">
@@ -770,7 +772,7 @@ $total_pages = ceil( $total_tickets / $per_page );
 
                     <div class="oz-receipt-sep"></div>
 
-                    <!-- Section 2: Admissions & Stay Times (Separate Adult & Child Rows) -->
+                    <!-- Section 2: Admissions & Stay Times -->
                     <div style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px;">
                         <?php esc_html_e( 'Admissions & Stay Session Times', 'swimming-pool-manager' ); ?>
                     </div>
@@ -845,7 +847,7 @@ $total_pages = ceil( $total_tickets / $per_page );
         </div>
     </div>
 
-    <!-- TAB 2: All Tickets Master Registry (With Advanced Calendar Filter & Overstay Highlights) -->
+    <!-- TAB 2: All Tickets Master Registry -->
     <div id="ozTicketPaneList" class="oz-tab-pane <?php echo ( 'list' === $active_tab ) ? 'active' : ''; ?>">
         <div class="oz-pos-card">
             <div class="oz-pos-head">
@@ -864,7 +866,6 @@ $total_pages = ceil( $total_tickets / $per_page );
                 <input type="hidden" name="view" value="tickets">
                 <input type="hidden" name="tab" value="list">
 
-                <!-- Calendar Period Dropdown -->
                 <div style="display:flex; align-items:center; gap:6px;">
                     <span class="dashicons dashicons-calendar-alt" style="color:#0284c7;"></span>
                     <select name="date_filter" id="ozDateFilterSelect" onchange="ozToggleCustomRange(this.value);" style="height:38px; border-radius:8px; font-weight:700; border-color:#cbd5e1;">
@@ -877,18 +878,17 @@ $total_pages = ceil( $total_tickets / $per_page );
                     </select>
                 </div>
 
-                <!-- Custom Date Range Inputs -->
                 <div id="ozCustomRangeBox" style="display:<?php echo ( 'custom' === $date_filter ) ? 'flex' : 'none'; ?>; align-items:center; gap:8px;">
                     <input type="date" name="custom_from" value="<?php echo esc_attr( $custom_from ); ?>" style="height:38px; border-radius:8px; border-color:#cbd5e1; font-weight:600;" placeholder="Start Date">
                     <span style="color:#64748b; font-weight:700;">&rarr;</span>
                     <input type="date" name="custom_to" value="<?php echo esc_attr( $custom_to ); ?>" style="height:38px; border-radius:8px; border-color:#cbd5e1; font-weight:600;" placeholder="End Date">
                 </div>
 
-                <!-- Status Filter -->
                 <select name="status_flt" style="height:38px; border-radius:8px; font-weight:700; border-color:#cbd5e1;">
                     <option value="ALL" <?php selected( $status_flt, 'ALL' ); ?>><?php esc_html_e( 'All Statuses', 'swimming-pool-manager' ); ?></option>
                     <option value="Valid" <?php selected( $status_flt, 'Valid' ); ?>><?php esc_html_e( 'Valid (Unused)', 'swimming-pool-manager' ); ?></option>
                     <option value="Used" <?php selected( $status_flt, 'Used' ); ?>><?php esc_html_e( 'Used (Admitted)', 'swimming-pool-manager' ); ?></option>
+                    <option value="Completed" <?php selected( $status_flt, 'Completed' ); ?>><?php esc_html_e( 'Completed (Exited)', 'swimming-pool-manager' ); ?></option>
                     <option value="Cancelled" <?php selected( $status_flt, 'Cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'swimming-pool-manager' ); ?></option>
                 </select>
 
@@ -927,9 +927,10 @@ $total_pages = ceil( $total_tickets / $per_page );
                                 $in_epoch   = strtotime( $tkt->sold_at );
                                 $dur_hrs    = max( 1, (int) $tkt->duration_hours );
                                 $out_epoch  = $in_epoch + ( $dur_hrs * 3600 );
-                                $is_late    = ( 'Valid' === $tkt->status || 'Used' === $tkt->status ) && ( current_time( 'timestamp' ) > $out_epoch );
+                                $is_today   = ( date( 'Y-m-d', $in_epoch ) === current_time( 'Y-m-d' ) );
+                                $is_late    = ( 'Valid' === $tkt->status || 'Used' === $tkt->status ) && $is_today && ( current_time( 'timestamp' ) > $out_epoch );
                                 $is_valid   = ( 'Valid' === $tkt->status );
-                                $status_class = $is_valid ? 'ifs-pms-badge-success' : ( 'Used' === $tkt->status ? 'ifs-pms-badge-warning' : 'ifs-pms-badge-danger' );
+                                $status_class = $is_valid ? 'ifs-pms-badge-success' : ( 'Used' === $tkt->status ? 'ifs-pms-badge-warning' : ( 'Completed' === $tkt->status ? 'ifs-pms-badge-info' : 'ifs-pms-badge-danger' ) );
                             ?>
                                 <tr class="oz-ticket-row <?php echo $is_late ? 'oz-row-overstay' : ''; ?>" data-status="<?php echo esc_attr( $tkt->status ); ?>" style="<?php echo $is_late ? 'background-color: #fff1f2 !important;' : ''; ?>">
                                     <td class="ifs-pms-mono" style="font-weight: 800; color: #0284c7;">
@@ -961,18 +962,24 @@ $total_pages = ceil( $total_tickets / $per_page );
                                         </span>
                                     </td>
                                     <td style="text-align: right; white-space: nowrap;">
+                                        <?php if ( 'Used' === $tkt->status ) : ?>
+                                            <button type="button" class="oz-btn oz-btn-sm" style="background: #10b981; color: #fff; border: none; font-weight:700;" onclick="ozManualCheckoutSwimmer(<?php echo esc_attr( $tkt->id ); ?>, '<?php echo esc_attr( $tkt->ticket_code ); ?>')">
+                                                <span class="dashicons dashicons-yes"></span> <?php esc_html_e( 'Exit', 'swimming-pool-manager' ); ?>
+                                            </button>
+                                        <?php endif; ?>
+
                                         <a href="<?php echo esc_url( admin_url( 'admin.php?page=ifs-pms&view=ticket_detail&ticket_id=' . $tkt->id ) ); ?>" class="oz-btn oz-btn-sm oz-btn-view">
                                             <span class="dashicons dashicons-visibility"></span> <?php esc_html_e( 'View', 'swimming-pool-manager' ); ?>
                                         </a>
 
                                         <button type="button" class="oz-btn oz-btn-sm oz-btn-edit" onclick='ozOpenEditModal(<?php echo wp_json_encode( array(
-                                            'id'         => $tkt->id,
-                                            'code'       => $tkt->ticket_code,
-                                            'name'       => ! empty( $tkt->customer_name ) ? $tkt->customer_name : '',
-                                            'phone'      => $tkt->customer_phone,
-                                            'room_no'    => $tkt->room_no ?? '',
-                                            'amount'     => $tkt->amount,
-                                            'status'     => $tkt->status,
+                                            'id'      => $tkt->id,
+                                            'code'    => $tkt->ticket_code,
+                                            'name'    => ! empty( $tkt->customer_name ) ? $tkt->customer_name : '',
+                                            'phone'   => $tkt->customer_phone,
+                                            'room_no' => $tkt->room_no ?? '',
+                                            'amount'  => $tkt->amount,
+                                            'status'  => $tkt->status,
                                         ) ); ?>)'>
                                             <span class="dashicons dashicons-edit"></span> <?php esc_html_e( 'Edit', 'swimming-pool-manager' ); ?>
                                         </button>
@@ -1062,6 +1069,7 @@ $total_pages = ceil( $total_tickets / $per_page );
                         <select name="status" id="ozModalStatus" style="height: 48px; border-radius: 12px; border: 1.5px solid #cbd5e1; padding: 8px 14px; font-weight: 700;">
                             <option value="Valid"><?php esc_html_e( 'Valid (Unused)', 'swimming-pool-manager' ); ?></option>
                             <option value="Used"><?php esc_html_e( 'Used (Admitted)', 'swimming-pool-manager' ); ?></option>
+                            <option value="Completed"><?php esc_html_e( 'Completed (Exited)', 'swimming-pool-manager' ); ?></option>
                             <option value="Cancelled"><?php esc_html_e( 'Cancelled / Void', 'swimming-pool-manager' ); ?></option>
                         </select>
                     </div>
@@ -1085,8 +1093,11 @@ $total_pages = ceil( $total_tickets / $per_page );
  * Direct POS Controller, Registry Filtering & Real-Time Sync Engine
  */
 (function() {
+    var currentGuestClassification = 'customer';
+
     window.ozSetGuestType = function(type) {
-        var isRoom = (type === 'room');
+        var isRoom = (type === 'room' || type === 'room_guest');
+        currentGuestClassification = isRoom ? 'room_guest' : 'customer';
 
         var pillWalkin = document.getElementById('ozTypePillWalkin');
         var pillRoom   = document.getElementById('ozTypePillRoom');
@@ -1097,7 +1108,7 @@ $total_pages = ceil( $total_tickets / $per_page );
         var hiddenType = document.getElementById('ozGuestTypeInput');
 
         if (hiddenType) {
-            hiddenType.value = isRoom ? 'room_guest' : 'customer';
+            hiddenType.value = currentGuestClassification;
         }
 
         if (pillWalkin && pillRoom) {
@@ -1124,8 +1135,8 @@ $total_pages = ceil( $total_tickets / $per_page );
             }
         }
 
-        if (typeof window.ozSelectTenderByName === 'function') {
-            window.ozSelectTenderByName(isRoom ? 'Complementary' : 'Cash');
+        if (typeof window.ozSelectTender === 'function') {
+            window.ozSelectTender(isRoom ? 'Complementary' : 'Cash');
         }
 
         if (cashWrap) {
@@ -1135,12 +1146,38 @@ $total_pages = ceil( $total_tickets / $per_page );
         if (cashInput) {
             if (isRoom) {
                 cashInput.removeAttribute('required');
+                cashInput.value = '';
             } else {
                 cashInput.setAttribute('required', 'required');
             }
         }
 
-        ozSyncReceiptDetails();
+        window.ozSyncReceiptDetails();
+    };
+
+    window.ozSelectTender = function(tenderName, elem) {
+        var tenderInput = document.getElementById('ozSelectedPayment');
+        if (tenderInput) {
+            tenderInput.value = tenderName;
+        }
+        var boxes = document.querySelectorAll('.oz-tender-box');
+        boxes.forEach(function(b) {
+            b.classList.remove('active');
+        });
+        if (elem) {
+            elem.classList.add('active');
+        } else {
+            boxes.forEach(function(b) {
+                if (b.textContent.indexOf(tenderName) !== -1) {
+                    b.classList.add('active');
+                }
+            });
+        }
+        window.ozSyncReceiptDetails();
+    };
+
+    window.ozSyncRoomDisplay = function(val) {
+        window.ozSyncReceiptDetails();
     };
 
     window.ozToggleCustomRange = function(val) {
@@ -1150,6 +1187,7 @@ $total_pages = ceil( $total_tickets / $per_page );
         }
     };
 
+    // 1. TIER ON/OFF SWITCH
     window.ozToggleTierSwitch = function(index) {
         var box    = document.getElementById('ozTierBox_' + index);
         var toggle = document.getElementById('ozTierToggle_' + index);
@@ -1158,15 +1196,18 @@ $total_pages = ceil( $total_tickets / $per_page );
         if (toggle && box && qtyIn) {
             if (toggle.checked) {
                 box.classList.add('is-enabled');
-                if (parseInt(qtyIn.value, 10) === 0) qtyIn.value = 1;
+                if (parseInt(qtyIn.value, 10) <= 0) {
+                    qtyIn.value = 1;
+                }
             } else {
                 box.classList.remove('is-enabled');
                 qtyIn.value = 0;
             }
         }
-        ozSyncReceiptDetails();
+        window.ozSyncReceiptDetails();
     };
 
+    // 2. HEADCOUNT INCREMENT / DECREMENT
     window.ozDeltaModularQty = function(index, delta) {
         var qtyIn  = document.getElementById('ozTierPersons_' + index);
         var toggle = document.getElementById('ozTierToggle_' + index);
@@ -1186,30 +1227,59 @@ $total_pages = ceil( $total_tickets / $per_page );
                 box.classList.remove('is-enabled');
             }
         }
-        ozSyncReceiptDetails();
+        window.ozSyncReceiptDetails();
     };
 
+    // 3. DURATION HOURS INCREMENT / DECREMENT
     window.ozDeltaModularHours = function(index, delta) {
         var hrsIn = document.getElementById('ozTierHours_' + index);
         if (!hrsIn) return;
         var val = parseInt(hrsIn.value, 10) || 1;
         val = Math.max(1, Math.min(12, val + delta));
         hrsIn.value = val;
-        ozSyncReceiptDetails();
+        window.ozSyncReceiptDetails();
     };
 
-    // Core Live-Update Calculation & Preview Engine with Separate Adult/Child Rows
-    window.ozSyncReceiptDetails = function() {
-        var nameField = document.getElementById('ozGuestName');
-        var phoneField = document.getElementById('ozGuestPhone');
-        var roomField = document.getElementById('ozHotelRoomNo');
-        var tenderField = document.getElementById('ozSelectedPayment');
+    window.ozManualCheckoutSwimmer = function(ticketId, ticketCode) {
+        if (!confirm('Process manual exit / check-out for pass ' + ticketCode + '?')) {
+            return;
+        }
 
-        var name = (nameField && nameField.value) ? nameField.value.trim() : 'Walk-in Guest';
-        var phone = (phoneField && phoneField.value) ? phoneField.value.trim() : '017XXXXXXXX';
-        var room = (roomField && roomField.value) ? roomField.value.trim() : '';
+        var data = {
+            'action': 'ifs_pms_checkout_swimmer_ajax',
+            'ticket_id': ticketId,
+            'security': ifsPmsConfig.security_token
+        };
+
+        jQuery.post(ifsPmsConfig.ajax_url, data, function(response) {
+            if (response.success) {
+                alert(response.data.message || 'Patron checked out successfully.');
+                location.reload();
+            } else {
+                alert(response.data.message || 'Failed to process checkout.');
+            }
+        }).fail(function() {
+            alert('Server communication error. Please try again.');
+        });
+    };
+
+    // CORE SYNCHRONIZER
+    window.ozSyncReceiptDetails = function() {
+        var nameField       = document.getElementById('ozGuestName');
+        var phoneField      = document.getElementById('ozGuestPhone');
+        var roomField       = document.getElementById('ozHotelRoomNo');
+        var tenderField     = document.getElementById('ozSelectedPayment');
+        var hiddenType      = document.getElementById('ozGuestTypeInput');
+        var pillRoom        = document.getElementById('ozTypePillRoom');
+
+        var isRoom = (currentGuestClassification === 'room_guest') || 
+                     (pillRoom && pillRoom.classList.contains('active')) ||
+                     (hiddenType && (hiddenType.value === 'room_guest' || hiddenType.value === 'room'));
+
+        var name   = (nameField && nameField.value) ? nameField.value.trim() : 'Walk-in Guest';
+        var phone  = (phoneField && phoneField.value) ? phoneField.value.trim() : '017XXXXXXXX';
+        var room   = (roomField && roomField.value) ? roomField.value.trim() : '';
         var tender = (tenderField && tenderField.value) ? tenderField.value : 'Cash';
-        var isRoom = document.getElementById('ozGuestTypeInput') && document.getElementById('ozGuestTypeInput').value === 'room_guest';
 
         var totalCost = 0;
         var maxSessionHours = 1;
@@ -1218,17 +1288,25 @@ $total_pages = ceil( $total_tickets / $per_page );
         var boxes = document.querySelectorAll('.oz-tier-box');
 
         boxes.forEach(function(box) {
-            var index  = box.getAttribute('data-index');
-            var toggle = document.getElementById('ozTierToggle_' + index);
-            if (toggle && toggle.checked) {
+            var index    = box.getAttribute('data-index');
+            var toggle   = document.getElementById('ozTierToggle_' + index);
+            var qtyInput = document.getElementById('ozTierPersons_' + index);
+            var hrsInput = document.getElementById('ozTierHours_' + index);
+
+            // Tier is active if toggle checked OR box has active class
+            var isTierActive = (toggle && toggle.checked) || box.classList.contains('is-enabled');
+
+            if (isTierActive && qtyInput) {
                 var tierName = box.getAttribute('data-name') || '';
                 var ageGroup = box.getAttribute('data-age') || '';
                 var price    = parseFloat(box.getAttribute('data-price')) || 0;
-                var persons  = parseInt(document.getElementById('ozTierPersons_' + index).value, 10) || 0;
-                var hours    = parseInt(document.getElementById('ozTierHours_' + index).value, 10) || 1;
+                var persons  = parseInt(qtyInput.value, 10) || 0;
+                var hours    = hrsInput ? (parseInt(hrsInput.value, 10) || 1) : 1;
 
                 if (persons > 0) {
-                    if (hours > maxSessionHours) maxSessionHours = hours;
+                    if (hours > maxSessionHours) {
+                        maxSessionHours = hours;
+                    }
                     totalCost += (isRoom ? 0 : (price * persons * hours));
 
                     var categoryTag = (ageGroup.indexOf('Child') !== -1 || tierName.indexOf('Junior') !== -1 || tierName.indexOf('Child') !== -1) 
@@ -1241,6 +1319,7 @@ $total_pages = ceil( $total_tickets / $per_page );
             }
         });
 
+        // Fallback default
         if (inclusionsPlain.length === 0) {
             inclusionsHTML = '<div>Adult x 1</div>';
             inclusionsPlain.push('Adult x 1');
@@ -1263,28 +1342,45 @@ $total_pages = ceil( $total_tickets / $per_page );
             submittedAmt.value = totalCost.toFixed(2);
         }
 
-        // Real-Time DOM Updates to Right-Side Receipt Preview
+        // --- UPDATE RIGHT PREVIEW PANEL ---
         var prevName = document.getElementById('ozPrevName');
         if (prevName) prevName.textContent = name || 'Walk-in Guest';
 
         var prevPhone = document.getElementById('ozPrevPhone');
         if (prevPhone) prevPhone.textContent = phone || '017XXXXXXXX';
 
+        // 1. Admissions Live List
         var prevInclusions = document.getElementById('ozPrevInclusions');
-        if (prevInclusions) prevInclusions.innerHTML = inclusionsHTML;
-
-        var prevTender = document.getElementById('ozPrevTender');
-        if (prevTender) prevTender.textContent = tender;
-
-        var prevRoomRow = document.getElementById('ozPrevRoomRow');
-        var prevRoom = document.getElementById('ozPrevRoom');
-        if (prevRoomRow && prevRoom) {
-            prevRoomRow.style.display = (isRoom && room) ? 'table-row' : 'none';
-            prevRoom.textContent = room || '-';
+        if (prevInclusions) {
+            prevInclusions.innerHTML = inclusionsHTML;
         }
 
+        // 2. Classification & Tender
+        var prevTender = document.getElementById('ozPrevTender');
+        if (prevTender) prevTender.textContent = isRoom ? 'Complementary' : tender;
+
+        var prevClassification = document.getElementById('ozPrevClassification');
+        if (prevClassification) {
+            prevClassification.textContent = isRoom ? 'Hotel Room Guest' : 'General Customer';
+        }
+
+        // 3. Hotel Room Number Display
+        var prevRoomRow = document.getElementById('ozPrevRoomRow');
+        var prevRoom    = document.getElementById('ozPrevRoom');
+        if (prevRoomRow && prevRoom) {
+            if (isRoom) {
+                prevRoomRow.style.setProperty('display', 'table-row', 'important');
+                prevRoom.textContent = room.length > 0 ? room : '-';
+            } else {
+                prevRoomRow.style.setProperty('display', 'none', 'important');
+                prevRoom.textContent = '-';
+            }
+        }
+
+        // 4. Session Duration & Times
         var now = new Date();
         var checkout = new Date(now.getTime() + (maxSessionHours * 3600000));
+        
         var prevDuration = document.getElementById('ozPrevDuration');
         var prevCheckIn  = document.getElementById('ozPrevCheckIn');
         var prevCheckOut = document.getElementById('ozPrevCheckOut');
@@ -1296,7 +1392,6 @@ $total_pages = ceil( $total_tickets / $per_page );
         if (prevTotal) prevTotal.textContent = '<?php echo esc_js( $currency ); ?> ' + totalCost.toFixed(2);
     };
 
-    // Dedicated Print Engine Scoped to 80mm Roll with Headcounts
     window.ozPrintPreviewReceipt = function() {
         var receiptEl = document.getElementById('ozReceiptPreviewContainer');
         if (!receiptEl) {
@@ -1385,11 +1480,6 @@ $total_pages = ceil( $total_tickets / $per_page );
             return false;
         }
 
-        if (typeof window.ozValidateFormSubmission === 'function') {
-            var isValid = window.ozValidateFormSubmission(e);
-            if (!isValid) return false;
-        }
-
         var previewCard = document.getElementById('ozReceiptPreviewContainer');
         if (previewCard) {
             sessionStorage.setItem('oz_saved_receipt_html', previewCard.innerHTML);
@@ -1399,21 +1489,16 @@ $total_pages = ceil( $total_tickets / $per_page );
     };
 
     window.addEventListener('DOMContentLoaded', function() {
-        // Event delegation: Bind change & input to all inputs within modular deck and form
         var masterForm = document.getElementById('ozPosMasterForm');
         if (masterForm) {
-            masterForm.addEventListener('input', function() {
-                ozSyncReceiptDetails();
-            });
-            masterForm.addEventListener('change', function() {
-                ozSyncReceiptDetails();
-            });
-            masterForm.addEventListener('click', function() {
-                ozSyncReceiptDetails();
+            ['input', 'keyup', 'change', 'click'].forEach(function(evt) {
+                masterForm.addEventListener(evt, function() {
+                    window.ozSyncReceiptDetails();
+                });
             });
         }
 
-        ozSyncReceiptDetails();
+        window.ozSyncReceiptDetails();
 
         var tokenElem = document.getElementById('ozPrevToken');
         var qrWrap = document.getElementById('ozReceiptQrWrap');
